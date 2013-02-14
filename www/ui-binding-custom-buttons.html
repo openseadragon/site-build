@@ -36,7 +36,7 @@
 
     OpenSeadragon({
         id:             "contentDiv",
-        prefixUrl:      "/openseadragon/images/",
+        prefixUrl:      "/images/",
         toolbar:        "toolbarDiv",
         zoomInButton:   "zoom-in",
         zoomOutButton:  "zoom-out",
@@ -48,15 +48,15 @@
         tileSources:    [{
             type: 'legacy-image-pyramid',
             levels:[{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
                 height: 889,
                 width:  600
             },{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
                 height: 2201,
                 width:  1485
             },{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
                 height: 4402,
                 width:  2970
                 
@@ -64,25 +64,25 @@
         },{
             type: 'legacy-image-pyramid',
             levels:[{
-                url: '/openseadragon/examples/images/rpbaasm/0900/0908/090801t.gif',
+                url: '/example-images/rpbaasm/0900/0908/090801t.gif',
                 height: 150,
                 width:  116
             },{
-                url: '/openseadragon/examples/images/rpbaasm/0900/0908/090801q.jpg',
+                url: '/example-images/rpbaasm/0900/0908/090801q.jpg',
                 height: 400,
                 width:  310
             },{
-                url: '/openseadragon/examples/images/rpbaasm/0900/0908/090801r.jpg',
+                url: '/example-images/rpbaasm/0900/0908/090801r.jpg',
                 height: 860,
                 width:  667
             },{
-                url: '/openseadragon/examples/images/rpbaasm/0900/0908/090801v.jpg',
+                url: '/example-images/rpbaasm/0900/0908/090801v.jpg',
                 height: 1650,
                 width:  1279
                 
             }],
         },
-            "/openseadragon/examples/images/highsmith/highsmith.dzi"
+            "/example-images/highsmith/highsmith.dzi"
         ],
         onPageChange:   function( data ){
             document.getElementById('currentpage').innerHTML = ( data.page + 1 ) + ' of 3';

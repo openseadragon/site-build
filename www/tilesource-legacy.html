@@ -27,14 +27,14 @@
         <script type="text/javascript">
             OpenSeadragon({
                 id:            "example-xmlhttprequest",
-                prefixUrl:     "/openseadragon/images/",
-                tileSources:   "/openseadragon/examples/images/rbc/rbc0001/2003/rosen.xml",
+                prefixUrl:     "/images/",
+                tileSources:   "/example-images/rbc/rbc0001/2003/rosen.xml",
                 showNavigator:  true
             });
         </script>
         <noscript>
             <p>Deep zoom is not available unless javascript is enabled.</p>
-            <img src='/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
+            <img src='/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
                  height='600'/>
         </noscript>
     </div>
@@ -45,15 +45,15 @@
 {
     type: 'legacy-image-pyramid',
     levels:[{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
         height: 889,
         width:  600
     },{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
         height: 2201,
         width:  1485
     },{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
         height: 4402,
         width:  2970
     }]
@@ -65,15 +65,15 @@
 <pre>
 &lt;image type='legacy-image-pyramid'>
     &lt;level
-        url='/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg'
+        url='/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg'
         height='889'
         width='600'/>
     &lt;level
-        url='/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg'
+        url='/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg'
         height='2201'
         width='1485'/>
     &lt;level
-        url='/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
+        url='/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
         height='4402'
         width='2970'/>
 &lt;/image>
@@ -84,7 +84,7 @@
 <pre>
 OpenSeadragon({
     ...
-    tileSources:   "/openseadragon/examples/images/rbc/rbc0001/2003/rosen.xml",
+    tileSources:   "/example-images/rbc/rbc0001/2003/rosen.xml",
     ...
 });</pre>
 </div>
@@ -109,14 +109,14 @@ OpenSeadragon({
         <script type="text/javascript">
             OpenSeadragon({
                 id:            "example-jsonprequest",
-                prefixUrl:     "/openseadragon/images/",
-                tileSources:   "/openseadragon/examples/images/rbc/rbc0001/2003/rosen.js",
+                prefixUrl:     "/images/",
+                tileSources:   "/example-images/rbc/rbc0001/2003/rosen.js",
                 showNavigator:  true
             });
         </script>
         <noscript>
             <p>Deep zoom is not available unless javascript is enabled.</p>
-            <img src='/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
+            <img src='/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg'
                  height='600'/>
         </noscript>
     </div>
@@ -127,15 +127,15 @@ OpenSeadragon({
 rosen({
     type: 'legacy-image-pyramid',
     levels:[{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
         height: 889,
         width:  600
     },{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
         height: 2201,
         width:  1485
     },{
-        url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
+        url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
         height: 4402,
         width:  2970
     }]
@@ -146,7 +146,7 @@ rosen({
 <pre>
 OpenSeadragon({
     ...
-    tileSources:   "/openseadragon/examples/images/rbc/rbc0001/2003/rosen.js",
+    tileSources:   "/example-images/rbc/rbc0001/2003/rosen.js",
     ...
 });</pre>
 </div>
@@ -173,20 +173,20 @@ OpenSeadragon({
     // Example
     OpenSeadragon({
         id: "inline-configuration",
-        prefixUrl: "/openseadragon/images/",
+        prefixUrl: "/images/",
         showNavigator: true,
         tileSources: {
             type: 'legacy-image-pyramid',
             levels:[{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
                 height: 889,
                 width:  600
             },{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
                 height: 2201,
                 width:  1485
             },{
-                url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
+                url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
                 height: 4402,
                 width:  2970
             }]
@@ -209,15 +209,15 @@ OpenSeadragon({
     tileSources: {
         type: 'legacy-image-pyramid',
         levels:[{
-            url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
+            url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001q.jpg',
             height: 889,
             width:  600
         },{
-            url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
+            url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001r.jpg',
             height: 2201,
             width:  1485
         },{
-            url: '/openseadragon/examples/images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
+            url: '/example-images/rbc/rbc0001/2003/2003rosen1799/0001v.jpg',
             height: 4402,
             width:  2970
             
@@ -243,16 +243,16 @@ OpenSeadragon({
     // Example
     OpenSeadragon({
         id: "aspect-ratio",
-        prefixUrl: "/openseadragon/images/",
+        prefixUrl: "/images/",
         showNavigator: true,
         tileSources: {
             type: 'legacy-image-pyramid',
             levels:[{
-                url: '/openseadragon/examples/images/highsmith/09250r.jpg',
+                url: '/example-images/highsmith/09250r.jpg',
                 height: 427,
                 width:  640
             },{
-                url: '/openseadragon/examples/images/highsmith/09250v.jpg',
+                url: '/example-images/highsmith/09250v.jpg',
                 height: 683,
                 width:  1024
             }]
