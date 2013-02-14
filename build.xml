@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Version: $Id: build.xml 495 2011-07-07 20:14:37Z chth $ -->
-<project name="openseadragon" 
-         default="build">
+<project name="openseadragon/site-build" 
+         default="www">
 
 	<tstamp/>
     
     <description>
-    	Build file for Zoomable User Interface HTML5 project OpenSeadragon.
+    	Build file for compiling a static web pages for 
+        http://openseadragon.github.com/
     </description>
 
     <!-- YOU CAN OVERRIDE PROPERTIES PER YOUR NEED IN local.properties -->
@@ -15,52 +16,8 @@
     <!-- BASIC PROJECT PROPERTIES TO HELP TRACK VERSION -->
     <property file="build.properties" />
 
-    <target name="build">
-        <echo>| OpenSeadragon </echo>
-        <filelist id="openseadragon.javascript" 
-                  dir=".">
-            <file name="src/openseadragon.js" />
-            <file name="src/eventhandler.js" />
-            <file name="src/mousetracker.js" />
-            <file name="src/control.js" />
-            <file name="src/controldock.js" />
-            <file name="src/viewer.js" />
-            <file name="src/navigator.js" />
-            <file name="src/strings.js" />
-            <file name="src/point.js" />
-            <!--file name="src/profiler.js" /-->
-            <file name="src/tilesource.js" />
-            <file name="src/dzitilesource.js" />
-            <file name="src/iiiftilesource.js" />
-            <file name="src/osmtilesource.js" />
-            <file name="src/tmstilesource.js" />
-            <file name="src/legacytilesource.js" />
-            <file name="src/tilesourcecollection.js" />
-            <file name="src/button.js" />
-            <file name="src/buttongroup.js" />
-            <file name="src/rectangle.js" />
-            <file name="src/referencestrip.js" />
-            <file name="src/displayrectangle.js" />
-            <file name="src/spring.js" />
-            <file name="src/tile.js" />
-            <file name="src/overlay.js" />
-            <file name="src/drawer.js" />
-            <file name="src/viewport.js" />
-        </filelist>
-            
-        <echo>| Building OpenSeadragon Javascript </echo>
-        <concat destFile="openseadragon.js">
-            <filterchain>    
-                <replacetokens>
-                    <token key="VERSION" value="${VERSION}"/>
-                </replacetokens>
-            </filterchain>
-            <filelist refid="openseadragon.javascript" />
-        </concat>
-    </target>
 
-
-    <target name='www' depends='build'>
+    <target name='www'>
         <echo>| Compiling OpenSeadragon Web Site </echo>
 
         <publish page='tilesource-custom' title='Custom Tile Source | '/>
