@@ -39,12 +39,23 @@
 
         <publish page='developer-debug-mode' title='Developer Tools - Debug Mode | '/>
 
-        <copy todir='${WWW}' file='openseadragon.js' />
+        <copy todir='${WWW}' file='openseadragon/openseadragon.js' />
+
+        <copy todir='${WWW}/images'>
+            <fileset dir='openseadragon/images' />
+        </copy>
+        
+        <copy todir='${WWW}/images'>
+            <fileset dir='images' />
+        </copy>
+
+        <copy todir='${WWW}/css'>
+            <fileset dir='css' />
+        </copy>
     </target>
 
     
-    <target name='doc'
-        depends='build'>
+    <target name='doc'>
         <echo>| Generating Public API Documentation </echo>
         <java jar="../jsdoc-toolkit/jsrun.jar" 
               fork="true">
