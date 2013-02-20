@@ -39,14 +39,13 @@
 
         <publish page='developer-debug-mode' title='Developer Tools - Debug Mode | '/>
 
-        <copy todir='${WWW}/openseadragon' file='openseadragon/openseadragon.js' />
-        <copy todir='${WWW}/openseadragon' file='openseadragon/openseadragon.min.js' />
-        <copy todir='${WWW}' file='openseadragon.zip' />
-        <copy todir='${WWW}' file='openseadragon.tar' />
-
+        <copy todir='${WWW}/openseadragon' file='${DISTRIBUTION}/build/openseadragon.js' />
+        <copy todir='${WWW}/openseadragon' file='${DISTRIBUTION}/build/openseadragon.min.js' />
         <copy todir='${WWW}/openseadragon/images'>
-            <fileset dir='openseadragon/images' />
+            <fileset dir='${DISTRIBUTION}/build/images' />
         </copy>
+        <copy todir='${WWW}' file='${DISTRIBUTION}/openseadragon.zip' />
+        <copy todir='${WWW}' file='${DISTRIBUTION}/openseadragon.tar' />
         
         <copy todir='${WWW}/images'>
             <fileset dir='images' />
@@ -58,17 +57,20 @@
     </target>
 
     
-    <target name='doc'>
+    <target name='doc' depends='www'>
         <echo>| Generating Public API Documentation </echo>
         <java jar="jsdoc/jsrun.jar" 
               fork="true">
             <arg value="jsdoc/app/run.js"/>
-            <arg value="openseadragon/openseadragon.js"/>
+            <arg value="${DISTRIBUTION}/build/openseadragon.js"/>
             <arg value="--template=jsdoc/openseadragon"/>
-            <arg value="--directory=${WWW_DOCS}"/>
+            <arg value="--directory=${WWW}/docs"/>
             <arg value="--verbose"/>
         </java>
     </target>
+
+
+    <target name='publish' depends='doc, www'/>
 
 
     <macrodef name='publish'>
