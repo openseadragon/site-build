@@ -60,11 +60,11 @@
     
     <target name='doc'>
         <echo>| Generating Public API Documentation </echo>
-        <java jar="../jsdoc-toolkit/jsrun.jar" 
+        <java jar="jsdoc/jsrun.jar" 
               fork="true">
-            <arg value="bin/jsdoc/run.js"/>
-            <arg value="openseadragon.js"/>
-            <arg value="--template=bin/jsdoc/templates"/>
+            <arg value="jsdoc/app/run.js"/>
+            <arg value="openseadragon/openseadragon.js"/>
+            <arg value="--template=bin/jsdoc/openseadragon"/>
             <arg value="--directory=${WWW_DOCS}"/>
             <arg value="--verbose"/>
         </java>
