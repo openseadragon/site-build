@@ -64,7 +64,7 @@
               fork="true">
             <arg value="jsdoc/app/run.js"/>
             <arg value="openseadragon/openseadragon.js"/>
-            <arg value="--template=bin/jsdoc/openseadragon"/>
+            <arg value="--template=jsdoc/openseadragon"/>
             <arg value="--directory=${WWW_DOCS}"/>
             <arg value="--verbose"/>
         </java>
