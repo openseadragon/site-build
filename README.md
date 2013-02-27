@@ -19,3 +19,9 @@ If you need to specify a different directly, please create and edit a file named
 Also built with ant, the result runs jsdoc over overseadragon.js and produces the html documentation pages.
 
 > ant doc
+
+## Building Everything
+
+To build the webpages and the docs, use:
+
+> ant publish
