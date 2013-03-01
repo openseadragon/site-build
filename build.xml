@@ -39,10 +39,8 @@
 
         <publish page='developer-debug-mode' title='Developer Tools - Debug Mode | '/>
 
-        <copy todir='${WWW}/openseadragon' file='openseadragon/openseadragon.js' />
-        <copy todir='${WWW}/openseadragon' file='openseadragon/openseadragon.min.js' />
-        <copy todir='${WWW}/openseadragon/images'>
-            <fileset dir='openseadragon/images' />
+        <copy todir='${WWW}/openseadragon/'>
+            <fileset dir='openseadragon/' />
         </copy>
         <copy todir='${WWW}' file='openseadragon.zip' />
         <copy todir='${WWW}' file='openseadragon.tar' />
