@@ -6,22 +6,29 @@ This project compiles static web pages which provide the examples and documentat
 
 http://openseadragon.github.com/
 
-## Building the Web pages
+## First Time Setup
 
-Building from source is easy with 'ant'.  The result is output to a folder specified in the build.properties files, WWW.  By default we assume it is a folder in the same parent folder as this project named 'openseadragon.github.com'.
+All command-line operations are scripted using [Grunt](http://gruntjs.com/) which is based on [Node.js](http://nodejs.org/). To get set up:
 
-If you need to specify a different directly, please create and edit a file named local.properties and this can override the values provided by default in build.properties.
+1. Install Node, if you haven't already (available at the link above)
+1. Install the Grunt command line runner (if you haven't already); on the command line, run `npm install -g grunt-cli`
+1. Clone the site-build repository
+1. Clone the [openseadragon.github.com](https://github.com/openseadragon/openseadragon.github.com) repository next to it
+1. On the command line, go in to the site-build folder
+1. Run `npm install`
 
-> ant 
+You're set... continue reading for build and test instructions.
 
-## Building the API Documentation pages
+## Building the Web Pages
 
-Also built with ant, the result runs jsdoc over overseadragon.js and produces the html documentation pages.
+To build, just run (on the command line, in the site-build folder):
 
-> ant doc
+    grunt publish
 
-## Building Everything
+This cleans out the openseadragon.github.com folder next to your site-build folder and builds and copies the appropriate files into it.
 
-To build the webpages and the docs, use:
+If you want to try the site out in your browser, you can run:
+    
+    grunt connect watch
 
-> ant publish
+This will run a server at http://localhost:9000/.
