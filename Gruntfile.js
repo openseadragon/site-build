@@ -10,7 +10,38 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-clean");
 
+    // ----------
     var destRoot = "../openseadragon.github.com/";
+
+    var filesToCopy = [
+        "openseadragon.tar",
+        "openseadragon.zip"
+    ];
+
+    var foldersToCopy = [
+        "css",
+        "images",
+        "openseadragon"
+    ];
+
+    var examples = {
+        "tilesource-custom": "Custom Tile Source",
+        "tilesource-dzi": "DZI Tile Source",
+        "tilesource-osm": "Open Street Maps Tile Source",
+        "tilesource-tms": "Tiled Map Service Tile Source",
+        "tilesource-iiif": "IIIF Tile Source",
+        "tilesource-legacy": "Legacy Tile Sources",
+        "tilesource-zoomit": "Zoom.it Tile Sources",
+        "tilesource-sequence": "Tile Source Sequence",
+        "tilesource-collection": "Tile Source Collections",
+        "ui-binding-custom-buttons": "Binding Custom Buttons",
+        "ui-reference-strip": "Image Reference Strip",
+        "ui-toolbar": "Toolbar",
+        "ui-viewport-navigator": "Viewport Navigator",
+        "ui-zoom-and-pan": "Viewport Zoom and Pan",
+        "ui-overlays": "Overlays",
+        "developer-debug-mode": "Developer Tools - Debug Mode"
+    };
 
     // ----------
     // Project configuration.
@@ -61,29 +92,10 @@ module.exports = function(grunt) {
             grunt.file.write(dest, built);
         };
 
-        var map = {
-            'tilesource-custom': 'Custom Tile Source',
-            'tilesource-dzi': 'DZI Tile Source',
-            'tilesource-osm': 'Open Street Maps Tile Source',
-            'tilesource-tms': 'Tiled Map Service Tile Source',
-            'tilesource-iiif': 'IIIF Tile Source',
-            'tilesource-legacy': 'Legacy Tile Sources',
-            'tilesource-zoomit': 'Zoom.it Tile Sources',
-            'tilesource-sequence': 'Tile Source Sequence',
-            'tilesource-collection': 'Tile Source Collections',
-            'ui-binding-custom-buttons': 'Binding Custom Buttons',
-            'ui-reference-strip': 'Image Reference Strip',
-            'ui-toolbar': 'Toolbar',
-            'ui-viewport-navigator': 'Viewport Navigator',
-            'ui-zoom-and-pan': 'Viewport Zoom and Pan',
-            'ui-overlays': 'Overlays',
-            'developer-debug-mode': 'Developer Tools - Debug Mode'
-        };
-
-        for (var key in map) {
+        for (var key in examples) {
             build("www/" + key + ".html", 
                 destRoot + "examples/" + key + "/index.html",
-                map[key] + " | ");
+                examples[key] + " | ");
         }
 
         build("www/index.html", destRoot + "index.html", "");
@@ -93,8 +105,11 @@ module.exports = function(grunt) {
     // Copy task.
     // Copies needed files to the destination folder.
     grunt.registerTask("copy", function() {
-        var sources = ["openseadragon", "images", "css"];
-        sources.forEach(function(v, i) {
+        filesToCopy.forEach(function(v, i) {
+            grunt.file.copy(v, destRoot + v);
+        });
+
+        foldersToCopy.forEach(function(v, i) {
             grunt.file.recurse(v, function(abspath, rootdir, subdir, filename) {
                 var dest = destRoot 
                     + v
@@ -105,9 +120,6 @@ module.exports = function(grunt) {
                 grunt.file.copy(abspath, dest);
             });
         });
-
-        grunt.file.copy("openseadragon.tar", destRoot + "openseadragon.tar");
-        grunt.file.copy("openseadragon.zip", destRoot + "openseadragon.zip");
     });
 
     // ----------
