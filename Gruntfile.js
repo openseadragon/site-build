@@ -39,6 +39,17 @@ module.exports = function(grunt) {
     };
 
     // ----------
+    function getVersion() {
+        var data = grunt.file.read("openseadragon/openseadragon.js");
+        var matches = data.match(/@version\s*OpenSeadragon\s*(.*)\s*/);
+        if (matches && matches.length == 2) {
+            return matches[1];
+        }
+
+        return "";
+    }
+
+    // ----------
     // Project configuration.
     grunt.initConfig({
         clean: {
@@ -71,13 +82,14 @@ module.exports = function(grunt) {
     // Builds all of the HTML pages and puts them in the destination folder.
     grunt.registerTask("build", function() {
         var base = grunt.file.read("www/base.html");
+        var version = getVersion();
 
         var build = function(src, dest, title) {
             var content = grunt.file.read(src);
             var built = grunt.template.process(base, {
                 data: {
                     title: title,
-                    version: 123,
+                    version: version,
                     content: content
                 }
             });
