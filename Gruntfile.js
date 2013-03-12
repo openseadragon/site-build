@@ -46,6 +46,7 @@ module.exports = function(grunt) {
             return matches[1];
         }
 
+        grunt.fail.fatal("Unable to locate version number in openseadragon/openseadragon.js");
         return "";
     }
 
