@@ -63,8 +63,6 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: [ "grunt.js", "src/*.js" ],
-            tasks: "build"
         }
     });
 
