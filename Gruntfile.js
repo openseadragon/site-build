@@ -1,5 +1,6 @@
 module.exports = function(grunt) {
 
+    // ----------
     grunt.loadNpmTasks("grunt-contrib-compress");
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-jshint");
@@ -11,6 +12,7 @@ module.exports = function(grunt) {
 
     var destRoot = "../openseadragon.github.com/";
 
+    // ----------
     // Project configuration.
     grunt.initConfig({
         clean: {
@@ -40,9 +42,10 @@ module.exports = function(grunt) {
         }
     });
 
-    // Www task.
+    // ----------
+    // Build task.
     // Builds all of the HTML pages and puts them in the destination folder.
-    grunt.registerTask("www", function() {
+    grunt.registerTask("build", function() {
         var base = grunt.file.read("www/base.html");
 
         var build = function(src, dest, title) {
@@ -86,7 +89,29 @@ module.exports = function(grunt) {
         build("www/index.html", destRoot + "index.html", "");
     });
 
+    // ----------
+    // Copy task.
+    // Copies needed files to the destination folder.
+    grunt.registerTask("copy", function() {
+        var sources = ["openseadragon", "images", "css"];
+        sources.forEach(function(v, i) {
+            grunt.file.recurse(v, function(abspath, rootdir, subdir, filename) {
+                var dest = destRoot 
+                    + v
+                    + "/"
+                    + (subdir ? subdir + "/" : "")
+                    + filename;
+
+                grunt.file.copy(abspath, dest);
+            });
+        });
+
+        grunt.file.copy("openseadragon.tar", destRoot + "openseadragon.tar");
+        grunt.file.copy("openseadragon.zip", destRoot + "openseadragon.zip");
+    });
+
+    // ----------
     // Publish task.
     // Cleans the built files out of ../site-build and copies newly built ones over.
-    grunt.registerTask("publish", ["clean", "www"]);
+    grunt.registerTask("publish", ["clean", "build", "copy"]);
 };
