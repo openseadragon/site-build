@@ -129,7 +129,25 @@ module.exports = function(grunt) {
     });
 
     // ----------
+    // Doc task.
+    // Generates the documentation.
+    grunt.registerTask("doc", function() {
+        var done = this.async();
+        grunt.util.spawn({
+            cmd: "ant",
+            args: ["doc"]
+        }, function(error, result) {
+            if (error) {
+                grunt.log.error(error);
+                return done(false);
+            }
+
+            done(result);
+        });
+    });
+
+    // ----------
     // Publish task.
     // Cleans the built files out of ../site-build and copies newly built ones over.
-    grunt.registerTask("publish", ["clean", "build", "copy"]);
+    grunt.registerTask("publish", ["clean", "build", "copy", "doc"]);
 };
