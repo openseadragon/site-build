@@ -32,11 +32,19 @@ If you want to try the site out in your browser, you can run:
 
 This will run a server at http://localhost:9000/.
 
+## Building the Docs
+
+    grunt doc
+
+... will build the docs into the local build folder.
+
+## Publishing
+
 To publish, run:
 
     grunt publish
 
-This cleans out the openseadragon.github.com folder (which you've cloned from the openseadragon.github.com repository, and resides next to your site-build folder) and builds and copies the appropriate files into it.
+This cleans out the openseadragon.github.com folder (which you've cloned from the openseadragon.github.com repository, and resides next to your site-build folder) and builds and copies the web pages and docs into it.
 
 ## Example Images
 

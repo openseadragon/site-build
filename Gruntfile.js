@@ -55,10 +55,16 @@ module.exports = function(grunt) {
     // Project configuration.
     grunt.initConfig({
         clean: {
-            build: {
+            www: {
                 src: [
                     buildRoot + "*",
-                    "!" + buildRoot + "example-images"
+                    "!" + buildRoot + "example-images",
+                    "!" + buildRoot + "docs"
+                ]
+            },
+            doc: {
+                src: [
+                    buildRoot + "docs/"
                 ]
             },
             release: {
@@ -85,14 +91,14 @@ module.exports = function(grunt) {
         },
         watch: {
             files: [ "Gruntfile.js", "www/*", "openseadragon/*", "css/*" ],
-            tasks: ["clean:build", "make", "copy:build"]
+            tasks: ["build"]
         }
     });
 
     // ----------
-    // Make task.
+    // Make:www task.
     // Builds all of the HTML pages.
-    grunt.registerTask("make", function() {
+    grunt.registerTask("make:www", function() {
         var base = grunt.file.read("www/base.html");
         var version = getVersion();
 
@@ -116,6 +122,24 @@ module.exports = function(grunt) {
         }
 
         make("www/index.html", buildRoot + "index.html", "");
+    });
+
+    // ----------
+    // Make:doc task.
+    // Generates the documentation.
+    grunt.registerTask("make:doc", function() {
+        var done = this.async();
+        grunt.util.spawn({
+            cmd: "ant",
+            args: ["doc"]
+        }, function(error, result) {
+            if (error) {
+                grunt.log.error(error);
+                return done(false);
+            }
+
+            done(result);
+        });
     });
 
     // ----------
@@ -153,30 +177,22 @@ module.exports = function(grunt) {
     });
 
     // ----------
-    // Doc task.
-    // Generates the documentation.
-    grunt.registerTask("doc", function() {
-        var done = this.async();
-        grunt.util.spawn({
-            cmd: "ant",
-            args: ["doc"]
-        }, function(error, result) {
-            if (error) {
-                grunt.log.error(error);
-                return done(false);
-            }
-
-            done(result);
-        });
-    });
+    // Build task.
+    // Cleans the built files out of the build folder and builds new ones, except the docs, which take some time.
+    grunt.registerTask("build", ["clean:www", "make:www", "copy:build"]);
 
     // ----------
-    // Build task.
-    // Cleans the built files out of the build folder and builds new ones.
-    grunt.registerTask("build", ["clean:build", "make", "copy:build", "doc"]);
+    // Doc task.
+    // Cleans the doc files out of the build folder and builds new ones.
+    grunt.registerTask("doc", ["clean:doc", "make:doc"]);
 
     // ----------
     // Publish task.
     // Cleans the built files out of ../openseadragon.github.com, builds, and copies newly built ones over.
-    grunt.registerTask("publish", ["build", "clean:release", "copy:release"]);
+    grunt.registerTask("publish", ["build", "doc", "clean:release", "copy:release"]);
+
+    // ----------
+    // Default task.
+    // Cleans the built files out of ../openseadragon.github.com, builds, and copies newly built ones over.
+    grunt.registerTask("default", ["build"]);
 };
