@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Version: $Id: build.xml 495 2011-07-07 20:14:37Z chth $ -->
-<project name="openseadragon/site-build" 
-         default="www">
+<project name="openseadragon/site-build">
 
 	<tstamp/>
     
@@ -16,46 +15,7 @@
     <!-- BASIC PROJECT PROPERTIES TO HELP TRACK VERSION -->
     <property file="build.properties" />
 
-
-    <target name='www'>
-        <echo>| Compiling OpenSeadragon Web Site </echo>
-
-        <publish page='tilesource-custom' title='Custom Tile Source | '/>
-        <publish page='tilesource-dzi' title='DZI Tile Source | '/>
-        <publish page='tilesource-osm' title='Open Street Maps Tile Source | '/>
-        <publish page='tilesource-tms' title='Tiled Map Service Tile Source | '/>
-        <publish page='tilesource-iiif' title='IIIF Tile Source | '/>
-        <publish page='tilesource-legacy' title='Legacy Tile Sources | '/>
-        <publish page='tilesource-zoomit' title='Zoom.it Tile Sources | '/>
-        <publish page='tilesource-sequence' title='Tile Source Sequence | '/>
-        <publish page='tilesource-collection' title='Tile Source Collections | '/>
-
-        <publish page='ui-binding-custom-buttons' title='Binding Custom Buttons | '/>
-        <publish page='ui-reference-strip' title='Image Reference Strip | '/>
-        <publish page='ui-toolbar' title='Toolbar | '/>
-        <publish page='ui-viewport-navigator' title='Viewport Navigator | '/>
-        <publish page='ui-zoom-and-pan' title='Viewport Zoom and Pan | '/>
-        <publish page='ui-overlays' title='Overlays |'/>
-
-        <publish page='developer-debug-mode' title='Developer Tools - Debug Mode | '/>
-
-        <copy todir='${WWW}/openseadragon/'>
-            <fileset dir='openseadragon/' />
-        </copy>
-        <copy todir='${WWW}' file='openseadragon.zip' />
-        <copy todir='${WWW}' file='openseadragon.tar' />
-        
-        <copy todir='${WWW}/images'>
-            <fileset dir='images' />
-        </copy>
-
-        <copy todir='${WWW}/css'>
-            <fileset dir='css' />
-        </copy>
-    </target>
-
-    
-    <target name='doc' depends='www'>
+    <target name='doc'>
         <echo>| Generating Public API Documentation </echo>
         <java jar="jsdoc/jsrun.jar" 
               fork="true">
@@ -66,39 +26,5 @@
             <arg value="--verbose"/>
         </java>
     </target>
-
-
-    <target name='publish' depends='doc, www'/>
-
-
-    <macrodef name='publish'>
-        <attribute name='page'/>
-        <attribute name='title'/>
-        <sequential>
-            <loadfile property='@{page}.html' srcfile='www/@{page}.html' />
-            <mkdir dir='${WWW}/examples/@{page}'/>
-            <copy file='www/base.html' 
-                  tofile="${WWW}/examples/@{page}/index.html"
-                  overwrite='true'>
-                <filterchain>    
-                    <replacetokens>
-                        <token key="EXAMPLE" value='${@{page}.html}'/>
-                        <token key="TITLE" value='@{title}'/>
-                        <token key="VERSION" value="${VERSION}"/>
-                    </replacetokens>
-                </filterchain>
-            </copy>
-            <loadfile property='index.html' srcfile='www/index.html' />
-            <copy file='www/base.html' tofile="${WWW}/index.html" overwrite='true'>
-                <filterchain>    
-                    <replacetokens>
-                        <token key="EXAMPLE" value='${index.html}'/>
-                        <token key="TITLE" value=''/>
-                        <token key="VERSION" value="${VERSION}"/>
-                    </replacetokens>
-                </filterchain>
-            </copy>
-        </sequential>
-    </macrodef>
 
 </project>
