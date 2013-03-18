@@ -22,7 +22,7 @@
             <arg value="jsdoc/app/run.js"/>
             <arg value="openseadragon/openseadragon.js"/>
             <arg value="--template=jsdoc/openseadragon"/>
-            <arg value="--directory=${WWW}/docs"/>
+            <arg value="--directory=${BUILD}/docs"/>
             <arg value="--verbose"/>
         </java>
     </target>

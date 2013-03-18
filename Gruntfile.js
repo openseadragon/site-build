@@ -6,7 +6,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-clean");
 
     // ----------
-    var destRoot = "../openseadragon.github.com/";
+    var buildRoot = "build/";
+    var releaseRoot = "../openseadragon.github.com/";
 
     var filesToCopy = [
         "openseadragon.tar",
@@ -54,38 +55,48 @@ module.exports = function(grunt) {
     // Project configuration.
     grunt.initConfig({
         clean: {
-            src: [
-                destRoot + "*",
-                "!" + destRoot + "README.md",
-                "!" + destRoot + "node_modules",
-                "!" + destRoot + "Gruntfile.js",
-                "!" + destRoot + "package.json",
-                "!" + destRoot + "example-images"
-            ],
-            options: {
-                force: true
+            build: {
+                src: [
+                    buildRoot + "*",
+                    "!" + buildRoot + "example-images"
+                ]
+            },
+            release: {
+                src: [
+                    releaseRoot + "*",
+                    "!" + releaseRoot + "README.md",
+                    "!" + releaseRoot + "node_modules",
+                    "!" + releaseRoot + "Gruntfile.js",
+                    "!" + releaseRoot + "package.json",
+                    "!" + releaseRoot + "example-images"
+                ],
+                options: {
+                    force: true
+                }
             }
         },
         connect: {
             server: {
                 options: {
                     port: 9000,
-                    base: destRoot
+                    base: buildRoot
                 }
             }
         },
         watch: {
+            files: [ "Gruntfile.js", "www/*", "openseadragon/*", "css/*" ],
+            tasks: ["clean:build", "make", "copy:build"]
         }
     });
 
     // ----------
-    // Build task.
-    // Builds all of the HTML pages and puts them in the destination folder.
-    grunt.registerTask("build", function() {
+    // Make task.
+    // Builds all of the HTML pages.
+    grunt.registerTask("make", function() {
         var base = grunt.file.read("www/base.html");
         var version = getVersion();
 
-        var build = function(src, dest, title) {
+        var make = function(src, dest, title) {
             var content = grunt.file.read(src);
             var built = grunt.template.process(base, {
                 data: {
@@ -99,25 +110,25 @@ module.exports = function(grunt) {
         };
 
         for (var key in examples) {
-            build("www/" + key + ".html", 
-                destRoot + "examples/" + key + "/index.html",
+            make("www/" + key + ".html", 
+                buildRoot + "examples/" + key + "/index.html",
                 examples[key] + " | ");
         }
 
-        build("www/index.html", destRoot + "index.html", "");
+        make("www/index.html", buildRoot + "index.html", "");
     });
 
     // ----------
-    // Copy task.
-    // Copies needed files to the destination folder.
-    grunt.registerTask("copy", function() {
+    // Copy:build task.
+    // Copies needed files to the build folder.
+    grunt.registerTask("copy:build", function() {
         filesToCopy.forEach(function(v, i) {
-            grunt.file.copy(v, destRoot + v);
+            grunt.file.copy(v, buildRoot + v);
         });
 
         foldersToCopy.forEach(function(v, i) {
             grunt.file.recurse(v, function(abspath, rootdir, subdir, filename) {
-                var dest = destRoot 
+                var dest = buildRoot 
                     + v
                     + "/"
                     + (subdir ? subdir + "/" : "")
@@ -125,6 +136,19 @@ module.exports = function(grunt) {
 
                 grunt.file.copy(abspath, dest);
             });
+        });
+    });
+
+    // ----------
+    // Copy:release task.
+    // Copies needed files to the release folder.
+    grunt.registerTask("copy:release", function() {
+        grunt.file.recurse(buildRoot, function(abspath, rootdir, subdir, filename) {
+            var dest = releaseRoot
+                + (subdir ? subdir + "/" : '/')
+                + filename;
+
+            grunt.file.copy(abspath, dest);
         });
     });
 
@@ -147,7 +171,12 @@ module.exports = function(grunt) {
     });
 
     // ----------
+    // Build task.
+    // Cleans the built files out of the build folder and builds new ones.
+    grunt.registerTask("build", ["clean:build", "make", "copy:build", "doc"]);
+
+    // ----------
     // Publish task.
-    // Cleans the built files out of ../site-build and copies newly built ones over.
-    grunt.registerTask("publish", ["clean", "build", "copy", "doc"]);
+    // Cleans the built files out of ../openseadragon.github.com, builds, and copies newly built ones over.
+    grunt.registerTask("publish", ["build", "clean:release", "copy:release"]);
 };
