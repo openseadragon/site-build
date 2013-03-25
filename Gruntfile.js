@@ -168,6 +168,10 @@ module.exports = function(grunt) {
     // Copies needed files to the release folder.
     grunt.registerTask("copy:release", function() {
         grunt.file.recurse(buildRoot, function(abspath, rootdir, subdir, filename) {
+            if (subdir && /^example-images/.test(subdir)) {
+                return;
+            }
+
             var dest = releaseRoot
                 + (subdir ? subdir + "/" : '/')
                 + filename;
