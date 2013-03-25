@@ -9,16 +9,11 @@ module.exports = function(grunt) {
     var buildRoot = "build/";
     var releaseRoot = "../openseadragon.github.com/";
 
-    var filesToCopy = [
-        "openseadragon.tar",
-        "openseadragon.zip"
-    ];
-
-    var foldersToCopy = [
-        "css",
-        "images",
-        "openseadragon"
-    ];
+    var foldersToCopy = {
+        css: "css",
+        images: "images",
+        "built-openseadragon": ""
+    };
 
     var examples = {
         "tilesource-custom": "Custom Tile Source",
@@ -41,13 +36,14 @@ module.exports = function(grunt) {
 
     // ----------
     function getVersion() {
-        var data = grunt.file.read("openseadragon/openseadragon.js");
+        var src = "built-openseadragon/openseadragon/openseadragon.js";
+        var data = grunt.file.read(src);
         var matches = data.match(/@version\s*OpenSeadragon\s*(.*)\s*/);
         if (matches && matches.length == 2) {
             return matches[1];
         }
 
-        grunt.fail.fatal("Unable to locate version number in openseadragon/openseadragon.js");
+        grunt.fail.fatal("Unable to locate version number in " + src);
         return "";
     }
 
@@ -146,21 +142,21 @@ module.exports = function(grunt) {
     // Copy:build task.
     // Copies needed files to the build folder.
     grunt.registerTask("copy:build", function() {
-        filesToCopy.forEach(function(v, i) {
-            grunt.file.copy(v, buildRoot + v);
-        });
-
-        foldersToCopy.forEach(function(v, i) {
-            grunt.file.recurse(v, function(abspath, rootdir, subdir, filename) {
+        var copyOne = function(from, to) {
+            grunt.file.recurse(from, function(abspath, rootdir, subdir, filename) {
                 var dest = buildRoot 
-                    + v
+                    + to
                     + "/"
                     + (subdir ? subdir + "/" : "")
                     + filename;
 
                 grunt.file.copy(abspath, dest);
             });
-        });
+        };
+
+        for (var key in foldersToCopy) {
+            copyOne(key, foldersToCopy[key]);
+        }
     });
 
     // ----------

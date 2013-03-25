@@ -20,7 +20,7 @@
         <java jar="jsdoc/jsrun.jar" 
               fork="true">
             <arg value="jsdoc/app/run.js"/>
-            <arg value="openseadragon/openseadragon.js"/>
+            <arg value="built-openseadragon/openseadragon/openseadragon.js"/>
             <arg value="--template=jsdoc/openseadragon"/>
             <arg value="--directory=${BUILD}/docs"/>
             <arg value="--verbose"/>
