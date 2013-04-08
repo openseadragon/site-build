@@ -4,7 +4,7 @@ This project compiles static web pages which provide the examples and documentat
 
 ## On the Web
 
-http://openseadragon.github.com/
+http://openseadragon.github.io/
 
 ## First Time Setup
 
@@ -45,6 +45,8 @@ To publish, run:
     grunt publish
 
 This cleans out the openseadragon.github.com folder (which you've cloned from the openseadragon.github.com repository, and resides next to your site-build folder) and builds and copies the web pages and docs into it.
+
+Note that while the OpenSeadragon website resides at http://openseadragon.github.io, for historical reasons the repository is named openseadragon.github.com.
 
 ## Example Images
 

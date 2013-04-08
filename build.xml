@@ -6,7 +6,7 @@
     
     <description>
     	Build file for compiling a static web pages for 
-        http://openseadragon.github.com/
+        http://openseadragon.github.io/
     </description>
 
     <!-- YOU CAN OVERRIDE PROPERTIES PER YOUR NEED IN local.properties -->
