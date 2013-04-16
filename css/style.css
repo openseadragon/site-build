@@ -70,6 +70,9 @@ p { padding: 0.5em 1.5em; }
 .navigation ul li{
     margin-bottom: 5px;
 }
+.demoarea{
+    clear: both;
+}
 pre { 
     background-color: #F8F8F8;
     border: 1px solid #CCC;
