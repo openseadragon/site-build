@@ -59,10 +59,18 @@ ul { list-style: none; padding: 0px 4em; }
 ul ul{ list-style: square}
 a { color: #800; }
 p { padding: 0 1.5em; }
-.description { font-size: 1.2em; margin: 2em 5em; font-style: italic;}
-.description p { 
+.description {
+    font-size: 1.2em;
+    margin: 2em 5em;
+    font-style: italic;
     padding-bottom: 1em;
     border-bottom: 1px dotted #999;
+}
+.description h3 {
+    margin-bottom: 0;
+}
+.description p {
+    margin-bottom: 0;
 }
 .download { float: right; }
 .navigation{
