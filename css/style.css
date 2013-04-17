@@ -37,6 +37,7 @@ h1 .version {
 h1 .tagline {
     font-size: 12px;
     float: left;
+    margin-top: 5px;
     margin-left: 10px;
 }
 h2 { 
@@ -57,9 +58,10 @@ ul h3 { text-align: left;}
 ul { list-style: none; padding: 0px 4em; }
 ul ul{ list-style: square}
 a { color: #800; }
-p { padding: 0.5em 1.5em; }
+p { padding: 0 1.5em; }
 .description { font-size: 1.2em; margin: 2em 5em; font-style: italic;}
 .description p { 
+    padding-bottom: 1em;
     border-bottom: 1px dotted #999;
 }
 .download { float: right; }
@@ -117,7 +119,7 @@ hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
 }
 .demoheading {
     color: #437AB2; 
-    padding: 0 0 0 1em;
+    padding: 0 0 0.2em 1em;
 }
 .toolbar
 {
