@@ -1,10 +1,16 @@
 <h2>developer: debug mode</h2>
 
+<p>
+Enabling debug mode provides some in-context information about the tiles
+being drawn in a given viewport.
+</p>
+
+<p>
+Currently this is only implemented for browsers supporting HTML Canvas.
+</p>
+
 <div class="description">
-  Enabling developer mode provides some in-context information
-  about the tiles being drawn in a given viewport. <br/><br/>
-  Currently this is only implemented for browsers supporting 
-  HTML Canvas.
+    <h3>Example</h3>
 </div>
 
 <div class="demoarea">
@@ -34,9 +40,9 @@ The relevant configuration options are shown below.
 </p>
 
 <pre>
-    OpenSeadragon({
-        ...
-        debugMode:  true,
-        ...
-    });
+OpenSeadragon({
+    ...
+    debugMode:  true,
+    ...
+});
 </pre>

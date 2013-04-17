@@ -1,47 +1,67 @@
 <h2>example: image sequence</h2>
 
-<div class="description">
-    It is not uncommon to have a sequence of images to present, and although
-    it's easy enough to add a 'previous' and 'next' link on your page, it's 
-    especially nice to allow the user to navigate the image sequence without
-    having leave the page.
-    <br/><br/>
-    OpenSeadragon now has support for an array of tile sources, including
-    a previous and next button!
-</div>
+<p>
+    It is not uncommon to have a sequence of images to present. Although
+    it's easy enough to add a &quot;previous&quot; and &quot;next&quot; link
+    on your page, it's nice to allow the user to navigate the image sequence
+    without having to leave the page.
+</p>
 
+<div class="description">
+    <h3>Basic Example with Default Settings</h3>
+    <p>
+        OpenSeadragon can display an array of tile sources, presented with a
+        previous and next button.
+    </p>
+</div>
 <div class="demoarea">
     <div class="demoheading">
-        Basic Example w/ Default Settings ( Using Legacy Image Pyramid Example )
+        Basic Example with Default Settings
     </div>
     <div id="contentDiv1" 
          class="openseadragon"></div>
-    <hr/>
+</div>
+
+
+<div class="description">
+    <h3>Preset Zoom Level, Resetting on Page Turn</h3>
+
+    <p>Click on the navigator and alternate pressing the <code>w</code> and
+    <code>s</code> keys to reproduce the effect of the referenced overlay
+    (depends on screen refresh rate; most screens will display the
+    effect).</p>
+</div>
+<div class="demoarea">
     <div class="demoheading">
-        Preset Zoom Level ( Resets on Page Turn )<br/>
-        Click on the navigator and alternate pressing keys 'w' and 's' to 
-        reproduce the effect of the referenced 'overlay' (depends on screen hertz
-        refresh rate, most screens will display the effect).
+        Preset Zoom Level
     </div>
-    <div id="contentDiv2" 
-         class="openseadragon"></div>
-    <hr/>
+    <div id="contentDiv2" class="openseadragon"></div>
+</div>
+
+
+<div class="description">
+    <h3>Preserving the Viewport Zoom Level and Position for Image Sequences</h3>
+</div>
+<div class="demoarea">
     <div class="demoheading">
         Preserving the Viewport Zoom Level and Position for Image Sequences
     </div>
-    <div id="contentDiv3" 
-         class="openseadragon"></div>
-    <hr/>
-    <div class="demoheading">
-        Mixed Tile Source Example ( w/ Default Settings )
-    </div>
-    <div id="contentDiv4" 
-         class="openseadragon"></div>
+    <div id="contentDiv3" class="openseadragon"></div>
 </div>
 
+
+<div class="description">
+    <h3>Mixed Tile Sources</h3>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Mixed Tile Sources
+    </div>
+    <div id="contentDiv4" class="openseadragon"></div>
+</div>
+
+
 <script type="text/javascript">
-
-
     // Example
     OpenSeadragon({
         id: "contentDiv1",

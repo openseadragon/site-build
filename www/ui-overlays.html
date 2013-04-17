@@ -2,32 +2,30 @@
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script>
 
+<p>Overlays are an important mechanism for displaying additional information
+on a zoomable image.  Below we present a few examples of how to
+add some simple overlays.</p>
+
+<p>The tile source in this example is from Chronicling America
+at the <a href='http://www.loc.gov/'>Library of Congress</a>.</p>
+
 <div class="description">
-    Overlays are an important mechanism for adding additional infomation channels
-    in a deep zoom image.  Below we present just a few examples of how to
-    add some simple overlays.
-    <p>
-        ( Tile source in this example is from Chronicling America
-        at the <a href='http://www.loc.gov/'>Library of Congress</a> )
-    </p>
+<h3>Highlighted Overlays</h3>
+<p>Highlighted overlays are useful for directing users' attention to
+specific areas of interest.</p>
+
+<p>OpenSeadragon makes it easy to declare highlighted areas and control 
+the presentation through simple CSS mechanisms. A tile source overlay
+is specific to the particular tile source. So if you have a sequence of
+tile sources and want to overlay unique content on each, use this mechanism.
+</p>
 </div>
 
 
 <div class="demoarea">
     <div class="demoheading">
-        Tile source overlays. 
+        Highlighted Overlays
     </div>
-    <p>
-    Highlighted overlays are very useful for directing users attention to
-    specific areas of interest, though the style is often decided based
-    on the specific content being presented.  
-    </p>
-    <p>
-    OpenSeadragon makes it easy to declare highlighted areas and control 
-    the presentation through simple css mechanisms. <em>A tile source overlay
-    is specific to the particular tile source.</em> So if you have a sequence of
-    tile sources and want to over lay unique content on each, use this mechanism.
-    </p>
     <div id="example-tilesource-overlay" class="openseadragon">
         <style>
         .navigator .highlight{
@@ -157,52 +155,60 @@
 
         <div id="example-tip" style='display:none;width:250px;background-color:#fff;'>
             <p>
-                The overlay can provide a class name and id to bind additional events to.
+                The overlay can provide a class name and ID to bind additional events to.
             </p>
         </div>
     </div>
 </div>
 <p>
-The relevant configuration options are shown below. Note the className and id attributes
-will be passed to the overlay element so you can use bind css styles and events to it.
-<em>Be sure to put your styles in the document head, inside the openseadragon viewer element,
-or apply them dynamically so they will persist when full screen mode is entered.</em>
+The relevant configuration options are shown below. The
+<code>className</code> and <code>id</code> attributes will be passed to the
+overlay element so you can bind CSS styles and events to it.
+<em>Be sure to put your styles in the document head, inside the
+OpenSeadragon viewer element, or apply them dynamically so they will persist
+when full-screen mode is entered.</em>
 </p>
 
 <pre>
-    OpenSeadragon({
+OpenSeadragon({
+    ...
+    tileSources: [{
         ...
-        tileSources: [{
-            ...
-            overlays: [{
-                id: 'example-overlay',
-                x: 0.33, 
-                y: 0.75, 
-                width: 0.2, 
-                height: 0.25,
-                className: 'highlight'
-            }],
-            ...
-        }]
+        overlays: [{
+            id: 'example-overlay',
+            x: 0.33, 
+            y: 0.75, 
+            width: 0.2, 
+            height: 0.25,
+            className: 'highlight'
+        }],
         ...
-    });
+    }]
+    ...
+});
 </pre>
   
 
 
+<div class="description">
+    <h3>Viewport Overlays</h3>
+    <p>
+        OpenSeadragon also supports overlays that persist across image
+        sequences.  In this case the overlay is simply configured outside of
+        the <code>tileSource</code>.
+    </p>
+    <p>
+        This example also demonstrates the ability to configure the overlay
+        position in terms of image pixel coordinates.  The difference is
+        inferred from the use of <code>px</code> and <code>py</code> instead
+        of <code>x</code> and <code>y</code>.
+    </p>
+</div>
+
 <div class="demoarea">
     <div class="demoheading">
-        Viewport overlays.
+        Viewport Overlays
     </div>
-    <p>
-        OpenSeadragon also supports overlays that persist accross image sequences.
-        In this case the overlay is simply configured outside of the tileSource.
-    </p>
-    <p>
-        This example also demonstrates the ability to configure the overlay position
-        in terms of image pixel coordinates.  The difference is infered by use of 
-        <strong>px</strong>, and <strong>py</strong>, instead of x and y.
-    </p>
     <div id="example-viewport-overlay" class="openseadragon">
     <style>
     .filter{
@@ -243,35 +249,42 @@ or apply them dynamically so they will persist when full screen mode is entered.
     </script>   
     </div>
 
-    <pre>
-        OpenSeadragon({
-            ...
-            overlays: [{
-                id: 'global-overlay-filter',
-                px: 0, 
-                py: 0, 
-                width: 6425, 
-                height: 8535,
-                className: 'filter'
-            }],
-            ...
-        });
-    </pre>
+<pre>
+OpenSeadragon({
+    ...
+    overlays: [{
+        id: 'global-overlay-filter',
+        px: 0, 
+        py: 0, 
+        width: 6425, 
+        height: 8535,
+        className: 'filter'
+    }],
+    ...
+});
+</pre>
 </div>
 
-<div class="demoarea">
-    <div class="demoheading">
-        Overlaying complex html.
-    </div>
+<div class="description">
+    <h3>
+        Overlaying Complex HTML
+    </h3>
     <p>
-        By default OpenSeadragon checks for an existing element in the DOM that
-        matches the id of the overlay id (if one is specified).  If that content
-        is found, OpenSeadragon will use it for the overlay, otherwise it will create
-        a link to ensure keyboard accesibilty to the target ( as in the examples above ).
+        By default OpenSeadragon checks for an existing element in the DOM
+        that matches the overlay ID (if one is specified).  If that content
+        is found, OpenSeadragon will use it for the overlay.  Otherwise, it
+        will create a link to ensure keyboard accessibilty to the target (as
+        in the examples above).
     </p>
     <p>
         In this example we display some additional metadata to the right of the image itself.
     </p>
+</div>
+
+<div class="demoarea">
+    <div class="demoheading">
+        Overlaying Complex HTML
+    </div>
     <div id="complex-html-overlay" class="openseadragon">
         <script type="text/javascript">
             OpenSeadragon({
@@ -494,30 +507,30 @@ or apply them dynamically so they will persist when full screen mode is entered.
         </div> 
     </div>
 
-    <pre>
-        OpenSeadragon({
-            ...
-            preserveViewport: true,
-            showNavigator: false,
-            minZoomLevel:  1,
-            overlays: [{
-                px: 6425,
-                py: 0,
-                width: 6425,
-                height: 8535,
-                id: 'html-overlay'
-            }],
-            tileSources: [{
-                width: 6425,
-                height: 8535,
-                tileSize: 256,
-                tileOverlap: 1,
-                getTileUrl: chronicling_america_example(1)
-            },{
-                ...
-            }]
-            ...
-        });
-    </pre>
+<pre>
+OpenSeadragon({
+    ...
+    preserveViewport: true,
+    showNavigator: false,
+    minZoomLevel:  1,
+    overlays: [{
+        px: 6425,
+        py: 0,
+        width: 6425,
+        height: 8535,
+        id: 'html-overlay'
+    }],
+    tileSources: [{
+        width: 6425,
+        height: 8535,
+        tileSize: 256,
+        tileOverlap: 1,
+        getTileUrl: chronicling_america_example(1)
+    },{
+        ...
+    }]
+    ...
+});
+</pre>
 </div>
         
