@@ -1,34 +1,37 @@
 <h2>
-    example: tiledmapservice support
+    example: tile map service support
 </h2>
 <p>
-    The Tiled Map Service TMS tile is a tile scheme ( [ as supported by OpenLayers ] 
-    is described here ( <a href="http://openlayers.org/dev/examples/tms.html"
-    >http://openlayers.org/dev/examples/tms.html</a> ) )
+    The Tile Map Service is a tile scheme developed by the
+    <a href="http://www.osgeo.org/">Open Source Geospatial Foundation</a>
+    and specified <a
+    href="http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification">here</a>.
 </p>
 <p>
-    OpenSeadragon has added support for TMS tile sources thanks to
-    Rainer Simon (http://github.com/rsimon).
+    OpenSeadragon supports TMS tile sources thanks to
+    <a href="http://github.com/rsimon">Rainer Simon</a>.
 </p>
 
 
 <div class="description">
-    <h3>Inline Configuration for Tiled Map Services</h3>
+    <h3>Inline Configuration for Tile Map Services</h3>
     <p>
         Inline configuration couldn't be much simpler for using a TMS as a tile source.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Example Inline Configuration for TMS tile sources
+        Example Inline Configuration for TMS Tile Sources
     </div>
     <div id="example-inline-configuration-for-tms" 
          class="openseadragon">
     </div>
     <p>
-        Configuration is done via the 'tileSources' option ( or programatically ). Because of its rich 
-        levels and depth, we slow down the zoomPerScroll option a litte, wrap horitonally, and hide the 
-        navigator. Also we set a lower minimum zoom pixel ratio to allow the user to pull back just a little further.
+        Configuration is done via the <code>tileSources</code> option
+        (or programatically). Because of its rich levels and depth, we slow
+        down the <code>zoomPerScroll</code> option a little, wrap
+        horizontally, and hide the navigator. Also we set a lower minimum
+        zoom pixel ratio to allow the user to pull back just a little further.
     </p>
 <pre>
 OpenSeadragon({
@@ -60,3 +63,4 @@ OpenSeadragon({
     });
 </script>
 
+<%= examples %>

@@ -18,11 +18,11 @@ module.exports = function(grunt) {
     var examples = {
         "tilesource-custom": "Custom Tile Source",
         "tilesource-dzi": "DZI Tile Source",
-        "tilesource-osm": "Open Street Maps Tile Source",
+        "tilesource-osm": "OpenStreetMap Tile Source",
         "tilesource-tms": "Tiled Map Service Tile Source",
         "tilesource-iiif": "IIIF Tile Source",
-        "tilesource-legacy": "Legacy Tile Sources",
-        "tilesource-zoomit": "Zoom.it Tile Sources",
+        "tilesource-legacy": "Legacy Tile Source",
+        "tilesource-zoomit": "Zoom.it Tile Source",
         "tilesource-sequence": "Tile Source Sequence",
         "tilesource-collection": "Tile Source Collections",
         "ui-binding-custom-buttons": "Binding Custom Buttons",
@@ -96,6 +96,7 @@ module.exports = function(grunt) {
     // Builds all of the HTML pages.
     grunt.registerTask("make:www", function() {
         var base = grunt.file.read("www/base.html");
+        var example_list = grunt.file.read("www/examples.html");
         var version = getVersion();
 
         var make = function(src, dest, title) {
@@ -104,6 +105,7 @@ module.exports = function(grunt) {
                 data: {
                     title: title,
                     version: version,
+                    examples: example_list,
                     content: content
                 }
             });

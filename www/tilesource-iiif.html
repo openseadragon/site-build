@@ -1,32 +1,32 @@
 <h2>
-    example: iiif tiles support
+    example: iiif tile support
 </h2>
 <p>
-    The International Image Interoperability Format is described formally here 
-    <a href='http://library.stanford.edu/iiif/image-api/'
-        >http://library.stanford.edu/iiif/image-api/</a>.
+    The International Image Interoperability Format is formally described
+    <a href='http://library.stanford.edu/iiif/image-api/'>here</a>.
 </p>
 <p>
-    The IIIF API specifies a web service that returns an image in response to a standard http or https request. 
-    The URL can specify the region, size, rotation, quality characteristics and format of the requested image. A 
+    The IIIF API specifies a web service that returns an image in response to a standard HTTP or HTTPS request. 
+    The URL can specify the region, size, rotation, quality, and format of the requested image. A 
     URL can also be constructed to request basic technical information about the image to support client 
-    applications.  The IIIF API was conceived of to facilitate systematic reuse of image resources in digital 
+    applications.  The IIIF API was designed to facilitate systematic reuse of image resources in digital 
     image repositories maintained by cultural heritage organizations. The API could be adopted by any image 
     repository or service, and can be used to retrieve static images in response to a properly constructed URL.
 </p>
 <p>
-    OpenSeadragon has added support for IIIF thanks to several of its specifications authors
-    as well as the gist provided by <a href='http://github.com/jstroop'>Jon Stroop</a> at 
-    <a href='https://gist.github.com/jpstroop/4624253'>this gist</a>.
+    OpenSeadragon has added support for IIIF thanks to several of the
+    authors of its specification,
+    as well as the <a href='https://gist.github.com/jpstroop/4624253'>gist</a>
+    provided by <a href='http://github.com/jstroop'>Jon Stroop</a>.
 </p>
 
 
 <div class="description">
-    <h3>Inline Configuration for IIIF tile sources.</h3>
+    <h3>Inline Configuration for IIIF Tile Sources</h3>
     <p>
-        Inline configuration is very straight forward.  The tile source type is
-        identified by it's <strong>profile</strong> attribute an must specify the 
-        url of the tile service with the <strong>tilesUrl</strong> attribute.
+        Inline configuration is very straightforward.  The tile source type is
+        identified by its <code>profile</code> attribute and must specify the 
+        URL of the tile service with the <code>tilesUrl</code> attribute.
     </p>
 </div>
 <div class="demoarea">
@@ -37,12 +37,12 @@
          class="openseadragon">
     </div>
     <p>
-        In this example we also specified the 'preserveViewport' option to retain the 
+        In this example we also specified the <code>preserveViewport</code> option to retain the 
         viewport zoom and position when changing pages.
 
     </p>
     <p>
-       In order to make this feel just a little more like a basic book turner, we are
+       In order to make this feel a little more like a basic book turner, we are
        adding a useful combination of other options that help to constrain the viewport.
     </p>
 <pre>
@@ -63,11 +63,9 @@ OpenSeadragon({
         "qualities":    ["native", "bitonal", "grey", "color"],   
         "profile":      "http://library.stanford.edu/iiif/image-api/compliance.html#level1",
         "image_host":   "http://img.princeton.edu/loris"
-    }...,{
-
-    ...//more tile sources
-
-    }]
+    },
+       ...
+    ]
     ...
 });</pre>
 </div>
@@ -163,14 +161,14 @@ OpenSeadragon({
 <div class="description">
     <h3>XMLHTTPRequest for IIIF info.xml or info.json</h3>
     <p>
-        The following example info.json and info.xml documents are non-normative and include
-        a property <strong>image_host</strong> which allows the info.json and info.xml
+        The following example info.json and info.xml documents include
+        a property <code>image_host</code> which allows the info.json and info.xml
         to be hosted from a different server than the images are served from.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Example XMLHTTPRequest for IIIF info ( XML or JSON )
+        Example XMLHTTPRequest for IIIF info (XML or JSON)
     </div>
     <div id="example-xmlhttprequest-for-info-xml" 
          class="openseadragon">
@@ -185,7 +183,7 @@ OpenSeadragon({
             });
         </script>
         <noscript>
-            <p>Deep zoom is not available unless javascript is enabled.</p>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
             <img src='/example-images/highsmith/01967v.jpg'
                  height='600'/>
         </noscript>
@@ -247,3 +245,5 @@ OpenSeadragon({
     ...
 });</pre>
 </div>
+
+<%= examples %>
