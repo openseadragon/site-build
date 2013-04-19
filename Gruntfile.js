@@ -96,7 +96,6 @@ module.exports = function(grunt) {
     // Builds all of the HTML pages.
     grunt.registerTask("make:www", function() {
         var base = grunt.file.read("www/base.html");
-        var example_list = grunt.file.read("www/examples.html");
         var version = getVersion();
 
         var make = function(src, dest, title) {
@@ -105,7 +104,6 @@ module.exports = function(grunt) {
                 data: {
                     title: title,
                     version: version,
-                    examples: example_list,
                     content: content
                 }
             });
