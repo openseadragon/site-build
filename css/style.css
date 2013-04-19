@@ -98,6 +98,25 @@ p { padding: 0 1.5em; }
 .demoarea{
     clear: both;
 }
+.footer{
+    margin: 25px 0 0 0;
+    border-top: 2px dotted #aaa;
+    padding: 15px 0 0 0;
+    text-align: center;
+}
+.footer li{
+    font-size: 12px;
+    display: inline;
+}
+.footer li:before{
+    content: "| ";
+    color: #bbb;
+    margin: 0 4px;
+}
+.footer li:first-child:before{
+    content: "";
+    margin: 0;
+}
 pre { 
     background-color: #F8F8F8;
     border: 1px solid #CCC;
