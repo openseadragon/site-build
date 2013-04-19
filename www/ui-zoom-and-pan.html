@@ -1,67 +1,67 @@
 <h2>example: zoom and pan options</h2>
 
 <p>
-A deep zoom viewport allows several options to be set in order to constrain
-the minimum and maximum zoom range as well as the range of panning.
+OpenSeadragon provides several options for constraining the minimum and
+maximum zoom range as well as the range of panning.
 </p>
 <p>
 	These features are generally controlled through various combinations of
 	the options: <ul>
-		<li>
-            <strong>panHorizontal</strong><em>(default:) true</em>
+	<li>
+            <code>panHorizontal</code> <em>(default: true)</em>
         </li>
         <li>
-            <strong>panVertical</strong><em>(default:) true</em>
+            <code>panVertical</code> <em>(default: true)</em>
         </li>
         <li>
-            <strong>constrainDuringPan</strong><em>(default:) false</em>
+            <code>constrainDuringPan</code> <em>(default: false)</em>
         </li>
         <li>
-            <strong> wrapHorizontal</strong><em>(default:) false</em>
+            <code> wrapHorizontal</code> <em>(default: false)</em>
         </li>
         <li>
-            <strong>wrapVertical</strong><em>(default:) false</em>
+            <code>wrapVertical</code> <em>(default: false)</em>
         </li>
         <li>
-            <strong>visibilityRatio</strong><em>(default:) 0.5</em>
+            <code>visibilityRatio</code> <em>(default: 0.5)</em>
         </li>
         <li>
-            <strong>minPixelRatio</strong><em>(default:) 0.5</em>
+            <code>minPixelRatio</code> <em>(default: 0.5)</em>
         </li>
         <li>
-            <strong>minZoomImageRatio</strong><em>(default:) 0.8</em>
+            <code>minZoomImageRatio</code> <em>(default: 0.8)</em>
         </li>
         <li>
-            <strong>maxZoomPixelRatio</strong><em>(default:) 2</em>
+            <code>maxZoomPixelRatio</code> <em>(default: 2)</em>
         </li>
         <li>
-            <strong>defaultZoomLevel</strong><em>(default:) 0</em>
+            <code>defaultZoomLevel</code> <em>(default: 0)</em>
         </li>
         <li>
-            <strong>minZoomLevel</strong><em>(default:) null</em>
+            <code>minZoomLevel</code> <em>(default: null)</em>
         </li>
         <li>
-            <strong>maxZoomLevel</strong><em>(default:) null</em>
+            <code>maxZoomLevel</code> <em>(default: null)</em>
         </li>
 	</ul>
 </p>
 
 <div class="description">
-    <h3>Constraining by viewport visibility as a ratio, and constraining during panning</h3>
+    <h3>Constraining by Viewport Visibility as a Ratio, and Constraining During Panning</h3>
     <p>
          The option 
-        <strong>visibilityRatio</strong>, which is by default <strong>0.5</strong>,
-        ensure that you cannot pan the image far enough to fill the viewport with
-        more than 50% background.  Setting it to 1, as in this example, ensure 
-        the image cannot be panned so as to show any background. Normally OpenSeadragon 
-        will enforce this by 'bouncing' back when the pan dragging is released.  In this
-        example we also add <strong>constrainDuringPan: true</strong> which stop the drag
+        <code>visibilityRatio</code>, which is by default <strong>0.5</strong>,
+        ensures that you cannot pan the image far enough to fill the viewport with
+        more than 50% background.  Setting it to 1, as in this example, ensures
+        the image cannot be panned to show any background. Normally OpenSeadragon
+        will enforce this by &quot;bouncing back&quot; when the drag is released.  In this
+        example we also add <code>constrainDuringPan: true</code> which stops the drag
         immediately when it hits the bounding area.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        A visibilityRatio of 1.
+        A visibilityRatio of 1 With <code>constrainDuringPan</code> Enabled
     </div>
     <div id="visibility-ratio-1" class="openseadragon"></div>
 </div>
@@ -78,24 +78,24 @@ the minimum and maximum zoom range as well as the range of panning.
 	Below is the relevant configuration.
 </p>
 <pre>OpenSeadragon({
-		...
-        visibilityRatio: 1.0,
-        constrainDuringPan: true
-        ...
-    });
+    ...
+    visibilityRatio: 1.0,
+    constrainDuringPan: true,
+    ...
+});
 </pre>
 
 
 <div class="description">
-    <h3>Constraining pan direction and using a default zoom level.</h3>
+    <h3>Constraining Pan Direction and Using a Default Zoom Level</h3>
     <p>
-       In this example we combine a number of options to produce an effect similar to
-       a pdf view 'fit-width'.
+       In this example we combine a number of options to produce an effect
+       similar to a &quot;fit-width&quot; PDF view.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Vertical scroll and zoom.
+        Vertical Scroll and Zoom
     </div>
     <div id="vertical-scrolling" class="openseadragon"></div>
 </div>
@@ -115,12 +115,14 @@ the minimum and maximum zoom range as well as the range of panning.
 	Below is the relevant configuration.
 </p>
 <pre>OpenSeadragon({
-		...
-        panHorizontal: 		false,
-        defaultZoomLevel: 	1,
-        minZoomLevel: 		1,
-        maxZoomLevel: 		1,
-        visibilityRatio: 	1
-        ...
-    });
+    ...
+    panHorizontal: 	false,
+    defaultZoomLevel: 	1,
+    minZoomLevel: 	1,
+    maxZoomLevel: 	1,
+    visibilityRatio: 	1,
+    ...
+});
 </pre>
+
+<%= examples %>

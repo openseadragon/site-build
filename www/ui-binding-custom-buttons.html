@@ -1,15 +1,18 @@
 <h2>example: binding custom buttons</h2>
 
+<p>
+    You can bind to an entirely custom user interface by passing the IDs of
+    the elements you want treated as buttons.  This is useful when you need
+    to fully control the look and feel of the user interface.
+</p>
+
 <div class="description">
-    You can now bind to an entirely custom user interface by just passing
-    the id of the elements you want treated as buttons!  This is especially useful
-    when you need to fully control the look and feel of the user interface.
-    (New since 0.9.50)
+    <h3>Example</h3>
 </div>
 
 <div class="demoarea">
     <div class="demoheading">
-        Binding custom buttons.
+        Binding Custom Buttons
     </div>
     <div id="toolbarDiv" class="toolbar">
         <span style='float:right;margin:10px 20px 0 0'>
@@ -89,8 +92,8 @@
 </script>
 
 <p>
-The relevant configuration options are shown below. Note the value for the options
-are the id of the element on the page to bind the button's action to.
+The relevant configuration options are shown below. The option values are
+the IDs of the elements to bind the button actions to.
 </p>
 
 <pre>
@@ -107,8 +110,9 @@ OpenSeadragon({
 </pre>
 
 <p>
-Also note the interface in this example updates the current page numbers in the label
-"Page N of 3".  This is achieved by making use of the provided callback 'onPageChange'
+The interface in this example updates the current page numbers in the label
+&quot;N of 3&quot;.  This is achieved via the provided callback
+<code>onPageChange</code>.
 </p>
 <pre>
 OpenSeadragon({
@@ -119,3 +123,5 @@ OpenSeadragon({
     ...
 });
 </pre>
+
+<%= examples %>

@@ -1,11 +1,15 @@
 <h2>example: viewport navigator</h2>
 
-<div class="description">
+<p>
     A viewport navigator allows the user to see the source image displayed
-    as a reference image with a highlighted area showing which portion of
-    the image they are currently viewing in the viewport. The navigator
-    reuses the image sources provided by the viewport so no additional
-    image derivatives are required. 
+    as a reference image, with a highlighted area showing which portion of
+    the image they are currently viewing.  The navigator reuses the
+    configured image sources so no additional image derivatives are
+    required.
+</p>
+
+<div class="description">
+    <h3>Example</h3>
 </div>
 
 <div class="demoarea">
@@ -27,13 +31,11 @@
 <p><em>(The viewport navigator is up for promotion as a default interface 
 element for accessibility reasons but could be disabled if required.)</em>
 </p>
-<p>Mouse interactions scroll (zoom) and drag are now supported on 
-the navigator!
-(New since 0.9.40) 
-</p>
-<p>
-The viewport navigator is now keyboard acessible! Just tab into it,
-the highlight will change to blue-ish, and you can use the following keys:
+<p>The navigator supports drag and scroll (zoom) mouse interactions and
+is keyboard-accessible.</p>
+
+<p>To interact via the keyboard, just tab into the navigator.  Its highlight
+will change to blue-ish and you can use the following keys:
 </p>
 <ul>
     <li><strong>[ w, up arrow ]</strong> - move viewport <strong>up</strong></li>
@@ -45,5 +47,7 @@ the highlight will change to blue-ish, and you can use the following keys:
     <li><strong>[ = / +, shift+S, shift+down arrow ]</strong> - zoom viewport <strong>in</strong></li>
 </ul>
 <p>
-<em>* NOTE: Chrome and Safari do not support the arrow keys for the Navigator.</em>
+<em>Note that Chrome and Safari do not support the arrow keys for the Navigator.</em>
 </p>
+
+<%= examples %>

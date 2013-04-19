@@ -1,26 +1,24 @@
 <h2>
-    example: tilesource-collection *NOTE* UNDER DEVELOPMENT
+    example: image collections
 </h2>
 <p>
-    The image collection is a major hurdle for OpenSeadragon. It allows arbitrarily 
-    large sets of tile sources, of mixed types, to be used to easily visualize the
-    group as 'wall' or 'grid'.  Many core features are available for preview now, though
-    it's still a work in progress.
+    The image collection is a major hurdle for OpenSeadragon. It allows
+    arbitrarily large sets of tile sources, of mixed types, to be used to
+    easily visualize the group as a &quot;wall&quot; or &quot;grid&quot;. 
+    <strong>Many core features are available for preview now, though the
+    functionality is not yet complete.</strong>
 </p>
 <p>
-    No doubt this makes OpenSeadragon into a whole new platform for deepzoom
-    image visualization.
+    When complete, this feature will make OpenSeadragon into a whole new
+    platform for zoomable image visualization.
 </p>
 
 <div class="description">
-    <h3>A basic single row tile source collection.</h3>
-    <p>
-        Just a simple row of tile sources visualized as a collection.
-    </p>
+    <h3>Basic Single-Row Tile Source Collection</h3>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        One row, horizontal..
+        One Row, Horizontal
     </div>
     <div id="example-tilesource-collection" 
          class="openseadragon" >
@@ -28,9 +26,9 @@
 <pre>
 OpenSeadragon({
     ...
-    collectionMode:     true,
-    collectionRows:     1, 
-    collectionTileSize: 1024,
+    collectionMode:       true,
+    collectionRows:       1, 
+    collectionTileSize:   1024,
     collectionTileMargin: 256,
     ...
 });</pre>
@@ -75,14 +73,14 @@ OpenSeadragon({
 
 
 <div class="description">
-    <h3>Two row tile source collection.</h3>
+    <h3>Two-Row Tile Source Collection</h3>
     <p>
         Multiple rows of tile sources visualized as a collection.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Two horizontal rows.
+        Two Horizontal Rows
     </div>
     <div id="example-2row-tilesource-collection" 
          class="openseadragon" >
@@ -93,9 +91,9 @@ OpenSeadragon({
 <pre>
 OpenSeadragon({
     ...
-    collectionMode:     true,
-    collectionRows:     2, 
-    collectionTileSize: 1024,
+    collectionMode:       true,
+    collectionRows:       2, 
+    collectionTileSize:   1024,
     collectionTileMargin: 256,
     ...
 });</pre>
@@ -142,14 +140,14 @@ OpenSeadragon({
 
 
 <div class="description">
-    <h3>Two colum tile source collection.</h3>
+    <h3>Two-Column Tile Source Collection</h3>
     <p>
         Multiple columns of tile sources visualized as a collection.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Two vertical columns.
+        Two Vertical Columns
     </div>
     <div id="example-2column-tilesource-collection" 
          class="openseadragon" >
@@ -160,11 +158,11 @@ OpenSeadragon({
 <pre>
 OpenSeadragon({
     ...
-    collectionMode:     true,
-    collectionRows:     2, 
-    collectionTileSize: 1024,
+    collectionMode:       true,
+    collectionRows:       2, 
+    collectionTileSize:   1024,
     collectionTileMargin: 256,
-    collectionLayout:   'vertical',
+    collectionLayout:     'vertical',
     ...
 });</pre>
 </div>
@@ -704,3 +702,5 @@ OpenSeadragon({
     });
 </script>
 -->
+
+<%= examples %>

@@ -1,10 +1,21 @@
 <h2>example: toolbar</h2>
 
+<p>
+    Although OpenSeadragon provides default buttons which are overlaid on
+    the viewport, there are many use cases where the presentation may
+    require a more traditional toolbar.  OpenSeadragon allows you to easily
+    dock your controls inside any element on the page.
+</p>
+
+<p>
+    In addition, the toolbar has logic which supports transitions between
+    full-screen and normal mode.  The user can style the toolbar in
+    full-screen mode, including hiding it, even though it's not otherwise
+    related to the viewer DOM.
+</p>
+
 <div class="description">
-    Although OpenSeadragon provides default buttons which are overlayed on the Viewport,
-    there are many use cases where the presentation may require a more traditional
-    'toolbar'.  OpenSeadragon now allows you to very simply dock your controls 
-    inside any element on the page which the end user has presentation control over.
+    <h3>Basic Example</h3>
 </div>
 
 <div class="demoarea">
@@ -30,8 +41,12 @@
     });
 </script>
 
-<p>
-Most importantly the toolbar has additional logic which supports transitions between
-fullpage and normal mode.  The user can style, including hiding, the toolbar in fullpage
-mode, even though its not otherwise related to the viewer / viewport DOM.
-</p>
+<pre>
+OpenSeadragon({
+    ...
+    toolbar:       "toolbarDiv",
+    ...
+});
+</pre>
+
+<%= examples %>

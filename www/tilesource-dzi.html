@@ -3,14 +3,14 @@
 </h2>
 <p>
     The DZI (Deep Zoom Image) format is an
-    xml specification maintained by Microsoft and described <a
+    XML specification maintained by Microsoft and described <a
     href='http://msdn.microsoft.com/en-us/library/cc645077(v=vs.95).aspx'>here</a>.
 </p>
 <p>
-    OpenSeadragon has added supports for DZI format via AJAX ( XML/JSON ), JSONP,
-    and as inline configuration ( using the json format ). The DZI specification 
-    does not officially describe a JSON format however the 
-    examples below illustrate how DZI xml is mapped to json following some
+    OpenSeadragon supports the DZI format via AJAX (XML/JSON), JSONP,
+    and as inline configuration (using the JSON format). The DZI specification 
+    does not officially describe a JSON format, but the 
+    examples below illustrate how DZI XML is mapped to JSON following some
     simple conventions.
 </p>
 
@@ -18,14 +18,14 @@
 <div class="description">
     <h3>XMLHTTPRequest for DZI XML or JSON</h3>
     <p>
-        The DZI Format is implied by a tile source specified as a string
-        and which has the </em>.dzi</em> extension.  OpenSeadragon sniffs
+        The DZI format is implied by a tile source specified as a string
+        and which has the <code>.dzi</code> extension.  OpenSeadragon sniffs
         for whether the DZI is formatted as XML or JSON.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Example XMLHTTPRequest for DZI ( XML or JSON )
+        Example XMLHTTPRequest for DZI (XML or JSON)
     </div>
     <div id="example-xmlhttprequest-for-dzi" 
          class="openseadragon">
@@ -39,7 +39,7 @@
             });
         </script>
         <noscript>
-            <p>Deep zoom is not available unless javascript is enabled.</p>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
             <img src='/example-images/highsmith/01967v.jpg'
                  height='600'/>
         </noscript>
@@ -73,7 +73,8 @@
     }
 }</pre>
     <p>
-        Configuration is done via the 'tileSources' option ( or programatically ).
+        Configuration is done via the <code>tileSources</code> option
+        (or programmatically).
     </p>
 <pre>
 OpenSeadragon({
@@ -88,10 +89,9 @@ OpenSeadragon({
 <div class="description">
     <h3>JSONP Request for DZI JSON</h3>
     <p>
-        The DZI JSONP Format is implied by a tile source specified as a string
-        and which has the </em>.js</em> extension.  The remainder of the
-        file name is expected to match the jsonp callback 
-        the example below illustrates
+        The DZI JSONP format is implied by a tile source specified as a string
+        and which has the <code>.js</code> extension.  The remainder of the
+        filename is expected to match the JSONP callback.
     </p>
 </div>
 <div class="demoarea">
@@ -109,7 +109,7 @@ OpenSeadragon({
             });
         </script>
         <noscript>
-            <p>Deep zoom is not available unless javascript is enabled.</p>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
             <img src='/example-images/highsmith/01967v.jpg'
                  height='600'/>
         </noscript>
@@ -131,7 +131,8 @@ highsmith({
     }
 });</pre>
     <p>
-        Configuration is done via the 'tileSources' option ( or programatically ).
+        Configuration is done via the <code>tileSources</code> option
+        (or programmatically).
     </p>
 <pre>
 OpenSeadragon({
@@ -148,8 +149,8 @@ OpenSeadragon({
     <h3>Inline Configuration for DZI</h3>
     <p>
         Inline configuration is convenient as well because it avoids a potentially
-        complicated JSON/XML Ajax request over the network.  Just plop the equivalent
-        json directly into 'tileSources' option.
+        complicated JSON/XML AJAX request.  Just drop the equivalent
+        JSON directly into the <code>tileSources</code> option.
     </p>
 </div>
 <div class="demoarea">
@@ -160,12 +161,13 @@ OpenSeadragon({
          class="openseadragon">
     </div>
     <p>
-        Configuration is done via the 'tileSources' option ( or programatically ).
+        Configuration is done via the <code>tileSources</code> option
+        (or programmatically).
     </p>
     <p>
-        Note however the non-standard dzi property 'Url' which we must supply
-        explicitly since this is normally inferred by the path specified
-        for the dzi XML/JSON/JSONP.
+        Note however the non-standard DZI property <code>url</code> which we
+        must supply explicitly, since this is normally inferred from the path
+        specified for the DZI XML/JSON/JSONP.
     </p>
 <pre>
 OpenSeadragon({
@@ -212,7 +214,7 @@ OpenSeadragon({
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        A very wide image.
+        A Very Wide Image
     </div>
     <div id="example-wide-dzi" 
          class="openseadragon">
@@ -225,3 +227,5 @@ OpenSeadragon({
         </script>
     </div>
 </div>
+
+<%= examples %>
