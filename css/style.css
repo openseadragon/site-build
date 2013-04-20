@@ -103,6 +103,7 @@ p { padding: 0 1.5em; }
     border-top: 2px dotted #aaa;
     padding: 15px 0 0 0;
     text-align: center;
+    clear: both;
 }
 .footer li{
     font-size: 12px;
