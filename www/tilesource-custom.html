@@ -51,7 +51,8 @@ OpenSeadragon({
         tileSize: 256,
         minLevel: 8,
         getTileUrl: function( level, x, y ){
-            return "http://s3.amazonaws.com/com.modestmaps.bluemarble/"+(level-8)+"-r"+x+"-c"+y+".jpg";
+            return "http://s3.amazonaws.com/com.modestmaps.bluemarble/" +
+                    (level-8) + "-r" + x + "-c" + y + ".jpg";
         }
     }
 });
@@ -117,7 +118,8 @@ OpenSeadragon({
                 return n.substr(0, 3) + "/" + n.substr(3);
             };
 
-            return "http://s3.amazonaws.com/info.aaronland.tiles.shapetiles/"+(level-8)+"/"+zeropad(x)+"/"+zeropad(y)+".png";
+            return "http://s3.amazonaws.com/info.aaronland.tiles.shapetiles/" +
+                    (level-8) + "/" + zeropad(x) + "/" + zeropad(y) + ".png";
         }
     }
     ...
@@ -150,5 +152,3 @@ OpenSeadragon({
     });
     </script>
 </div>
-
-<%= examples %>
