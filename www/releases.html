@@ -1,0 +1,20 @@
+<h2>releases</h2>
+
+<table class="releases">
+    <tr>
+        <th></th>
+        <th class="first-binary" colspan="2">Binaries</th>
+        <th class="first-source" colspan="2">Source</th>
+    </tr>
+    <%
+    for (var i = 0 ; i < versions.length; i++) {
+        var version = versions[i];
+        print('<tr><th>' + version + '</th>\n');
+        print('<td class="first-binary"><a href="openseadragon-bin-' + version + '.zip">zip</a></td>\n');
+        print('<td><a href="openseadragon-bin-' + version + '.tar.gz">tar.gz</a></td>\n');
+        print('<td class="first-source"><a href="https://github.com/openseadragon/openseadragon/archive/v' + version + '.zip">zip</a></td>\n');
+        print('<td><a href="https://github.com/openseadragon/openseadragon/archive/v' + version + '.tar.gz">tar.gz</a></td>\n');
+        print('</tr>\n');
+    }
+    %>
+</table>
