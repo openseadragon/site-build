@@ -1,12 +1,22 @@
 <h2>example: viewport navigator</h2>
 
 <p>
-    A viewport navigator allows the user to see the source image displayed
-    as a reference image, with a highlighted area showing which portion of
-    the image they are currently viewing.  The navigator reuses the
+    A viewport navigator shows the source image displayed
+    as a reference, with a highlighted area showing which portion of
+    the image the user is currently viewing.  The navigator reuses the
     configured image sources so no additional image derivatives are
-    required.
+    required.  Set the <code>showNavigator</code> to <code>true</code>
+    to activate the navigator feature.
 </p>
+
+<pre>
+    OpenSeadragon({
+        ...
+        showNavigator:  true,
+        ...
+    });
+
+</pre>
 
 <div class="description">
     <h3>Navigator Example</h3>
@@ -65,6 +75,7 @@ does not autofade.
 <pre>
     OpenSeadragon({
         ...
+        showNavigator:  true,
         navigatorId:   "navigatorDiv",
         ...
     });
