@@ -1,15 +1,25 @@
 <h2>example: viewport navigator</h2>
 
 <p>
-    A viewport navigator allows the user to see the source image displayed
-    as a reference image, with a highlighted area showing which portion of
-    the image they are currently viewing.  The navigator reuses the
+    A viewport navigator shows the source image displayed
+    as a reference, with a highlighted area showing which portion of
+    the image the user is currently viewing.  The navigator reuses the
     configured image sources so no additional image derivatives are
-    required.
+    required.  Set the <code>showNavigator</code> to <code>true</code>
+    to activate the navigator feature.
 </p>
 
+<pre>
+    OpenSeadragon({
+        ...
+        showNavigator:  true,
+        ...
+    });
+
+</pre>
+
 <div class="description">
-    <h3>Example</h3>
+    <h3>Navigator Example</h3>
 </div>
 
 <div class="demoarea">
@@ -28,24 +38,46 @@
     });
 </script>
 
-<p><em>(The viewport navigator is up for promotion as a default interface 
-element for accessibility reasons but could be disabled if required.)</em>
-</p>
-<p>The navigator supports drag and scroll (zoom) mouse interactions and
-is keyboard-accessible.</p>
+<div class="description">
+    <h3>Custom Navigator Location</h3>
+    <p>Instead of placing the navigator overtop of the main image, the navigator
+    may be placed elsewhere in the web page as illustrated in the example below.
+    The navigator can be placed in a jQuery UI dialog or other widget.</p>
 
-<p>To interact via the keyboard, just tab into the navigator.  Its highlight
-will change to blue-ish and you can use the following keys:
-</p>
-<ul>
-    <li><strong>[ w, up arrow ]</strong> - move viewport <strong>up</strong></li>
-    <li><strong>[ s, down arrow ]</strong> - move viewport <strong>down</strong></li>
-    <li><strong>[ a, left arrow ]</strong> - move viewport <strong>left</strong></li>
-    <li><strong>[ f, right arrow ]</strong> - move viewport <strong>right</strong></li>
-    <li><strong>[ 0 ]</strong> - zoom / move viewport <strong>home</strong></li>
-    <li><strong>[ - / _, shift+W, shift+up arrow ]</strong> - zoom viewport <strong>out</strong></li>
-    <li><strong>[ = / +, shift+S, shift+down arrow ]</strong> - zoom viewport <strong>in</strong></li>
-</ul>
+</div>
+
+
+<div class="demoarea2">
+    <div class="demoheading">
+        Viewport With Custom Navigator Location 
+        <div id="navigatorDiv" class="openseadragon-small"></div>
+    </div>
+    <div id="contentDiv2" class="openseadragon"></div>
+</div>
+
+<script type="text/javascript">
+    OpenSeadragon({
+        id:            "contentDiv2",
+        navigatorId:   "navigatorDiv",
+        prefixUrl:     "/openseadragon/images/",
+        tileSources:   "/example-images/highsmith/highsmith.dzi",
+        showNavigator:  true
+    });
+</script>
+
 <p>
-<em>Note that Chrome and Safari do not support the arrow keys for the Navigator.</em>
+The relevant configuration options are shown below. The
+<code>navigatorId</code> attribute identifies the div into
+which the navigator is placed.  When using this variation the navigator
+does not autofade.
 </p>
+
+<pre>
+    OpenSeadragon({
+        ...
+        showNavigator:  true,
+        navigatorId:   "navigatorDiv",
+        ...
+    });
+
+</pre>
