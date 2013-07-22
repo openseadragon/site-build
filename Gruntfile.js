@@ -12,6 +12,7 @@ module.exports = function(grunt) {
     var foldersToCopy = {
         css: "css",
         images: "images",
+        releases: "releases",
         "built-openseadragon": ""
     };
 
