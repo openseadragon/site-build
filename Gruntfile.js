@@ -98,13 +98,6 @@ module.exports = function(grunt) {
     grunt.registerTask("make:www", function() {
         var base = grunt.file.read("www/base.html");
         var version = getVersion();
-        var versions = [];
-        grunt.file.expand({cwd: "built-openseadragon/releases"}, "*").forEach(function(element, index, array) {
-            var match = /^openseadragon-bin-([\d.]+)\.(?:tar\.gz|zip)$/.exec(element);
-            if (match && match[1] !== versions[0]) {
-                versions.unshift(match[1]);
-            }
-        });
 
         var make = function(src, dest, title) {
             var content = grunt.file.read(src);
@@ -112,7 +105,6 @@ module.exports = function(grunt) {
                 data: {
                     title: title,
                     version: version,
-                    versions: versions,
                     content: content
                 }
             });
@@ -128,7 +120,8 @@ module.exports = function(grunt) {
 
         make("www/index.html", buildRoot + "index.html", "");
         make("www/license.html", buildRoot + "license/index.html", "License | ");
-        make("www/releases.html", buildRoot + "releases/index.html", "Releases | ");
+        // meta-refresh redirect; doesn't use base template
+        grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
     });
 
     // ----------
