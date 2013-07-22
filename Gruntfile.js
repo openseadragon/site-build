@@ -87,7 +87,7 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: [ "Gruntfile.js", "www/*", "openseadragon/*", "css/*", "built-openseadragon/releases/*"],
+            files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
         }
     });
