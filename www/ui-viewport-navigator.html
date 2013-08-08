@@ -38,6 +38,52 @@
     });
 </script>
 
+<!--==================================================================-->
+
+<div class="description">
+    <h3>Navigator Overlay Position</h3>
+    <p>By default the navigator is positioned in the upper right corner,
+        though it is possible to position it through configuration into any 
+        corner.</p>
+
+</div>
+
+
+<div class="demoarea">
+    <div class="demoheading">
+        Viewport with Navigator in BOTTOM_LEFT
+    </div>
+    <div id="contentDiv3" class="openseadragon"></div>
+</div>
+
+<script type="text/javascript">
+    OpenSeadragon({
+        id:            "contentDiv3",
+        prefixUrl:     "/openseadragon/images/",
+        tileSources:   "/example-images/highsmith/highsmith.dzi",
+        showNavigator:  true,
+        navigatorPosition: 'BOTTOM_LEFT'
+    });
+</script>
+
+<p>
+The relevant configuration options are shown below. The
+<code>navigatorPosition</code> attribute identifies the corner
+into which the navigator should be overlayed.
+</p>
+
+<pre>
+    OpenSeadragon({
+        ...
+        showNavigator:  true,
+        navigatorPosition:   "BOTTOM_LEFT",
+        ...
+    });
+
+</pre>
+
+<!--==================================================================-->
+
 <div class="description">
     <h3>Custom Navigator Location</h3>
     <p>Instead of placing the navigator overtop of the main image, the navigator

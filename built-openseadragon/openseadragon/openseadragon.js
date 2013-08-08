@@ -1,6 +1,6 @@
 //! OpenSeadragon 0.9.129
-//! Built on 2013-07-09
-//! Git commit: v0.9.129-0-g024fefd
+//! Built on 2013-08-07
+//! Git commit: v0.9.129-29-g967f2e4-dirty
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -967,6 +967,8 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
           } else {
             $.now = function() { return new Date().getTime(); };
           }
+
+          return $.now();
         },
 
 
@@ -2882,7 +2884,7 @@ $.EventHandler.prototype = {
      * @private
      * @inner
      */
-    function onMouseDown( tracker, event ) {
+    function onMouseDown( tracker, event, noCapture ) {
         var delegate = THIS[ tracker.hash ],
             propagate;
 
@@ -2912,6 +2914,10 @@ $.EventHandler.prototype = {
             $.cancelEvent( event );
         }
 
+        if ( noCapture ) {
+            return;
+        }
+            
         if ( !( $.Browser.vendor == $.BROWSERS.IE && $.Browser.version < 9 ) ||
              !IS_CAPTURING ) {
             captureMouse( tracker );
@@ -2938,7 +2944,9 @@ $.EventHandler.prototype = {
 
             THIS[ tracker.hash ].lastTouch = event.touches[ 0 ];
             onMouseOver( tracker, event.changedTouches[ 0 ] );
-            onMouseDown( tracker, event.touches[ 0 ] );
+            // call with no capture as the onMouseMove will 
+            // be triggered by onTouchMove
+            onMouseDown( tracker, event.touches[ 0 ], true );
         }
 
         if( event.touches.length == 2 ){
@@ -3008,7 +3016,10 @@ $.EventHandler.prototype = {
             event.changedTouches.length == 1 ){
 
             THIS[ tracker.hash ].lastTouch = null;
-            onMouseUp( tracker, event.changedTouches[ 0 ] );
+            
+            // call with no release, as the mouse events are 
+            // not registered in onTouchStart
+            onMouseUpWindow( tracker, event.changedTouches[ 0 ], true );
             onMouseOut( tracker, event.changedTouches[ 0 ] );
         }
         if( event.touches.length + event.changedTouches.length == 2 ){
@@ -3067,10 +3078,15 @@ $.EventHandler.prototype = {
      * @private
      * @inner
      */
-    function onMouseUpWindow( tracker, event ) {
+    function onMouseUpWindow( tracker, event, noRelease ) {
         if ( ! THIS[ tracker.hash ].insideElement ) {
             onMouseUp( tracker, event );
         }
+
+        if (noRelease) {
+            return;
+        }
+
         releaseMouse( tracker );
     }
 
@@ -4798,6 +4814,23 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
     }
 });
 
+
+/**
+ * _getSafeElemSize is like getElementSize(), but refuses to return 0 for x or y,
+ * which was causing some calling operations in updateOnce and openTileSource to
+ * return NaN.
+ * @returns {Point}
+ * @private
+ */
+function _getSafeElemSize (oElement) {
+    oElement = $.getElement( oElement );
+
+    return new $.Point(
+        (oElement.clientWidth === 0 ? 1 : oElement.clientWidth),
+        (oElement.clientHeight === 0 ? 1 : oElement.clientHeight)
+    );
+}
+
 /**
  * @function
  * @private
@@ -4812,7 +4845,7 @@ function openTileSource( viewer, source ) {
     }
 
     _this.canvas.innerHTML = "";
-    THIS[ _this.hash ].prevContainerSize = $.getElementSize( _this.container );
+    THIS[ _this.hash ].prevContainerSize = _getSafeElemSize( _this.container );
 
 
     if( _this.collectionMode ){
@@ -5205,7 +5238,7 @@ function updateOnce( viewer ) {
 
     //viewer.profiler.beginUpdate();
 
-    containerSize = $.getElementSize( viewer.container );
+    containerSize = _getSafeElemSize( viewer.container );
     if ( !containerSize.equals( THIS[ viewer.hash ].prevContainerSize ) ) {
         // maintain image position
         viewer.viewport.resize( containerSize, true );
@@ -5433,15 +5466,31 @@ $.Navigator = function( options ){
     if( !options.id ){
         options.id              = 'navigator-' + $.now();
         this.element            = $.makeNeutralElement( "div" );
-        options.controlOptions  = {anchor:           $.ControlAnchor.TOP_RIGHT,
-                                   attachToViewer:   true,
-                                   autoFade:         true};
-    }
-    else {
+        options.controlOptions  = {
+            anchor:           $.ControlAnchor.TOP_RIGHT,
+            attachToViewer:   true,
+            autoFade:         true
+        };
+
+        if( options.position ){
+            if( 'BOTTOM_RIGHT' == options.position ){
+               options.controlOptions.anchor = $.ControlAnchor.BOTTOM_RIGHT;
+            } else if( 'BOTTOM_LEFT' == options.position ){
+               options.controlOptions.anchor = $.ControlAnchor.BOTTOM_LEFT;
+            } else if( 'TOP_RIGHT' == options.position ){
+               options.controlOptions.anchor = $.ControlAnchor.TOP_RIGHT;
+            } else if( 'TOP_LEFT' == options.position ){
+               options.controlOptions.anchor = $.ControlAnchor.TOP_LEFT;
+            }
+        }
+        
+    } else {
         this.element            = document.getElementById( options.id );
-        options.controlOptions  = {anchor:           $.ControlAnchor.NONE,
-                                   attachToViewer:   false,
-                                   autoFade:         false};
+        options.controlOptions  = {
+            anchor:           $.ControlAnchor.NONE,
+            attachToViewer:   false,
+            autoFade:         false
+        };
     }
     this.element.id         = options.id;
     this.element.className  += ' navigator';
@@ -9613,27 +9662,40 @@ $.Tile.prototype = {
      * @class
      */
     $.Overlay = function( element, location, placement ) {
-        this.element    = element;
-        this.scales     = location instanceof $.Rect;
+
+        var options;
+        if( $.isPlainObject( element ) ){
+            options = element;
+        } else{
+            options = {
+                element: element,
+                location: location,
+                placement: placement
+            };
+        }
+        
+        this.element    = options.element;
+        this.scales     = options.location instanceof $.Rect;
         this.bounds     = new $.Rect(
-            location.x,
-            location.y,
-            location.width,
-            location.height
+            options.location.x,
+            options.location.y,
+            options.location.width,
+            options.location.height
         );
         this.position   = new $.Point(
-            location.x,
-            location.y
+            options.location.x,
+            options.location.y
         );
         this.size       = new $.Point(
-            location.width,
-            location.height
+            options.location.width,
+            options.location.height
         );
-        this.style      = element.style;
+        this.style      = options.element.style;
         // rects are always top-left
-        this.placement  = location instanceof $.Point ?
-            placement :
+        this.placement  = options.location instanceof $.Point ?
+            options.placement :
             $.OverlayPlacement.TOP_LEFT;
+        this.onDraw = options.onDraw;
     };
 
     $.Overlay.prototype = {
@@ -9740,14 +9802,20 @@ $.Tile.prototype = {
             position = position.apply( Math.floor );
             size     = size.apply( Math.ceil );
 
-            style.left     = position.x + "px";
-            style.top      = position.y + "px";
-            style.position = "absolute";
-            style.display  = 'block';
+            // call the onDraw callback if there is one to allow, this allows someone to overwrite
+            // the drawing/positioning/sizing of the overlay
+            if (this.onDraw) {
+                this.onDraw(position, size, element);
+            } else {
+                style.left     = position.x + "px";
+                style.top      = position.y + "px";
+                style.position = "absolute";
+                style.display  = 'block';
 
-            if ( scales ) {
-                style.width  = size.x + "px";
-                style.height = size.y + "px";
+                if ( scales ) {
+                    style.width  = size.x + "px";
+                    style.height = size.y + "px";
+                }
             }
         },
 
@@ -9937,30 +10005,50 @@ $.Drawer.prototype = {
      * highlighting words or areas of interest on an image or other zoomable
      * interface.
      * @method
-     * @param {Element|String} element - A reference to an element or an id for
-     *      the element which will overlayed.
+     * @param {Element|String|Object} element - A reference to an element or an id for
+     *      the element which will overlayed. Or an Object specifying the configuration for the overlay
      * @param {OpenSeadragon.Point|OpenSeadragon.Rect} location - The point or
      *      rectangle which will be overlayed.
      * @param {OpenSeadragon.OverlayPlacement} placement - The position of the
      *      viewport which the location coordinates will be treated as relative
      *      to.
+     * @param {function} onDraw - If supplied the callback is called when the overlay 
+     *      needs to be drawn. It it the responsibility of the callback to do any drawing/positioning.
+     *      It is passed position, size and element.
      */
-    addOverlay: function( element, location, placement ) {
-        element = $.getElement( element );
+    addOverlay: function( element, location, placement, onDraw ) {
+        var options;
+        if( $.isPlainObject( element ) ){
+            options = element;
+        } else {
+            options = {
+                element: element,
+                location: location,
+                placement: placement,
+                onDraw: onDraw
+            };
+        }
+
+        element = $.getElement(options.element);
 
         if ( getOverlayIndex( this.overlays, element ) >= 0 ) {
             // they're trying to add a duplicate overlay
             return;
         }
 
-        this.overlays.push( new $.Overlay( element, location, placement ) );
+        this.overlays.push( new $.Overlay({
+            element: element,
+            location: options.location,
+            placement: options.placement,
+            onDraw: options.onDraw
+        }) );
         this.updateAgain = true;
         if( this.viewer ){
             this.viewer.raiseEvent( 'add-overlay', {
                 viewer: this.viewer,
                 element: element,
-                location: location,
-                placement: placement
+                location: options.location,
+                placement: options.placement
             });
         }
         return this;
@@ -10199,14 +10287,20 @@ $.Drawer.prototype = {
         //we need to translate to viewport coordinates
         rect = drawer.viewport.imageToViewportRectangle( rect );
     }
+    
     if( overlay.placement ){
-        return new $.Overlay(
-            element,
-            drawer.viewport.pointFromPixel(rect),
-            $.OverlayPlacement[overlay.placement.toUpperCase()]
-        );
+        return new $.Overlay({
+            element: element,
+            location: drawer.viewport.pointFromPixel(rect),
+            placement: $.OverlayPlacement[overlay.placement.toUpperCase()],
+            onDraw: overlay.onDraw
+        });
     }else{
-        return new $.Overlay( element, rect );
+        return new $.Overlay({
+            element: element,
+            location: rect,
+            onDraw: overlay.onDraw
+        });
     }
 
 }
