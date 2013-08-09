@@ -194,7 +194,7 @@ module.exports = function(grunt) {
     // ----------
     // Publish task.
     // Cleans the built files out of ../openseadragon.github.com, builds, and copies newly built ones over.
-    grunt.registerTask("publish", ["build", /*"doc",*/ "clean:release", "copy:release"]);
+    grunt.registerTask("publish", ["build", "doc", "clean:release", "copy:release"]);
 
     // ----------
     // Default task.
