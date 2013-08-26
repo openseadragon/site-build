@@ -1,6 +1,6 @@
-//! OpenSeadragon 0.9.129
-//! Built on 2013-08-07
-//! Git commit: v0.9.129-29-g967f2e4-dirty
+//! OpenSeadragon 0.9.130
+//! Built on 2013-08-26
+//! Git commit: v0.9.130-0-g4d006d6
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 
  /**
-  * @version  OpenSeadragon 0.9.129
+  * @version  OpenSeadragon 0.9.130
   *
   * @fileOverview
   * <h2>
@@ -538,6 +538,9 @@ window.OpenSeadragon = window.OpenSeadragon || function( options ){
             navigatorWidth:         null,
             navigatorPosition:      null,
             navigatorSizeRatio:     0.2,
+
+            // INITIAL ROTATION
+            degrees:                0,
 
             //REFERENCE STRIP SETTINGS
             showReferenceStrip:          false,
@@ -2163,14 +2166,20 @@ $.EventHandler.prototype = {
 
 
     /**
-     * Remove all event handler for a given event type.
+     * Remove all event handlers for a given event type. If no type is given all
+     * event handlers for every event type are removed.
      * @function
      * @param {String} eventName - Name of event for which all handlers are to be removed.
      */
-    removeAllHandlers: function( eventName ){
-        this.events[ eventName ] = [];
+    removeAllHandlers: function( eventName ) {
+        if (eventName){
+            this.events[ eventName ] = [];
+        } else{
+            for (var eventType in this.events) {
+                this.events[eventType] = [];
+            }
+        }
     },
-
 
     /**
      * Retrive the list of all handlers registered for a given event.
@@ -2391,6 +2400,15 @@ $.EventHandler.prototype = {
     };
 
     $.MouseTracker.prototype = {
+
+        /**
+         * Clean up any events or objects created by the mouse tracker.
+         * @function
+         */
+        destroy: function() {
+            stopTracking( this );
+            this.element = null;
+        },
 
         /**
          * Are we currently tracking events on this element.
@@ -3214,6 +3232,10 @@ $.EventHandler.prototype = {
             touchB,
             pinchDelta;
 
+        if ( !THIS[ tracker.hash ].lastTouch ) {
+          return;
+        }
+
         if( event.touches.length === 1 &&
             event.targetTouches.length === 1 &&
             event.changedTouches.length === 1 &&
@@ -3538,6 +3560,12 @@ $.Control.prototype = {
             container: $.makeNeutralElement('form'),
             controls: []
         }, options );
+
+        // Disable the form's submit; otherwise button clicks and return keys
+        // can trigger it.
+        this.container.onsubmit = function() {
+            return false;
+        };
 
         if( this.element ){
             this.element = $.getElement( this.element );
@@ -4206,7 +4234,9 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
 
         this.viewport   = this.preserveViewport ? this.viewport : null;
         //this.profiler   = null;
-        this.canvas.innerHTML = "";
+        if (this.canvas){
+            this.canvas.innerHTML = "";
+        }
 
         VIEWERS[ this.hash ] = null;
         delete VIEWERS[ this.hash ];
@@ -4214,6 +4244,47 @@ $.extend( $.Viewer.prototype, $.EventHandler.prototype, $.ControlDock.prototype,
         this.raiseEvent( 'close', { viewer: this } );
 
         return this;
+    },
+
+    
+    /**
+     * Function to destroy the viewer and clean up everything created by
+     * OpenSeadragon.
+     * @function
+     * @name OpenSeadragon.Viewer.prototype.destroy
+     */
+    destroy: function( ) {
+        this.close();
+
+        this.removeAllHandlers();
+
+        // Go through top element (passed to us) and remove all children
+        // Use removeChild to make sure it handles SVG or any non-html
+        // also it performs better - http://jsperf.com/innerhtml-vs-removechild/15
+        if (this.element){
+            while (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+        }
+
+        // destroy the mouse trackers
+        if (this.keyboardCommandArea){
+            this.keyboardCommandArea.innerTracker.destroy();
+        }
+        if (this.innerTracker){
+            this.innerTracker.destroy();
+        }
+        if (this.outerTracker){
+            this.outerTracker.destroy();
+        }
+
+        // clear all our references to dom objects
+        this.canvas = null;
+        this.keyboardCommandArea = null;
+        this.container = null;
+
+        // clear our reference to the main element - they will need to pass it in again, creating a new viewer
+        this.element = null;
     },
 
 
@@ -6026,6 +6097,21 @@ $.Point.prototype = {
         ) && (
             this.y === point.y
         );
+    },
+
+    /**
+     * Rotates the point around the specified pivot
+     * From http://stackoverflow.com/questions/4465931/rotate-rectangle-around-a-point
+     * @function
+     * @param {Number} degress to rotate around the pivot.
+     * @param {OpenSeadragon.Point} pivot Point about which to rotate.
+     * @returns {OpenSeadragon.Point}. A new point representing the point rotated around the specified pivot
+     */
+    rotate: function ( degrees, pivot ) {
+        var angle = degrees * Math.PI / 180.0,
+            x = Math.cos( angle ) * ( this.x - pivot.x ) - Math.sin( angle ) * ( this.y - pivot.y ) + pivot.x,
+            y = Math.sin( angle ) * ( this.x - pivot.x ) + Math.cos( angle ) * ( this.y - pivot.y ) + pivot.y;
+        return new $.Point( x, y );
     },
 
     /**
@@ -8532,14 +8618,17 @@ $.Rect.prototype = {
     },
 
     /**
-     * Provides the coordinates of the upper-left corner of the rectanglea s a
+     * Provides the coordinates of the upper-left corner of the rectangle as a
      * point.
      * @function
      * @returns {OpenSeadragon.Point} The coordinate of the upper-left corner of
      *  the rectangle.
      */
     getTopLeft: function() {
-        return new $.Point( this.x, this.y );
+        return new $.Point(
+            this.x,
+            this.y
+        );
     },
 
     /**
@@ -8557,9 +8646,37 @@ $.Rect.prototype = {
     },
 
     /**
+     * Provides the coordinates of the top-right corner of the rectangle as a
+     * point.
+     * @function
+     * @returns {OpenSeadragon.Point} The coordinate of the top-right corner of
+     *  the rectangle.
+     */
+    getTopRight: function() {
+        return new $.Point(
+            this.x + this.width,
+            this.y
+        );
+    },
+
+    /**
+     * Provides the coordinates of the bottom-left corner of the rectangle as a
+     * point.
+     * @function
+     * @returns {OpenSeadragon.Point} The coordinate of the bottom-left corner of
+     *  the rectangle.
+     */
+    getBottomLeft: function() {
+        return new $.Point(
+            this.x,
+            this.y + this.height
+        );
+    },
+
+    /**
      * Computes the center of the rectangle.
      * @function
-     * @returns {OpenSeadragon.Point} The center of the rectangle as represnted
+     * @returns {OpenSeadragon.Point} The center of the rectangle as represented
      *  as represented by a 2-dimensional vector (x,y)
      */
     getCenter: function() {
@@ -8572,7 +8689,7 @@ $.Rect.prototype = {
     /**
      * Returns the width and height component as a vector OpenSeadragon.Point
      * @function
-     * @returns {OpenSeadragon.Point} The 2 dimensional vector represnting the
+     * @returns {OpenSeadragon.Point} The 2 dimensional vector representing the
      *  the width and height of the rectangle.
      */
     getSize: function() {
@@ -8580,7 +8697,7 @@ $.Rect.prototype = {
     },
 
     /**
-     * Determines if two Rectanlges have equivalent components.
+     * Determines if two Rectangles have equivalent components.
      * @function
      * @param {OpenSeadragon.Rect} rectangle The Rectangle to compare to.
      * @return {Boolean} 'true' if all components are equal, otherwise 'false'.
@@ -8594,7 +8711,62 @@ $.Rect.prototype = {
     },
 
     /**
-     * Provides a string representation of the retangle which is useful for
+     * Rotates a rectangle around a point. Currently only 90, 180, and 270
+     * degrees are supported.
+     * @function
+     * @param {Number} degrees The angle in degrees to rotate.
+     * @param {OpenSeadragon.Point} pivot The point about which to rotate.
+     * Defaults to the center of the rectangle.
+     * @return {OpenSeadragon.Rect}
+     */
+    rotate: function( degrees, pivot ) {
+        // TODO support arbitrary rotation
+        var width = this.width,
+            height = this.height,
+            newTopLeft;
+
+        degrees = ( degrees + 360 ) % 360;
+        if( degrees % 90 !== 0 ) {
+            throw new Error('Currently only 0, 90, 180, and 270 degrees are supported.');
+        }
+
+        if( degrees === 0 ){
+            return new $.Rect(
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+        }
+
+        pivot = pivot || this.getCenter();
+
+        switch ( degrees ) {
+            case 90:
+                newTopLeft = this.getBottomLeft();
+                width = this.height;
+                height = this.width;
+                break;
+            case 180:
+                newTopLeft = this.getBottomRight();
+                break;
+            case 270:
+                newTopLeft = this.getTopRight();
+                width = this.height;
+                height = this.width;
+                break;
+            default:
+                newTopLeft = this.getTopLeft();
+                break;
+        }
+
+        newTopLeft = newTopLeft.rotate(degrees, pivot);
+
+        return new $.Rect(newTopLeft.x, newTopLeft.y, width, height);
+    },
+
+    /**
+     * Provides a string representation of the rectangle which is useful for
      * debugging.
      * @function
      * @returns {String} A string representation of the rectangle.
@@ -9762,6 +9934,9 @@ $.Tile.prototype = {
                 }
             }
 
+            // clear the onDraw callback
+            this.onDraw = null;
+
             style.top = "";
             style.left = "";
             style.position = "";
@@ -9776,12 +9951,18 @@ $.Tile.prototype = {
          * @function
          * @param {Element} container
          */
-        drawHTML: function( container ) {
+        drawHTML: function( container, viewport ) {
             var element = this.element,
                 style   = this.style,
                 scales  = this.scales,
+                drawerCenter = new $.Point(
+                    viewport.viewer.drawer.canvas.width / 2,
+                    viewport.viewer.drawer.canvas.height / 2
+                ),
+                degrees = viewport.degrees,
                 position,
-                size;
+                size,
+                overlayCenter;
 
             if ( element.parentNode != container ) {
                 //save the source parent for later if we need it
@@ -9801,6 +9982,23 @@ $.Tile.prototype = {
 
             position = position.apply( Math.floor );
             size     = size.apply( Math.ceil );
+
+            // rotate the position of the overlay
+            // TODO only rotate overlays if in canvas mode
+            // TODO replace the size rotation with CSS3 transforms
+            // TODO add an option to overlays to not rotate with the image
+            // Currently only rotates position and size
+            if( degrees !== 0 && this.scales ) {
+                overlayCenter = new $.Point( size.x / 2, size.y / 2 );
+
+                position = position.plus( overlayCenter ).rotate(
+                    degrees,
+                    drawerCenter
+                ).minus( overlayCenter );
+
+                size = size.rotate( degrees, new $.Point( 0, 0 ) );
+                size = new $.Point( Math.abs( size.x ), Math.abs( size.y ) );
+            }
 
             // call the onDraw callback if there is one to allow, this allows someone to overwrite
             // the drawing/positioning/sizing of the overlay
@@ -9974,6 +10172,10 @@ $.Drawer = function( options ) {
     this.normHeight = this.source.dimensions.y / this.source.dimensions.x;
     this.element    = this.container;
 
+    // We force our container to ltr because our drawing math doesn't work in rtl.
+    // This issue only affects our canvas renderer, but we do it always for consistency.
+    // Note that this means overlays you want to be rtl need to be explicitly set to rtl.
+    this.container.dir = 'ltr';
 
     this.canvas.style.width     = "100%";
     this.canvas.style.height    = "100%";
@@ -10247,6 +10449,10 @@ $.Drawer.prototype = {
         }
 
         return loading;
+    },
+
+    canRotate: function() {
+        return USE_CANVAS;
     }
 };
 
@@ -10349,6 +10555,7 @@ function updateViewport( drawer ) {
                 Math.log( 2 )
             ))
         ),
+        degrees         = drawer.viewport.degrees,
         renderPixelRatioC,
         renderPixelRatioT,
         zeroRatioT,
@@ -10373,7 +10580,14 @@ function updateViewport( drawer ) {
         drawer.context.clearRect( 0, 0, viewportSize.x, viewportSize.y );
     }
 
-    //TODO
+    //Change bounds for rotation
+    if (degrees === 90 || degrees === 270) {
+        var rotatedBounds = viewportBounds.rotate( degrees );
+        viewportTL = rotatedBounds.getTopLeft();
+        viewportBR = rotatedBounds.getBottomRight();
+    }
+
+    //Don't draw if completely outside of the viewport
     if  ( !drawer.wrapHorizontal &&
         ( viewportBR.x < 0 || viewportTL.x > 1 ) ) {
         return;
@@ -10415,6 +10629,7 @@ function updateViewport( drawer ) {
             continue;
         }
 
+        //Perform calculations for draw if we haven't drawn this
         renderPixelRatioT = drawer.viewport.deltaPixelsFromPoints(
             drawer.source.getPixelRatio( level ),
             false
@@ -10957,7 +11172,7 @@ function drawOverlay( viewport, overlay, container ){
         overlay.bounds.getSize(),
         true
     );
-    overlay.drawHTML( container );
+    overlay.drawHTML( container, viewport );
 }
 
 function drawTiles( drawer, lastDrawn ){
@@ -11036,7 +11251,15 @@ function drawTiles( drawer, lastDrawn ){
         } else {
 
             if ( USE_CANVAS ) {
-                tile.drawCanvas( drawer.context );
+                // TODO do this in a more performant way
+                // specifically, don't save,rotate,restore every time we draw a tile
+                if( drawer.viewport.degrees !== 0 ) {
+                    offsetForRotation( tile, drawer.canvas, drawer.context, drawer.viewport.degrees );
+                    tile.drawCanvas( drawer.context );
+                    restoreRotationChanges( tile, drawer.canvas, drawer.context );
+                } else {
+                    tile.drawCanvas( drawer.context );
+                }
             } else {
                 tile.drawHTML( drawer.canvas );
             }
@@ -11060,6 +11283,32 @@ function drawTiles( drawer, lastDrawn ){
             });
         }
     }
+}
+
+function offsetForRotation( tile, canvas, context, degrees ){
+    var cx = canvas.width / 2,
+        cy = canvas.height / 2,
+        px = tile.position.x - cx,
+        py = tile.position.y - cy;
+
+    context.save();
+
+    context.translate(cx, cy);
+    context.rotate( Math.PI / 180 * degrees);
+    tile.position.x = px;
+    tile.position.y = py;
+}
+
+function restoreRotationChanges( tile, canvas, context ){
+    var cx = canvas.width / 2,
+        cy = canvas.height / 2,
+        px = tile.position.x + cx,
+        py = tile.position.y + cy;
+
+    tile.position.x = px;
+    tile.position.y = py;
+
+    context.restore();
 }
 
 
@@ -11207,7 +11456,8 @@ $.Viewport = function( options ) {
         wrapVertical:       $.DEFAULT_SETTINGS.wrapVertical,
         defaultZoomLevel:   $.DEFAULT_SETTINGS.defaultZoomLevel,
         minZoomLevel:       $.DEFAULT_SETTINGS.minZoomLevel,
-        maxZoomLevel:       $.DEFAULT_SETTINGS.maxZoomLevel
+        maxZoomLevel:       $.DEFAULT_SETTINGS.maxZoomLevel,
+        degrees:            $.DEFAULT_SETTINGS.degrees
 
     }, options );
 
@@ -11345,6 +11595,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     getBounds: function( current ) {
         var center = this.getCenter( current ),
@@ -11361,6 +11612,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     getCenter: function( current ) {
         var centerCurrent = new $.Point(
@@ -11411,6 +11663,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     getZoom: function( current ) {
         if ( current ) {
@@ -11625,6 +11878,7 @@ $.Viewport.prototype = {
             this.centerSpringX.target.value,
             this.centerSpringY.target.value
         );
+        delta = delta.rotate( -this.degrees, new $.Point( 0, 0 ) );
         return this.panTo( center.plus( delta ), immediately );
     },
 
@@ -11659,6 +11913,12 @@ $.Viewport.prototype = {
      * @return {OpenSeadragon.Viewport} Chainable.
      */
     zoomBy: function( factor, refPoint, immediately ) {
+        if( refPoint ) {
+            refPoint = refPoint.rotate(
+                -this.degrees,
+                new $.Point( this.centerSpringX.target.value, this.centerSpringY.target.value )
+            );
+        }
         return this.zoomTo( this.zoomSpring.target.value * factor, refPoint, immediately );
     },
 
@@ -11688,6 +11948,40 @@ $.Viewport.prototype = {
         }
 
         return this;
+    },
+
+    /**
+     * Currently only 90 degree rotation is supported and it only works
+     * with the canvas. Additionally, the navigator does not rotate yet,
+     * debug mode doesn't rotate yet, and overlay rotation is only
+     * partially supported.
+     * @function
+     * @name OpenSeadragon.Viewport.prototype.setRotation
+     * @return {OpenSeadragon.Viewport} Chainable.
+     */
+    setRotation: function( degrees ) {
+        if( !( this.viewer && this.viewer.drawer.canRotate() ) ) {
+            return this;
+        }
+
+        degrees = ( degrees + 360 ) % 360;
+        if( degrees % 90 !== 0 ) {
+            throw new Error('Currently only 0, 90, 180, and 270 degrees are supported.');
+        }
+        this.degrees = degrees;
+        this.viewer.drawer.update();
+        
+        return this;
+    },
+
+    /**
+     * Gets the current rotation in degrees.
+     * @function
+     * @name OpenSeadragon.Viewport.prototype.setRotation
+     * @return {Number} The current rotation in degrees.
+     */
+    getRotation: function() {
+        return this.degrees;
     },
 
     /**
@@ -11760,6 +12054,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     deltaPixelsFromPoints: function( deltaPoints, current ) {
         return deltaPoints.times(
@@ -11769,6 +12064,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     deltaPointsFromPixels: function( deltaPixels, current ) {
         return deltaPixels.divide(
@@ -11778,6 +12074,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     pixelFromPoint: function( point, current ) {
         var bounds = this.getBounds( current );
@@ -11790,6 +12087,7 @@ $.Viewport.prototype = {
 
     /**
      * @function
+     * @param {Boolean} current - Pass true for the current location; defaults to false (target location).
      */
     pointFromPixel: function( pixel, current ) {
         var bounds = this.getBounds( current );
