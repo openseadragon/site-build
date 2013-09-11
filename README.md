@@ -15,7 +15,7 @@ All command-line operations are scripted using [Grunt](http://gruntjs.com/) whic
 1. Clone the site-build repository
 1. On the command line, go in to the site-build folder
 1. Run `npm install`
-1. You'll also need to install http://ant.apache.org/ (for building the docs, until https://github.com/openseadragon/site-build/issues/8 gets fixed)
+1. You'll also need http://ant.apache.org/ (for building the docs, until https://github.com/openseadragon/site-build/issues/8 gets fixed)
 
 You're set... continue reading for build and test instructions.
 
