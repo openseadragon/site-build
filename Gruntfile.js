@@ -4,6 +4,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-connect");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     // ----------
     var buildRoot = "build/";
@@ -65,6 +66,11 @@ module.exports = function(grunt) {
                     buildRoot + "docs/"
                 ]
             },
+            doc3: {
+                src: [
+                    buildRoot + 'docs3/'
+                ]
+            },
             release: {
                 src: [
                     releaseRoot + "*",
@@ -90,6 +96,13 @@ module.exports = function(grunt) {
         watch: {
             files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
+        },
+        jsdoc : { 
+            src: ['built-openseadragon/openseadragon/openseadragon.js', '../openseadragon/README.md'], 
+            options: {
+                destination: buildRoot + 'docs3',
+                configure: 'doc-conf.json'
+            }
         }
     });
 
@@ -187,9 +200,11 @@ module.exports = function(grunt) {
     grunt.registerTask("build", ["clean:www", "make:www", "copy:build"]);
 
     // ----------
-    // Doc task.
+    // Doc tasks.
     // Cleans the doc files out of the build folder and builds new ones.
     grunt.registerTask("doc", ["clean:doc", "make:doc"]);
+    // jsdoc 3 Doc Task
+    grunt.registerTask("doc3", ["clean:doc3", "jsdoc"]);
 
     // ----------
     // Publish task.
