@@ -177,7 +177,7 @@ module.exports = function(grunt) {
     grunt.registerTask("build", ["clean:www", "make:www", "copy:build"]);
 
     // ----------
-    // Doc tasks.
+    // Doc task.
     // Cleans the doc files out of the build folder and builds new ones.
     grunt.registerTask("doc", ["clean:doc", "jsdoc"]);
 
