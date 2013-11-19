@@ -226,6 +226,18 @@ function buildNav(members) {
         nav += '</ul>';
     }
 
+    if (members.namespaces.length) {
+        nav += '<h3>Namespaces</h3><ul>';
+        members.namespaces.forEach(function(n) {
+            if ( !hasOwnProp.call(seen, n.longname) ) {
+                nav += '<li>'+linkto(n.longname, n.name)+'</li>';
+            }
+            seen[n.longname] = true;
+        });
+        
+        nav += '</ul>';
+    }
+    
     if (members.classes.length) {
         members.classes.forEach(function(c) {
             if ( !hasOwnProp.call(seen, c.longname) ) {
@@ -242,24 +254,17 @@ function buildNav(members) {
     }
 
     if (members.events.length) {
+        //**debug**
+        //eventsString = JSON.stringify(members.events, null, " ");
+        //nav += '<br><pre>' + eventsString + '</pre><br>';
+        //memberof OpenSeadragon.Button
+        //**debug**
         nav += '<h3>Events</h3><ul>';
         members.events.forEach(function(e) {
             if ( !hasOwnProp.call(seen, e.longname) ) {
                 nav += '<li>'+linkto(e.longname, e.name)+'</li>';
             }
             seen[e.longname] = true;
-        });
-        
-        nav += '</ul>';
-    }
-    
-    if (members.namespaces.length) {
-        nav += '<h3>Namespaces</h3><ul>';
-        members.namespaces.forEach(function(n) {
-            if ( !hasOwnProp.call(seen, n.longname) ) {
-                nav += '<li>'+linkto(n.longname, n.name)+'</li>';
-            }
-            seen[n.longname] = true;
         });
         
         nav += '</ul>';
