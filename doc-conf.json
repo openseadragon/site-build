@@ -8,6 +8,10 @@
         "monospaceLinks" : false,
         "default" : {
             "outputSourceFiles" : false
+        },
+        "openseadragon" : {
+            "logMode" : false,
+            "debugMode" : false
         }
     },
     "markdown" : {

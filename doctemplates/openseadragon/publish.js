@@ -14,6 +14,55 @@ var template = require('jsdoc/template'),
     view,
     outdir = env.opts.destination;
 
+// Get OpenSeadragon configuration (from [doc-conf.json].templates.openseadragon)
+var osdConfig = {};
+if (env.conf.templates && env.conf.templates['openseadragon']) {
+    osdConfig = env.conf.templates['openseadragon'];
+}
+
+// Setup for debugging/logging
+var logMode = false,
+    debugMode = false,
+    logTextFile,
+    logText,
+    debugHtmlFile,
+    debugHtmlHeader,
+    debugHtmlFooter,
+    debugHtml;
+if (osdConfig.logMode) {
+    logMode = true;
+    logTextFile = outdir + '/debug.txt';
+    logText = 'OpenSeadragon Documentation Build Log\n\n';
+}
+if (osdConfig.debugMode) {
+    debugMode = true;
+    debugHtmlFile = outdir + '/debug.html';
+    debugHtml = '<h1>OpenSeadragon Documentation Build</h1>\n<h3>JSDOC Configuration</h3>\n<pre class="prettyprint lang-js">\nenv.conf =\n' + JSON.stringify(env.conf, null, 2) + ';\n</pre>\n';
+    debugHtmlHeader = '\
+        <!DOCTYPE html>\n\
+        <html lang="en">\n\
+        <head>\n\
+            <meta charset="utf-8">\n\
+            <title>OpenSeadragon Documentation Build Debug</title>\n\
+            \n\
+            <script src="scripts/prettify/prettify.js"> </script>\n\
+            <!--<script src="scripts/prettify/lang-css.js"> </script>-->\n\
+            <!--<link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">-->\n\
+            <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">\n\
+            <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">\n\
+        </head>\n\
+        \n\
+        <body>\n';
+    debugHtmlFooter = '\n\
+        <footer>\n\
+            End OpenSeadragon Debug Output \n\
+        </footer>\n\
+        \n\
+        <script> prettyPrint(); </script>\n\
+        </body>\n\
+        </html>\n';
+
+}
 
 function find(spec) {
     return helper.find(data, spec);
@@ -255,9 +304,10 @@ function buildNav(members) {
 
     if (members.events.length) {
         //**debug**
-        //eventsString = JSON.stringify(members.events, null, " ");
-        //nav += '<br><pre>' + eventsString + '</pre><br>';
         //memberof OpenSeadragon.Button
+        //if (debugMode) {
+        //    debugHtml += ('<h3>members.events</h3>\n<pre class="prettyprint lang-js">\nmembers.events =\n' + JSON.stringify(members.events, null, "  ") + '</pre>\n');
+        //}
         //**debug**
         nav += '<h3>Events</h3><ul>';
         members.events.forEach(function(e) {
@@ -567,4 +617,11 @@ exports.publish = function(taffyData, opts, tutorials) {
         });
     }
     saveChildren(tutorials);
+
+    if (logMode) {
+        fs.writeFileSync(logTextFile, logText, 'utf8');
+    }
+    if (debugMode) {
+        fs.writeFileSync(debugHtmlFile, debugHtmlHeader + debugHtml + debugHtmlFooter, 'utf8');
+    }
 };
