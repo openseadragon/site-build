@@ -93,7 +93,7 @@ module.exports = function(grunt) {
             tasks: ["build"]
         },
         jsdoc : { 
-            src: [builtSourceUnMinified, '../openseadragon/README.md'], 
+            src: [builtSourceUnMinified], //, '../openseadragon/README.md'
             options: {
                 destination: buildRoot + 'docs',
                 configure: 'doc-conf.json'

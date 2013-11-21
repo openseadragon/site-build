@@ -8,8 +8,8 @@ body
 {
     /*font: 14px "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans serif;*/
     font-family: Helvetica, Arial, FreeSans, san-serif;
-    font-size: 90%;
-    line-height: 110%;/*130%*/
+    font-size: 88%;
+    line-height: 120%;/*130%*/
     color: #333;/*#000*/
     background-color: #fff;
 }
@@ -269,7 +269,7 @@ h6
     margin: 0px;
     text-align: left;
     vertical-align: top;
-    padding: 4px;/*4px 6px*/
+    padding: 4px 6px;
     display: table-cell;
     font-size: 90%;/*100%*/
 }
