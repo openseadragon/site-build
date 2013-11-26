@@ -8,22 +8,22 @@ body
 {
     /*font: 14px "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans serif;*/
     font-family: Helvetica, Arial, FreeSans, san-serif;
-    font-size: 88%;
+    font-size: 82%;
     line-height: 120%;/*130%*/
     color: #333;/*#000*/
     background-color: #fff;
 }
 
 a {
-    color: #121621;/*#444*/
+    color: #444;/*#121621*/
 }
 
 a:visited {
-    color: #121621;/*#444*/
+    color: #444;/*#444*/
 }
 
 a:active {
-    color: #121621;/*#444*/
+    color: #444;/*#444*/
 }
 
 header

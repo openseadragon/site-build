@@ -46,10 +46,10 @@ if (osdConfig.debugMode) {
             <title>OpenSeadragon Documentation Build Debug</title>\n\
             \n\
             <script src="scripts/prettify/prettify.js"> </script>\n\
-            <!--<script src="scripts/prettify/lang-css.js"> </script>-->\n\
-            <!--<link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">-->\n\
-            <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">\n\
-            <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">\n\
+            <script src="scripts/prettify/lang-css.js"> </script>\n\
+            <link type="text/css" rel="stylesheet" href="styles/prettify.css">\n\
+            <!--<link type="text/css" rel="stylesheet" href="styles/desert.css">-->\n\
+            <link type="text/css" rel="stylesheet" href="styles/jsdoc-openseadragon.css">\n\
         </head>\n\
         \n\
         <body>\n';
@@ -251,18 +251,6 @@ function buildNav(members) {
         classNav = '',
         globalNav = '';
 
-    if (members.modules.length) {
-        nav += '<h3>Modules</h3><ul>';
-        members.modules.forEach(function(m) {
-            if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
-            }
-            seen[m.longname] = true;
-        });
-        
-        nav += '</ul>';
-    }
-    
     if (members.externals.length) {
         nav += '<h3>Externals</h3><ul>';
         members.externals.forEach(function(e) {
@@ -275,6 +263,18 @@ function buildNav(members) {
         nav += '</ul>';
     }
 
+    if (members.modules.length) {
+        nav += '<h3>Modules</h3><ul>';
+        members.modules.forEach(function(m) {
+            if ( !hasOwnProp.call(seen, m.longname) ) {
+                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+            }
+            seen[m.longname] = true;
+        });
+        
+        nav += '</ul>';
+    }
+    
     if (members.namespaces.length) {
         nav += '<h3>Namespaces</h3><ul>';
         members.namespaces.forEach(function(n) {
@@ -302,6 +302,18 @@ function buildNav(members) {
         }
     }
 
+    if (members.mixins.length) {
+        nav += '<h3>Mixins</h3><ul>';
+        members.mixins.forEach(function(m) {
+            if ( !hasOwnProp.call(seen, m.longname) ) {
+                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+            }
+            seen[m.longname] = true;
+        });
+        
+        nav += '</ul>';
+    }
+
     if (members.events.length) {
         //**debug**
         //memberof OpenSeadragon.Button
@@ -320,18 +332,6 @@ function buildNav(members) {
         nav += '</ul>';
     }
     
-    if (members.mixins.length) {
-        nav += '<h3>Mixins</h3><ul>';
-        members.mixins.forEach(function(m) {
-            if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
-            }
-            seen[m.longname] = true;
-        });
-        
-        nav += '</ul>';
-    }
-
     if (members.tutorials.length) {
         nav += '<h3>Tutorials</h3><ul>';
         members.tutorials.forEach(function(t) {
@@ -526,6 +526,12 @@ exports.publish = function(taffyData, opts, tutorials) {
     
     var members = helper.getMembers(data);
     members.tutorials = tutorials.children;
+
+    //**debug**
+    if (debugMode) {
+        debugHtml += ('<h3>members.classes</h3>\n<pre class="prettyprint lang-js">\nmembers.classes =\n' + JSON.stringify(members.classes, null, "  ") + '</pre>\n');
+    }
+    //**debug**
 
     // add template helpers
     view.find = find;
