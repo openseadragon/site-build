@@ -249,7 +249,8 @@ function buildNav(members) {
         seen = {},
         hasClassList = false,
         classNav = '',
-        globalNav = '';
+        globalNav = '',
+        prevClass;
 
     if (members.externals.length) {
         nav += '<h3>Externals</h3><ul>';
@@ -316,20 +317,30 @@ function buildNav(members) {
 
     if (members.events.length) {
         //**debug**
-        //memberof OpenSeadragon.Button
         //if (debugMode) {
         //    debugHtml += ('<h3>members.events</h3>\n<pre class="prettyprint lang-js">\nmembers.events =\n' + JSON.stringify(members.events, null, "  ") + '</pre>\n');
         //}
         //**debug**
-        nav += '<h3>Events</h3><ul>';
+        prevClass = '';
+        nav += '<h3>Events</h3>';
         members.events.forEach(function(e) {
             if ( !hasOwnProp.call(seen, e.longname) ) {
+                // Add header to group by parent class
+                if (e.memberof !== prevClass) {
+                    if (prevClass.length > 0) {
+                        nav += '</ul>';
+                    }
+                    nav += '<h4>' + e.memberof + '</h4>';
+                    nav += '<ul>';
+                    prevClass = e.memberof;
+                }
                 nav += '<li>'+linkto(e.longname, e.name)+'</li>';
             }
             seen[e.longname] = true;
         });
         
         nav += '</ul>';
+
     }
     
     if (members.tutorials.length) {
@@ -527,11 +538,11 @@ exports.publish = function(taffyData, opts, tutorials) {
     var members = helper.getMembers(data);
     members.tutorials = tutorials.children;
 
-    //**debug**
-    if (debugMode) {
-        debugHtml += ('<h3>members.classes</h3>\n<pre class="prettyprint lang-js">\nmembers.classes =\n' + JSON.stringify(members.classes, null, "  ") + '</pre>\n');
-    }
-    //**debug**
+    ////**debug**
+    //if (debugMode) {
+    //    debugHtml += ('<h3>members.classes</h3>\n<pre class="prettyprint lang-js">\nmembers.classes =\n' + JSON.stringify(members.classes, null, "  ") + '</pre>\n');
+    //}
+    ////**debug**
 
     // add template helpers
     view.find = find;

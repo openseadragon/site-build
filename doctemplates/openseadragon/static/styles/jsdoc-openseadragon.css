@@ -97,8 +97,17 @@ nav h3 {
     margin-top: 12px;
 }
 
+nav h4 {
+    font-size: 85%;
+    font-weight: bold;
+    letter-spacing: -0.01em;
+    margin-top: 6px;
+    margin: 6px 0 0 0;
+}
+
 nav li {
     margin-top: 6px;
+    margin-left: 6px;
 }
 
 nav a {
