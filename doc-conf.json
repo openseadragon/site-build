@@ -7,7 +7,7 @@
         "cleverLinks" : true,
         "monospaceLinks" : false,
         "default" : {
-            "outputSourceFiles" : false
+            "outputSourceFiles" : true
         },
         "openseadragon" : {
             "logMode" : false,

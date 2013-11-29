@@ -25,6 +25,89 @@
 </header>  
 
 <article>
+    <?js if (doc.kind === 'class' || doc.kind === 'namespace') { 
+             var namespaces = self.find({kind: 'namespace', memberof: doc.longname}); 
+             var classes = self.find({kind: 'class', memberof: doc.longname}); 
+             var members = self.find({kind: 'member', memberof: doc.longname});
+             var methods = self.find({kind: 'function', memberof: doc.longname});
+             var typedefs = self.find({kind: 'typedef', memberof: doc.longname}); 
+             var events = self.find({kind: 'event', memberof: doc.longname}); 
+    ?>
+        <div class="container-toc">
+        <h3 class="subsection-title" id="toc">Contains</h3>
+        <table border="1" class="toc">
+            <thead>
+                <tr>
+                    <?js if (namespaces && namespaces.length && namespaces.forEach) { ?>
+                        <th>Namespaces</th>
+                    <?js } ?>
+                    <?js if (classes && classes.length && classes.forEach) { ?>
+                        <th>Classes</th>
+                    <?js } ?>
+                    <?js if (members && members.length && members.forEach) { ?>
+                        <th>Members</th>
+                    <?js } ?>
+                    <?js if (methods && methods.length && methods.forEach) { ?>
+                        <th>Methods</th>
+                    <?js } ?>
+                    <?js if (typedefs && typedefs.length && typedefs.forEach) { ?>
+                        <th>Types</th>
+                    <?js } ?>
+                    <?js if (events && events.length && events.forEach) { ?>
+                        <th>Events</th>
+                    <?js } ?>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <?js if (namespaces && namespaces.length && namespaces.forEach) { ?>
+                        <td>
+                            <ul><?js namespaces.forEach(function(n) { ?>
+                                <li><?js= self.linkto(n.longname, n.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                    <?js if (classes && classes.length && classes.forEach) { ?>
+                        <td>
+                            <ul><?js classes.forEach(function(c) { ?>
+                                <li><?js= self.linkto(c.longname, c.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                    <?js if (members && members.length && members.forEach) { ?>
+                        <td>
+                            <ul><?js members.forEach(function(m) { ?>
+                                <li><?js= self.linkto(m.longname, m.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                    <?js if (methods && methods.length && methods.forEach) { ?>
+                        <td>
+                            <ul><?js methods.forEach(function(m) { ?>
+                                <li><?js= self.linkto(m.longname, m.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                    <?js if (typedefs && typedefs.length && typedefs.forEach) { ?>
+                        <td>
+                            <ul><?js typedefs.forEach(function(t) { ?>
+                                <li><?js= self.linkto(t.longname, t.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                    <?js if (events && events.length && events.forEach) { ?>
+                        <td>
+                            <ul><?js events.forEach(function(e) { ?>
+                                <li><?js= self.linkto(e.longname, e.name) ?></li>
+                            <?js }); ?></ul>
+                        </td>
+                    <?js } ?>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+    <?js } ?>
+
     <div class="container-overview">
     <?js if (doc.kind === 'module' && doc.module) { ?>
         <?js= self.partial('method.tmpl', doc.module) ?>
@@ -45,7 +128,7 @@
         <?js } ?>
     <?js } ?>
     </div>
-    
+
     <?js if (doc.augments && doc.augments.length) { ?>
         <h3 class="subsection-title">Extends</h3>
         
@@ -72,7 +155,7 @@
     
     <?js
         var classes = self.find({kind: 'class', memberof: doc.longname}); 
-        if (doc.kind !== 'globalobj' && classes && classes.length) { 
+        if (doc.kind !== 'globalobj' && doc.kind !== 'class' && doc.kind !== 'namespace' && classes && classes.length) { 
     ?>
         <h3 class="subsection-title">Classes</h3>
         
@@ -84,7 +167,7 @@
     
     <?js
         var namespaces = self.find({kind: 'namespace', memberof: doc.longname}); 
-        if (doc.kind !== 'globalobj' && namespaces && namespaces.length) { 
+        if (doc.kind !== 'globalobj' && doc.kind !== 'class' && doc.kind !== 'namespace' && namespaces && namespaces.length) { 
     ?>
         <h3 class="subsection-title">Namespaces</h3>
         
