@@ -34,7 +34,6 @@
              var events = self.find({kind: 'event', memberof: doc.longname}); 
     ?>
         <div class="container-toc">
-        <h3 class="subsection-title" id="toc">Contains</h3>
         <table border="1" class="toc">
             <thead>
                 <tr>
@@ -47,7 +46,7 @@
                     <?js if (members && members.length && members.forEach) { ?>
                         <th>Members</th>
                     <?js } ?>
-                    <?js if (methods && methods.length && methods.forEach) { ?>
+                    <?js if (doc.kind === 'class' || (methods && methods.length && methods.forEach)) { ?>
                         <th>Methods</th>
                     <?js } ?>
                     <?js if (typedefs && typedefs.length && typedefs.forEach) { ?>
@@ -81,11 +80,18 @@
                             <?js }); ?></ul>
                         </td>
                     <?js } ?>
-                    <?js if (methods && methods.length && methods.forEach) { ?>
+                    <?js if (doc.kind === 'class' || (methods && methods.length && methods.forEach)) { ?>
                         <td>
-                            <ul><?js methods.forEach(function(m) { ?>
-                                <li><?js= self.linkto(m.longname, m.name) ?></li>
-                            <?js }); ?></ul>
+                            <ul>
+                            <?js if (doc.kind === 'class') { ?>
+                                <li><?js= self.linkto(doc.longname, '&lt; constructor &gt;', 'ctor-link', doc.name) ?></li>
+                            <?js } ?>
+                            <?js if (methods && methods.length && methods.forEach) { ?>
+                                <?js methods.forEach(function(m) { ?>
+                                    <li><?js= self.linkto(m.longname, m.name) ?></li>
+                                <?js }); ?>
+                            <?js } ?>
+                            </ul>
                         </td>
                     <?js } ?>
                     <?js if (typedefs && typedefs.length && typedefs.forEach) { ?>

@@ -182,11 +182,22 @@ function generate(title, docs, filename, resolveLinks) {
 }
 
 function generateSourceFiles(sourceFiles, encoding) {
+    //**debug**
+    if (debugMode) {
+        debugHtml += ('<h3>sourceFiles</h3>\n<pre class="prettyprint lang-js">\nsourceFiles =\n' + JSON.stringify(sourceFiles, null, "  ") + '</pre>\n');
+    }
+    //**debug**
     encoding = encoding || 'utf8';
     Object.keys(sourceFiles).forEach(function(file) {
         var source;
         // links are keyed to the shortened path in each doclet's `meta.filename` property
         var sourceOutfile = helper.getUniqueFilename(sourceFiles[file].shortened);
+        //**debug**
+        if (debugMode) {
+            debugHtml += ('<h3>longname</h3>\n<pre class="prettyprint lang-js">\n' + JSON.stringify(sourceFiles[file].shortened, null, "  ") + '</pre>\n');
+            debugHtml += ('<h3>url</h3>\n<pre class="prettyprint lang-js">\n' + JSON.stringify(sourceOutfile, null, "  ") + '</pre>\n');
+        }
+        //**debug**
         helper.registerLink(sourceFiles[file].shortened, sourceOutfile);
 
         try {

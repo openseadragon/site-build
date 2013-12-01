@@ -1,7 +1,6 @@
 html
 {
     overflow: auto;
-    background-color: #fff;
 }
 
 body
@@ -9,9 +8,15 @@ body
     /*font: 14px "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans serif;*/
     font-family: Helvetica, Arial, FreeSans, san-serif;
     font-size: 82%;
-    line-height: 120%;/*130%*/
-    color: #333;/*#000*/
-    background-color: #fff;
+    line-height: 120%;
+    background-color: #121621;/*#0e182e;*/
+    margin: 0;
+    color: #333;
+}
+#container {
+    margin:     0 5em;
+    padding:    1.0em;
+    background-color: #EEE; 
 }
 
 a {
@@ -50,7 +55,7 @@ section
 {
     display: block;
     
-    background-color: #fff;
+    background-color: #eee;
     padding: 12px 24px;
     border-bottom: 1px solid #ccc;
     margin-right: 240px;
@@ -249,7 +254,7 @@ h6
     display: block;
     padding: 4px 12px;
     margin: 0;
-    /*background-color: #fff;*/
+    /*background-color: #eee;*/
     color: #444;/*#000*/
     border-left: 3px #ddd solid;
 }
@@ -264,6 +269,7 @@ h6
     border-spacing: 0;
     border: 0;
     border-collapse: collapse;
+    margin: 0 0 2em 2em;
 }
 
 .toc td, .toc th
@@ -274,7 +280,7 @@ h6
     vertical-align: top;
     padding: 4px 6px;
     display: table-cell;
-    font-size: 90%;/*100%*/
+    /*font-size: 90%;100%*/
 }
 
 .toc thead tr
@@ -287,11 +293,34 @@ h6
 .toc thead .last { border-right: 1px solid #ddd; }
 
 .toc ul {
-    /*font-family: 'Lucida Grande', 'Lucida Sans Unicode', arial, sans-serif;*/
-    font-size: 100%;
+    font-size: 90%;
+    line-height: 1.1em;
     padding:0;
     margin:0;
+    margin-bottom: 3px;
     list-style-type:none;
+}
+
+.toc li 
+{
+    margin-top: 3px;
+}
+
+.toc a {
+    color: #437ab2;
+}
+
+.toc a:visited {
+    color: #437ab2;
+}
+
+.toc a:active {
+    color: #437ab2;
+}
+
+.ctor-link {
+    color: #ff0000;
+    font-weight: bold;
 }
 
 .params, .props
@@ -326,7 +355,7 @@ h6
 
 .params .params thead tr, .props .props thead tr
 {
-    background-color: #fff;
+    background-color: #eee;
     font-weight: bold;
 }
 
