@@ -20,6 +20,12 @@ if (env.conf.templates && env.conf.templates['openseadragon']) {
     osdConfig = env.conf.templates['openseadragon'];
 }
 
+// Setup for highlight.js
+var hljs = null;
+if (osdConfig.useHighlightJs) {
+    hljs = require('../../node_modules/highlight.js');
+}
+
 // Setup for debugging/logging
 var logMode = false,
     debugMode = false,
@@ -37,7 +43,7 @@ if (osdConfig.logMode) {
 if (osdConfig.debugMode) {
     debugMode = true;
     debugHtmlFile = outdir + '/debug.html';
-    debugHtml = '<h1>OpenSeadragon Documentation Build</h1>\n<h3>JSDOC Configuration</h3>\n<pre class="prettyprint lang-js">\nenv.conf =\n' + JSON.stringify(env.conf, null, 2) + ';\n</pre>\n';
+    debugHtml = '<h1>OpenSeadragon Documentation Build</h1>\n<h3>JSDOC Configuration</h3>\n<pre class="source-code">\nenv.conf =\n' + JSON.stringify(env.conf, null, 2) + ';\n</pre>\n';
     debugHtmlHeader = '\
         <!DOCTYPE html>\n\
         <html lang="en">\n\
@@ -52,13 +58,14 @@ if (osdConfig.debugMode) {
             <link type="text/css" rel="stylesheet" href="styles/jsdoc-openseadragon.css">\n\
         </head>\n\
         \n\
-        <body>\n';
+        <body>\n\
+        <div id="container">\n\n';
     debugHtmlFooter = '\n\
         <footer>\n\
             End OpenSeadragon Debug Output \n\
         </footer>\n\
         \n\
-        <script> prettyPrint(); </script>\n\
+        </div>\n\
         </body>\n\
         </html>\n';
 
@@ -181,23 +188,17 @@ function generate(title, docs, filename, resolveLinks) {
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
+//// If you know the language
+//hljs.highlight('javascript', code).value;
+//// Automatic language detection
+//hljs.highlightAuto(code).value;
+
 function generateSourceFiles(sourceFiles, encoding) {
-    //**debug**
-    if (debugMode) {
-        debugHtml += ('<h3>sourceFiles</h3>\n<pre class="prettyprint lang-js">\nsourceFiles =\n' + JSON.stringify(sourceFiles, null, "  ") + '</pre>\n');
-    }
-    //**debug**
     encoding = encoding || 'utf8';
     Object.keys(sourceFiles).forEach(function(file) {
         var source;
         // links are keyed to the shortened path in each doclet's `meta.filename` property
         var sourceOutfile = helper.getUniqueFilename(sourceFiles[file].shortened);
-        //**debug**
-        if (debugMode) {
-            debugHtml += ('<h3>longname</h3>\n<pre class="prettyprint lang-js">\n' + JSON.stringify(sourceFiles[file].shortened, null, "  ") + '</pre>\n');
-            debugHtml += ('<h3>url</h3>\n<pre class="prettyprint lang-js">\n' + JSON.stringify(sourceOutfile, null, "  ") + '</pre>\n');
-        }
-        //**debug**
         helper.registerLink(sourceFiles[file].shortened, sourceOutfile);
 
         try {
@@ -205,6 +206,9 @@ function generateSourceFiles(sourceFiles, encoding) {
                 kind: 'source',
                 code: helper.htmlsafe( fs.readFileSync(sourceFiles[file].resolved, encoding) )
             };
+            if (hljs) {
+                source.code = hljs.highlight('javascript', source.code).value;
+            }
         }
         catch(e) {
             handle(e);
@@ -329,7 +333,7 @@ function buildNav(members) {
     if (members.events.length) {
         //**debug**
         //if (debugMode) {
-        //    debugHtml += ('<h3>members.events</h3>\n<pre class="prettyprint lang-js">\nmembers.events =\n' + JSON.stringify(members.events, null, "  ") + '</pre>\n');
+        //    debugHtml += ('<h3>members.events</h3>\n<pre class="source-code">\nmembers.events =\n' + JSON.stringify(members.events, null, "  ") + '</pre>\n');
         //}
         //**debug**
         prevClass = '';
@@ -551,7 +555,7 @@ exports.publish = function(taffyData, opts, tutorials) {
 
     ////**debug**
     //if (debugMode) {
-    //    debugHtml += ('<h3>members.classes</h3>\n<pre class="prettyprint lang-js">\nmembers.classes =\n' + JSON.stringify(members.classes, null, "  ") + '</pre>\n');
+    //    debugHtml += ('<h3>members.classes</h3>\n<pre class="source-code">\nmembers.classes =\n' + JSON.stringify(members.classes, null, "  ") + '</pre>\n');
     //}
     ////**debug**
 
@@ -567,7 +571,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     attachModuleSymbols( find({ kind: ['class', 'function'], longname: {left: 'module:'} }),
         members.modules );
 
-    // output pretty-printed source files by default; do this before generating any other pages, so
+    // output source files by default; do this before generating any other pages, so
     // that the other pages can link to the source files
     if (!conf['default'] || conf['default'].outputSourceFiles !== false) {
         generateSourceFiles(sourceFiles, opts.encoding);

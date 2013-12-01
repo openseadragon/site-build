@@ -1,7 +1,7 @@
 (function() {
     var counter = 0;
     var numbered;
-    var source = document.getElementsByClassName('source');//prettyprint source
+    var source = document.getElementsByClassName('source-code');
 
     if (source && source[0]) {
         source = source[0].getElementsByTagName('code')[0];

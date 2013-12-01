@@ -5,7 +5,7 @@ var defaultObjectClass = '';
 
 // Check if the default value is an object, if so, apply code highlighting
 if (data.defaultvalue && data.defaultvaluetype === 'object') {
-    data.defaultvalue = "<pre class=\"prettyprint\"><code>" + data.defaultvalue + "</code></pre>";
+    data.defaultvalue = "<pre class=\"source-code\"><code>" + data.defaultvalue + "</code></pre>";
     defaultObjectClass = ' class="object-value"';
 }
 ?>
