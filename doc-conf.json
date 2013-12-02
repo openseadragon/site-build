@@ -1,0 +1,21 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "plugins" : [],
+    "templates" : {
+        "cleverLinks" : true,
+        "monospaceLinks" : false,
+        "default" : {
+            "outputSourceFiles" : true
+        },
+        "openseadragon" : {
+            "logMode" : false,
+            "debugMode" : false,
+            "useHighlightJs" : true
+        }
+    },
+    "opts": {
+        "template": "doctemplates/openseadragon"
+    }
+}

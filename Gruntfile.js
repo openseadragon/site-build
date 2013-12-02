@@ -4,10 +4,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-connect");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-clean");
+    grunt.loadNpmTasks('grunt-jsdoc');
 
     // ----------
     var buildRoot = "build/";
     var releaseRoot = "../openseadragon.github.com/";
+    var builtSourceUnMinified = "built-openseadragon/openseadragon/openseadragon.js";
 
     var foldersToCopy = {
         css: "css",
@@ -38,14 +40,13 @@ module.exports = function(grunt) {
 
     // ----------
     function getVersion() {
-        var src = "built-openseadragon/openseadragon/openseadragon.js";
-        var data = grunt.file.read(src);
+        var data = grunt.file.read(builtSourceUnMinified);
         var matches = data.match(/@version\s*OpenSeadragon\s*(.*)\s*/);
         if (matches && matches.length == 2) {
             return matches[1];
         }
 
-        grunt.fail.fatal("Unable to locate version number in " + src);
+        grunt.fail.fatal("Unable to locate version number in " + builtSourceUnMinified);
         return "";
     }
 
@@ -90,6 +91,13 @@ module.exports = function(grunt) {
         watch: {
             files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
+        },
+        jsdoc : { 
+            src: [builtSourceUnMinified], //, '../openseadragon/README.md'
+            options: {
+                destination: buildRoot + 'docs',
+                configure: 'doc-conf.json'
+            }
         }
     });
 
@@ -123,24 +131,6 @@ module.exports = function(grunt) {
         make("www/license.html", buildRoot + "license/index.html", "License | ");
         // meta-refresh redirect; doesn't use base template
         grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
-    });
-
-    // ----------
-    // Make:doc task.
-    // Generates the documentation.
-    grunt.registerTask("make:doc", function() {
-        var done = this.async();
-        grunt.util.spawn({
-            cmd: "ant",
-            args: ["doc"]
-        }, function(error, result) {
-            if (error) {
-                grunt.log.error(error);
-                return done(false);
-            }
-
-            done(result);
-        });
     });
 
     // ----------
@@ -189,7 +179,7 @@ module.exports = function(grunt) {
     // ----------
     // Doc task.
     // Cleans the doc files out of the build folder and builds new ones.
-    grunt.registerTask("doc", ["clean:doc", "make:doc"]);
+    grunt.registerTask("doc", ["clean:doc", "jsdoc"]);
 
     // ----------
     // Publish task.
