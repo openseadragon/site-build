@@ -16,7 +16,13 @@ body
 #container {
     margin:     0 5em;
     padding:    1.0em;
-    background-color: #EEE; 
+    background-color: #EEE;
+    overflow: auto;
+}
+
+.source-code 
+{
+    font-size: 90%;
 }
 
 a {

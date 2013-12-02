@@ -23,7 +23,7 @@ if (env.conf.templates && env.conf.templates['openseadragon']) {
 // Setup for highlight.js
 var hljs = null;
 if (osdConfig.useHighlightJs) {
-    hljs = require('../../node_modules/highlight.js');
+    hljs = require('./highlight.js');
 }
 
 // Setup for debugging/logging
@@ -59,7 +59,7 @@ if (osdConfig.debugMode) {
         </head>\n\
         \n\
         <body>\n\
-        <div id="container">\n\n';
+        <div id="container" style="overflow:auto;">\n\n';
     debugHtmlFooter = '\n\
         <footer>\n\
             End OpenSeadragon Debug Output \n\
@@ -170,7 +170,7 @@ function getPathFromDoclet(doclet) {
     return filepath;
 }
     
-function generate(title, docs, filename, resolveLinks) {
+function generate(title, docs, filename, resolveLinks, highlightSource) {
     resolveLinks = resolveLinks === false ? false : true;
 
     var docData = {
@@ -188,11 +188,6 @@ function generate(title, docs, filename, resolveLinks) {
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
-//// If you know the language
-//hljs.highlight('javascript', code).value;
-//// Automatic language detection
-//hljs.highlightAuto(code).value;
-
 function generateSourceFiles(sourceFiles, encoding) {
     encoding = encoding || 'utf8';
     Object.keys(sourceFiles).forEach(function(file) {
@@ -204,18 +199,26 @@ function generateSourceFiles(sourceFiles, encoding) {
         try {
             source = {
                 kind: 'source',
-                code: helper.htmlsafe( fs.readFileSync(sourceFiles[file].resolved, encoding) )
+                code: fs.readFileSync(sourceFiles[file].resolved, encoding)
             };
-            if (hljs) {
-                source.code = hljs.highlight('javascript', source.code).value;
-            }
         }
         catch(e) {
             handle(e);
         }
 
+        // If you know the language
+        //hljs.highlight('javascript', code).value;
+        // Automatic language detection
+        //hljs.highlightAuto(code).value;
+        if (hljs) {
+            source.code = hljs.highlight('javascript', source.code).value;
+        }
+        else {
+            source.code = helper.htmlsafe(source.code);
+        }
+
         generate('Source: ' + sourceFiles[file].shortened, [source], sourceOutfile,
-            false);
+            false, true);
     });
 }
 

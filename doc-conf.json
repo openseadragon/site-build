@@ -11,7 +11,7 @@
         },
         "openseadragon" : {
             "logMode" : false,
-            "debugMode" : true,
+            "debugMode" : false,
             "useHighlightJs" : true
         }
     },
