@@ -206,11 +206,10 @@ function generateSourceFiles(sourceFiles, encoding) {
             handle(e);
         }
 
-        // If you know the language
-        //hljs.highlight('javascript', code).value;
-        // Automatic language detection
-        //hljs.highlightAuto(code).value;
         if (hljs) {
+            //source.code = hljs.highlightAuto(source.code).value;
+            // For a generic template this should be auto. 
+            // OpenSeadragon is pure javascript, so this speeds things up.
             source.code = hljs.highlight('javascript', source.code).value;
         }
         else {
@@ -568,6 +567,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.resolveAuthorLinks = resolveAuthorLinks;
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
+    view.hljs = hljs;
 
     // once for all
     view.nav = buildNav(members);
