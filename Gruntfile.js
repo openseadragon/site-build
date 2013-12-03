@@ -70,6 +70,7 @@ module.exports = function(grunt) {
                 src: [
                     releaseRoot + "*",
                     "!" + releaseRoot + "README.md",
+                    "!" + releaseRoot + "CONTRIBUTING.md",
                     "!" + releaseRoot + "node_modules",
                     "!" + releaseRoot + "Gruntfile.js",
                     "!" + releaseRoot + "package.json",
