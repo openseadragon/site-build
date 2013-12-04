@@ -188,6 +188,18 @@ function generate(title, docs, filename, resolveLinks, highlightSource) {
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
+function generateSourceLineNumberIds(source) {
+    var counter = 0;
+    var numbered = source.split('\n');
+
+    numbered = numbered.map(function(item) {
+        counter++;
+        return '<span id="line' + counter + '" class="line"></span>' + item;
+    });
+
+    return numbered.join('\n');
+}
+
 function generateSourceFiles(sourceFiles, encoding) {
     encoding = encoding || 'utf8';
     Object.keys(sourceFiles).forEach(function(file) {
@@ -206,12 +218,13 @@ function generateSourceFiles(sourceFiles, encoding) {
             handle(e);
         }
 
-        // If you know the language
-        //hljs.highlight('javascript', code).value;
-        // Automatic language detection
-        //hljs.highlightAuto(code).value;
         if (hljs) {
+            //source.code = hljs.highlightAuto(source.code).value;
+            // For a generic template this should be auto. 
+            // OpenSeadragon is pure javascript, so this speeds things up.
             source.code = hljs.highlight('javascript', source.code).value;
+
+            source.code = generateSourceLineNumberIds(source.code);
         }
         else {
             source.code = helper.htmlsafe(source.code);
@@ -568,6 +581,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.resolveAuthorLinks = resolveAuthorLinks;
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
+    view.hljs = hljs;
 
     // once for all
     view.nav = buildNav(members);
