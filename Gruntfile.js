@@ -35,7 +35,8 @@ module.exports = function(grunt) {
         "ui-zoom-and-pan": "Viewport Zoom and Pan",
         "ui-overlays": "Overlays",
         "ui-keyboard-navigation": "Keyboard Navigation",
-        "developer-debug-mode": "Developer Tools - Debug Mode"
+        "developer-debug-mode": "Developer Tools - Debug Mode",
+        "creating-zooming-images": "Creating Zooming Images"
     };
 
     // ----------
@@ -94,7 +95,7 @@ module.exports = function(grunt) {
             tasks: ["build"]
         },
         jsdoc : { 
-            src: [builtSourceUnMinified], //, '../openseadragon/README.md'
+            src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
                 configure: 'doc-conf.json'
