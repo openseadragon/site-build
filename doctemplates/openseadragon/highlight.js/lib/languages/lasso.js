@@ -69,12 +69,15 @@ module.exports = function(hljs) {
     },
     {
       className: 'variable',
-      begin: '[#$]' + LASSO_IDENT_RE
-    },
-    {
-      className: 'variable',
-      begin: '#', end: '\\d+',
-      illegal: '\\W'
+      variants: [
+        {
+          begin: '[#$]' + LASSO_IDENT_RE
+        },
+        {
+          begin: '#', end: '\\d+',
+          illegal: '\\W'
+        }
+      ]
     },
     {
       className: 'tag',
@@ -87,13 +90,16 @@ module.exports = function(hljs) {
     },
     {
       className: 'subst',
-      begin: '->\\s*',
-      contains: [ LASSO_DATAMEMBER ]
-    },
-    {
-      className: 'subst',
-      begin: ':=|[-+*/%=<>&|!?\\\\]+',
-      relevance: 0
+      variants: [
+        {
+          begin: '->\\s*',
+          contains: [ LASSO_DATAMEMBER ]
+        },
+        {
+          begin: ':=|/(?!\\w)=?|[-+*%=<>&|!?\\\\]+',
+          relevance: 0
+        }
+      ]
     },
     {
       className: 'built_in',
@@ -103,7 +109,7 @@ module.exports = function(hljs) {
     },
     {
       className: 'class',
-      beginWithKeyword: true, keywords: 'define',
+      beginKeywords: 'define',
       returnEnd: true, end: '\\(|=>',
       contains: [
         {
@@ -114,6 +120,7 @@ module.exports = function(hljs) {
     }
   ];
   return {
+    aliases: ['ls', 'lassoscript'],
     case_insensitive: true,
     lexemes: LASSO_IDENT_RE + '|&[lg]t;',
     keywords: LASSO_KEYWORDS,
@@ -126,6 +133,7 @@ module.exports = function(hljs) {
           className: 'markup',
           end: '\\[|' + LASSO_ANGLE_RE,
           returnEnd: true,
+          relevance: 0,
           contains: [ HTML_COMMENT ]
         }
       },

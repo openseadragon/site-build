@@ -38,7 +38,7 @@ module.exports = function(hljs) {
       'cpSolverTypes cpTool cpUpdateClothUVs createDisplayLayer createDrawCtx createEditor ' +
       'createLayeredPsdFile createMotionField createNewShelf createNode createRenderLayer ' +
       'createSubdivRegion cross crossProduct ctxAbort ctxCompletion ctxEditMode ctxTraverse ' +
-      'currentCtx currentTime currentTimeCtx currentUnit currentUnit curve curveAddPtCtx ' +
+      'currentCtx currentTime currentTimeCtx currentUnit curve curveAddPtCtx ' +
       'curveCVCtx curveEPCtx curveEditorCtx curveIntersect curveMoveEPCtx curveOnSurface ' +
       'curveSketchCtx cutKey cycleCheck cylinder dagPose date defaultLightListCheckBox ' +
       'defaultNavigation defineDataServer defineVirtualDevice deformer deg_to_rad delete ' +
@@ -55,7 +55,7 @@ module.exports = function(hljs) {
       'dynamicLoad editAttrLimits editDisplayLayerGlobals editDisplayLayerMembers ' +
       'editRenderLayerAdjustment editRenderLayerGlobals editRenderLayerMembers editor ' +
       'editorTemplate effector emit emitter enableDevice encodeString endString endsWith env ' +
-      'equivalent equivalentTol erf error eval eval evalDeferred evalEcho event ' +
+      'equivalent equivalentTol erf error eval evalDeferred evalEcho event ' +
       'exactWorldBoundingBox exclusiveLightCheckBox exec executeForEachObject exists exp ' +
       'expression expressionEditorListen extendCurve extendSurface extrude fcheck fclose feof ' +
       'fflush fgetline fgetword file fileBrowserDialog fileDialog fileExtension fileInfo ' +

@@ -12,3 +12,8 @@ var self = this;
         <article><?js= data.readme ?></article>
     </section>
 <?js } ?>
+
+<?js if (data.kind === 'mainpage') { ?>
+<script src="scripts/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<?js } ?>

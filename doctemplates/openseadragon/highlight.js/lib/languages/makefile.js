@@ -2,7 +2,7 @@ module.exports = function(hljs) {
   var VARIABLE = {
     className: 'variable',
     begin: /\$\(/, end: /\)/,
-    contains: hljs.BACKSLASH_ESCAPE
+    contains: [hljs.BACKSLASH_ESCAPE]
   }
   return {
     contains: [

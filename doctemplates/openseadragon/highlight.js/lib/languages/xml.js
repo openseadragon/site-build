@@ -10,25 +10,18 @@ module.exports = function(hljs) {
         relevance: 0
       },
       {
-        begin: '="', returnBegin: true, end: '"',
-        contains: [{
-            className: 'value',
-            begin: '"', endsWithParent: true
-        }]
-      },
-      {
-        begin: '=\'', returnBegin: true, end: '\'',
-        contains: [{
-          className: 'value',
-          begin: '\'', endsWithParent: true
-        }]
-      },
-      {
         begin: '=',
-        contains: [{
-          className: 'value',
-          begin: '[^\\s/>]+'
-        }]
+        relevance: 0,
+        contains: [
+          {
+            className: 'value',
+            variants: [
+              {begin: /"/, end: /"/},
+              {begin: /'/, end: /'/},
+              {begin: /[^\s\/>]+/}
+            ]
+          }
+        ]
       }
     ]
   };
@@ -36,11 +29,6 @@ module.exports = function(hljs) {
     aliases: ['html'],
     case_insensitive: true,
     contains: [
-      {
-        className: 'pi',
-        begin: '<\\?', end: '\\?>',
-        relevance: 10
-      },
       {
         className: 'doctype',
         begin: '<!DOCTYPE', end: '>',
@@ -89,9 +77,17 @@ module.exports = function(hljs) {
         subLanguage: 'vbscript'
       },
       {
+        begin: /<\?(php)?(?!\w)/, end: /\?>/,
+        subLanguage: 'php', subLanguageMode: 'continuous'
+      },
+      {
+        className: 'pi',
+        begin: /<\?\w+/, end: /\?>/,
+        relevance: 10
+      },
+      {
         className: 'tag',
         begin: '</?', end: '/?>',
-        relevance: 0,
         contains: [
           {
             className: 'title', begin: '[^ /><]+'

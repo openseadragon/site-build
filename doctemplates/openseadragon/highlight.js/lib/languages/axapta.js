@@ -18,14 +18,12 @@ module.exports = function(hljs) {
       },
       {
         className: 'class',
-        beginWithKeyword: true, end: '{',
+        beginKeywords: 'class interface', end: '{',
         illegal: ':',
-        keywords: 'class interface',
         contains: [
           {
             className: 'inheritance',
-            beginWithKeyword: true,
-            keywords: 'extends implements',
+            beginKeywords: 'extends implements',
             relevance: 10
           },
           {

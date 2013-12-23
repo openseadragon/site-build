@@ -1,15 +1,12 @@
 module.exports = function(hljs) {
-  var VARS = [
-    {
-      className: 'variable', begin: '\\$\\d+'
-    },
-    {
-      className: 'variable', begin: '\\${', end: '}'
-    },
-    {
-      className: 'variable', begin: '[\\$\\@]' + hljs.UNDERSCORE_IDENT_RE
-    }
-  ];
+  var VAR = {
+    className: 'variable',
+    variants: [
+      {begin: /\$\d+/},
+      {begin: /\$\{/, end: /}/},
+      {begin: '[\\$\\@]' + hljs.UNDERSCORE_IDENT_RE}
+    ]
+  };
   var DEFAULT = {
     endsWithParent: true,
     lexemes: '[a-z/_]+',
@@ -24,15 +21,11 @@ module.exports = function(hljs) {
       hljs.HASH_COMMENT_MODE,
       {
         className: 'string',
-        begin: '"', end: '"',
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS),
-        relevance: 0
-      },
-      {
-        className: 'string',
-        begin: "'", end: "'",
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS),
-        relevance: 0
+        contains: [hljs.BACKSLASH_ESCAPE, VAR],
+        variants: [
+          {begin: /"/, end: /"/},
+          {begin: /'/, end: /'/}
+        ]
       },
       {
         className: 'url',
@@ -40,26 +33,16 @@ module.exports = function(hljs) {
       },
       {
         className: 'regexp',
-        begin: "\\s\\^", end: "\\s|{|;", returnEnd: true,
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS)
-      },
-      // regexp locations (~, ~*)
-      {
-        className: 'regexp',
-        begin: "~\\*?\\s+", end: "\\s|{|;", returnEnd: true,
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS)
-      },
-      // *.example.com
-      {
-        className: 'regexp',
-        begin: "\\*(\\.[a-z\\-]+)+",
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS)
-      },
-      // sub.example.*
-      {
-        className: 'regexp',
-        begin: "([a-z\\-]+\\.)+\\*",
-        contains: [hljs.BACKSLASH_ESCAPE].concat(VARS)
+        contains: [hljs.BACKSLASH_ESCAPE, VAR],
+        variants: [
+          {begin: "\\s\\^", end: "\\s|{|;", returnEnd: true},
+          // regexp locations (~, ~*)
+          {begin: "~\\*?\\s+", end: "\\s|{|;", returnEnd: true},
+          // *.example.com
+          {begin: "\\*(\\.[a-z\\-]+)+"},
+          // sub.example.*
+          {begin: "([a-z\\-]+\\.)+\\*"}
+        ]
       },
       // IP
       {
@@ -71,8 +54,9 @@ module.exports = function(hljs) {
         className: 'number',
         begin: '\\b\\d+[kKmMgGdshdwy]*\\b',
         relevance: 0
-      }
-    ].concat(VARS)
+      },
+      VAR
+    ]
   };
 
   return {

@@ -26,7 +26,8 @@ module.exports = function(hljs) {
       hljs.inherit(hljs.QUOTE_STRING_MODE, {contains: [{begin: '""'}]}),
       {
         className: 'comment',
-        begin: '\'', end: '$'
+        begin: /'/, end: /$/,
+        relevance: 0
       },
       hljs.C_NUMBER_MODE
     ]

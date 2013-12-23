@@ -32,8 +32,7 @@ module.exports = function(hljs){
   var STR_START = {
       className: 'string',
       begin: '"', end: '"|$',
-      contains: [DQUOTE],
-      relevance: 0
+      contains: [DQUOTE]
     };
   var STR_CONT = {
     className: 'string',
