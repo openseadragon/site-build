@@ -24,8 +24,7 @@ module.exports = function(hljs) {
       },
       {
         className: 'class',
-        beginWithKeyword: true, end: '\\(|=|$',
-        keywords: 'type',
+        beginKeywords: 'type', end: '\\(|=|$',
         contains: [
           {
             className: 'title',

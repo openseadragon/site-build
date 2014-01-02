@@ -1,4 +1,4 @@
-var Highlight = function() {
+var hljs = new function() {
 
   /* Utility functions */
 
@@ -659,5 +659,476 @@ var Highlight = function() {
       }
     ]
   };
-};
-module.exports = Highlight;
+}();
+
+hljs.registerLanguage('coffeescript', function(hljs) {
+  var KEYWORDS = {
+    keyword:
+      // JS keywords
+      'in if for while finally new do return else break catch instanceof throw try this ' +
+      'switch continue typeof delete debugger super ' +
+      // Coffee keywords
+      'then unless until loop of by when and or is isnt not',
+    literal:
+      // JS literals
+      'true false null undefined ' +
+      // Coffee literals
+      'yes no on off',
+    reserved:
+      'case default function var void with const let enum export import native ' +
+      '__hasProp __extends __slice __bind __indexOf',
+    built_in:
+      'npm require console print module exports global window document'
+  };
+  var JS_IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
+  var TITLE = {className: 'title', begin: JS_IDENT_RE};
+  var SUBST = {
+    className: 'subst',
+    begin: /#\{/, end: /}/,
+    keywords: KEYWORDS
+  };
+  var EXPRESSIONS = [
+    hljs.BINARY_NUMBER_MODE,
+    hljs.inherit(hljs.C_NUMBER_MODE, {starts: {end: '(\\s*/)?', relevance: 0}}), // a number tries to eat the following slash to prevent treating it as a regexp
+    {
+      className: 'string',
+      variants: [
+        {
+          begin: /'''/, end: /'''/,
+          contains: [hljs.BACKSLASH_ESCAPE]
+        },
+        {
+          begin: /'/, end: /'/,
+          contains: [hljs.BACKSLASH_ESCAPE]
+        },
+        {
+          begin: /"""/, end: /"""/,
+          contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        },
+        {
+          begin: /"/, end: /"/,
+          contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        }
+      ]
+    },
+    {
+      className: 'regexp',
+      variants: [
+        {
+          begin: '///', end: '///',
+          contains: [SUBST, hljs.HASH_COMMENT_MODE]
+        },
+        {
+          begin: '//[gim]*',
+          relevance: 0
+        },
+        {
+          begin: '/\\S(\\\\.|[^\\n])*?/[gim]*(?=\\s|\\W|$)' // \S is required to parse x / 2 / 3 as two divisions
+        }
+      ]
+    },
+    {
+      className: 'property',
+      begin: '@' + JS_IDENT_RE
+    },
+    {
+      begin: '`', end: '`',
+      excludeBegin: true, excludeEnd: true,
+      subLanguage: 'javascript'
+    }
+  ];
+  SUBST.contains = EXPRESSIONS;
+
+  return {
+    keywords: KEYWORDS,
+    contains: EXPRESSIONS.concat([
+      {
+        className: 'comment',
+        begin: '###', end: '###'
+      },
+      hljs.HASH_COMMENT_MODE,
+      {
+        className: 'function',
+        begin: '(' + JS_IDENT_RE + '\\s*=\\s*)?(\\(.*\\))?\\s*[-=]>', end: '[-=]>',
+        returnBegin: true,
+        contains: [
+          TITLE,
+          {
+            className: 'params',
+            begin: '\\(', returnBegin: true,
+            /* We need another contained nameless mode to not have every nested
+            pair of parens to be called "params" */
+            contains: [{
+              begin: /\(/, end: /\)/,
+              keywords: KEYWORDS,
+              contains: ['self'].concat(EXPRESSIONS)
+            }]
+          }
+        ]
+      },
+      {
+        className: 'class',
+        beginKeywords: 'class',
+        end: '$',
+        illegal: /[:="\[\]]/,
+        contains: [
+          {
+            beginKeywords: 'extends',
+            endsWithParent: true,
+            illegal: /[:="\[\]]/,
+            contains: [TITLE]
+          },
+          TITLE
+        ]
+      },
+      {
+        className: 'attribute',
+        begin: JS_IDENT_RE + ':', end: ':',
+        returnBegin: true, excludeEnd: true,
+        relevance: 0
+      }
+    ])
+  };
+});
+
+hljs.registerLanguage('css', function(hljs) {
+  var IDENT_RE = '[a-zA-Z-][a-zA-Z0-9_-]*';
+  var FUNCTION = {
+    className: 'function',
+    begin: IDENT_RE + '\\(', end: '\\)',
+    contains: ['self', hljs.NUMBER_MODE, hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE]
+  };
+  return {
+    case_insensitive: true,
+    illegal: '[=/|\']',
+    contains: [
+      hljs.C_BLOCK_COMMENT_MODE,
+      {
+        className: 'id', begin: '\\#[A-Za-z0-9_-]+'
+      },
+      {
+        className: 'class', begin: '\\.[A-Za-z0-9_-]+',
+        relevance: 0
+      },
+      {
+        className: 'attr_selector',
+        begin: '\\[', end: '\\]',
+        illegal: '$'
+      },
+      {
+        className: 'pseudo',
+        begin: ':(:)?[a-zA-Z0-9\\_\\-\\+\\(\\)\\"\\\']+'
+      },
+      {
+        className: 'at_rule',
+        begin: '@(font-face|page)',
+        lexemes: '[a-z-]+',
+        keywords: 'font-face page'
+      },
+      {
+        className: 'at_rule',
+        begin: '@', end: '[{;]', // at_rule eating first "{" is a good thing
+                                 // because it doesn’t let it to be parsed as
+                                 // a rule set but instead drops parser into
+                                 // the default mode which is how it should be.
+        contains: [
+          {
+            className: 'keyword',
+            begin: /\S+/
+          },
+          {
+            begin: /\s/, endsWithParent: true, excludeEnd: true,
+            relevance: 0,
+            contains: [
+              FUNCTION,
+              hljs.APOS_STRING_MODE, hljs.QUOTE_STRING_MODE,
+              hljs.NUMBER_MODE
+            ]
+          }
+        ]
+      },
+      {
+        className: 'tag', begin: IDENT_RE,
+        relevance: 0
+      },
+      {
+        className: 'rules',
+        begin: '{', end: '}',
+        illegal: '[^\\s]',
+        relevance: 0,
+        contains: [
+          hljs.C_BLOCK_COMMENT_MODE,
+          {
+            className: 'rule',
+            begin: '[^\\s]', returnBegin: true, end: ';', endsWithParent: true,
+            contains: [
+              {
+                className: 'attribute',
+                begin: '[A-Z\\_\\.\\-]+', end: ':',
+                excludeEnd: true,
+                illegal: '[^\\s]',
+                starts: {
+                  className: 'value',
+                  endsWithParent: true, excludeEnd: true,
+                  contains: [
+                    FUNCTION,
+                    hljs.NUMBER_MODE,
+                    hljs.QUOTE_STRING_MODE,
+                    hljs.APOS_STRING_MODE,
+                    hljs.C_BLOCK_COMMENT_MODE,
+                    {
+                      className: 'hexcolor', begin: '#[0-9A-Fa-f]+'
+                    },
+                    {
+                      className: 'important', begin: '!important'
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+});
+
+hljs.registerLanguage('http', function(hljs) {
+  return {
+    illegal: '\\S',
+    contains: [
+      {
+        className: 'status',
+        begin: '^HTTP/[0-9\\.]+', end: '$',
+        contains: [{className: 'number', begin: '\\b\\d{3}\\b'}]
+      },
+      {
+        className: 'request',
+        begin: '^[A-Z]+ (.*?) HTTP/[0-9\\.]+$', returnBegin: true, end: '$',
+        contains: [
+          {
+            className: 'string',
+            begin: ' ', end: ' ',
+            excludeBegin: true, excludeEnd: true
+          }
+        ]
+      },
+      {
+        className: 'attribute',
+        begin: '^\\w', end: ': ', excludeEnd: true,
+        illegal: '\\n|\\s|=',
+        starts: {className: 'string', end: '$'}
+      },
+      {
+        begin: '\\n\\n',
+        starts: {subLanguage: '', endsWithParent: true}
+      }
+    ]
+  };
+});
+
+hljs.registerLanguage('javascript', function(hljs) {
+  return {
+    aliases: ['js'],
+    keywords: {
+      keyword:
+        'in if for while finally var new function do return void else break catch ' +
+        'instanceof with throw case default try this switch continue typeof delete ' +
+        'let yield const',
+      literal:
+        'true false null undefined NaN Infinity',
+      built_in:
+        'eval isFinite isNaN parseFloat parseInt decodeURI decodeURIComponent ' +
+        'encodeURI encodeURIComponent escape unescape Object Function Boolean Error ' +
+        'EvalError InternalError RangeError ReferenceError StopIteration SyntaxError ' +
+        'TypeError URIError Number Math Date String RegExp Array Float32Array ' +
+        'Float64Array Int16Array Int32Array Int8Array Uint16Array Uint32Array ' +
+        'Uint8Array Uint8ClampedArray ArrayBuffer DataView JSON Intl arguments require'
+    },
+    contains: [
+      {
+        className: 'pi',
+        begin: /^('|")use strict('|")/,
+        relevance: 10
+      },
+      hljs.APOS_STRING_MODE,
+      hljs.QUOTE_STRING_MODE,
+      hljs.C_LINE_COMMENT_MODE,
+      hljs.C_BLOCK_COMMENT_MODE,
+      hljs.C_NUMBER_MODE,
+      { // "value" container
+        begin: '(' + hljs.RE_STARTERS_RE + '|\\b(case|return|throw)\\b)\\s*',
+        keywords: 'return throw case',
+        contains: [
+          hljs.C_LINE_COMMENT_MODE,
+          hljs.C_BLOCK_COMMENT_MODE,
+          hljs.REGEXP_MODE,
+          { // E4X
+            begin: /</, end: />;/,
+            relevance: 0,
+            subLanguage: 'xml'
+          }
+        ],
+        relevance: 0
+      },
+      {
+        className: 'function',
+        beginKeywords: 'function', end: /\{/,
+        contains: [
+          {
+            className: 'title', begin: /[A-Za-z$_][0-9A-Za-z$_]*/
+          },
+          {
+            className: 'params',
+            begin: /\(/, end: /\)/,
+            contains: [
+              hljs.C_LINE_COMMENT_MODE,
+              hljs.C_BLOCK_COMMENT_MODE
+            ],
+            illegal: /["'\(]/
+          }
+        ],
+        illegal: /\[|%/
+      }
+    ]
+  };
+});
+
+hljs.registerLanguage('json', function(hljs) {
+  var LITERALS = {literal: 'true false null'};
+  var TYPES = [
+    hljs.QUOTE_STRING_MODE,
+    hljs.C_NUMBER_MODE
+  ];
+  var VALUE_CONTAINER = {
+    className: 'value',
+    end: ',', endsWithParent: true, excludeEnd: true,
+    contains: TYPES,
+    keywords: LITERALS
+  };
+  var OBJECT = {
+    begin: '{', end: '}',
+    contains: [
+      {
+        className: 'attribute',
+        begin: '\\s*"', end: '"\\s*:\\s*', excludeBegin: true, excludeEnd: true,
+        contains: [hljs.BACKSLASH_ESCAPE],
+        illegal: '\\n',
+        starts: VALUE_CONTAINER
+      }
+    ],
+    illegal: '\\S'
+  };
+  var ARRAY = {
+    begin: '\\[', end: '\\]',
+    contains: [hljs.inherit(VALUE_CONTAINER, {className: null})], // inherit is also a workaround for a bug that makes shared modes with endsWithParent compile only the ending of one of the parents
+    illegal: '\\S'
+  };
+  TYPES.splice(TYPES.length, 0, OBJECT, ARRAY);
+  return {
+    contains: TYPES,
+    keywords: LITERALS,
+    illegal: '\\S'
+  };
+});
+
+hljs.registerLanguage('xml', function(hljs) {
+  var XML_IDENT_RE = '[A-Za-z0-9\\._:-]+';
+  var TAG_INTERNALS = {
+    endsWithParent: true,
+    relevance: 0,
+    contains: [
+      {
+        className: 'attribute',
+        begin: XML_IDENT_RE,
+        relevance: 0
+      },
+      {
+        begin: '=',
+        relevance: 0,
+        contains: [
+          {
+            className: 'value',
+            variants: [
+              {begin: /"/, end: /"/},
+              {begin: /'/, end: /'/},
+              {begin: /[^\s\/>]+/}
+            ]
+          }
+        ]
+      }
+    ]
+  };
+  return {
+    aliases: ['html'],
+    case_insensitive: true,
+    contains: [
+      {
+        className: 'doctype',
+        begin: '<!DOCTYPE', end: '>',
+        relevance: 10,
+        contains: [{begin: '\\[', end: '\\]'}]
+      },
+      {
+        className: 'comment',
+        begin: '<!--', end: '-->',
+        relevance: 10
+      },
+      {
+        className: 'cdata',
+        begin: '<\\!\\[CDATA\\[', end: '\\]\\]>',
+        relevance: 10
+      },
+      {
+        className: 'tag',
+        /*
+        The lookahead pattern (?=...) ensures that 'begin' only matches
+        '<style' as a single word, followed by a whitespace or an
+        ending braket. The '$' is needed for the lexeme to be recognized
+        by hljs.subMode() that tests lexemes outside the stream.
+        */
+        begin: '<style(?=\\s|>|$)', end: '>',
+        keywords: {title: 'style'},
+        contains: [TAG_INTERNALS],
+        starts: {
+          end: '</style>', returnEnd: true,
+          subLanguage: 'css'
+        }
+      },
+      {
+        className: 'tag',
+        // See the comment in the <style tag about the lookahead pattern
+        begin: '<script(?=\\s|>|$)', end: '>',
+        keywords: {title: 'script'},
+        contains: [TAG_INTERNALS],
+        starts: {
+          end: '</script>', returnEnd: true,
+          subLanguage: 'javascript'
+        }
+      },
+      {
+        begin: '<%', end: '%>',
+        subLanguage: 'vbscript'
+      },
+      {
+        begin: /<\?(php)?(?!\w)/, end: /\?>/,
+        subLanguage: 'php', subLanguageMode: 'continuous'
+      },
+      {
+        className: 'pi',
+        begin: /<\?\w+/, end: /\?>/,
+        relevance: 10
+      },
+      {
+        className: 'tag',
+        begin: '</?', end: '/?>',
+        contains: [
+          {
+            className: 'title', begin: '[^ /><]+'
+          },
+          TAG_INTERNALS
+        ]
+      }
+    ]
+  };
+});

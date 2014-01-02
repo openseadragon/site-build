@@ -5,7 +5,8 @@ module.exports = function(hljs) {
   };
   var COMMENTS = {
     className: 'comment',
-    begin: ';', end: '$'
+    begin: ';', end: '$',
+    relevance: 0
   };
   var BUILT_IN = [
     {
@@ -14,8 +15,7 @@ module.exports = function(hljs) {
     },
     {
       className: 'built_in',
-      beginWithKeyword: true,
-      keywords: 'ComSpec Clipboard ClipboardAll ErrorLevel'
+      beginKeywords: 'ComSpec Clipboard ClipboardAll ErrorLevel'
     }
   ];
 
@@ -42,10 +42,12 @@ module.exports = function(hljs) {
       },
       {
         className: 'label',
-        begin: '^[^\\n";]+(::|:)(?!=)',
-        illegal: '\\n',
         contains: [BACKTICK_ESCAPE],
-        relevance: 0
+        variants: [
+          {begin: '^[^\\n";]+::(?!=)'},
+          {begin: '^[^\\n";]+:(?!=)', relevance: 0} // zero relevance as it catches a lot of things
+                                                    // followed by a single ':' in many languages
+        ]
       },
       {
         // consecutive commas, not for highlighting but just for relevance

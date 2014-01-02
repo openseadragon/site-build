@@ -25,8 +25,7 @@ module.exports = function(hljs) {
       NUMBER,
       {
         className: 'function',
-        beginWithKeyword: true, end: '(\\(|<)',
-        keywords: 'fn',
+        beginKeywords: 'fn', end: '(\\(|<)',
         contains: [TITLE]
       },
       {
@@ -34,14 +33,12 @@ module.exports = function(hljs) {
         begin: '#\\[', end: '\\]'
       },
       {
-        beginWithKeyword: true, end: '(=|<)',
-        keywords: 'type',
+        beginKeywords: 'type', end: '(=|<)',
         contains: [TITLE],
         illegal: '\\S'
       },
       {
-        beginWithKeyword: true, end: '({|<)',
-        keywords: 'trait enum',
+        beginKeywords: 'trait enum', end: '({|<)',
         contains: [TITLE],
         illegal: '\\S'
       }

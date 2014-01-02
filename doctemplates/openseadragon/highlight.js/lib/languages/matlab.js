@@ -5,8 +5,7 @@ module.exports = function(hljs) {
     {
       className: 'string',
       begin: '\'', end: '\'',
-      contains: [hljs.BACKSLASH_ESCAPE, {begin: '\'\''}],
-      relevance: 0
+      contains: [hljs.BACKSLASH_ESCAPE, {begin: '\'\''}]
     }
   ];
 
@@ -35,8 +34,7 @@ module.exports = function(hljs) {
     contains: [
       {
         className: 'function',
-        beginWithKeyword: true, end: '$',
-        keywords: 'function',
+        beginKeywords: 'function', end: '$',
         contains: [
           {
               className: 'title',
@@ -54,17 +52,20 @@ module.exports = function(hljs) {
       },
       {
         className: 'transposed_variable',
-        begin: '[a-zA-Z_][a-zA-Z_0-9]*(\'+[\\.\']*|[\\.\']+)', end: ''
+        begin: '[a-zA-Z_][a-zA-Z_0-9]*(\'+[\\.\']*|[\\.\']+)', end: '',
+        relevance: 0
       },
       {
         className: 'matrix',
         begin: '\\[', end: '\\]\'*[\\.\']*',
-        contains: COMMON_CONTAINS
+        contains: COMMON_CONTAINS,
+        relevance: 0
       },
       {
         className: 'cell',
         begin: '\\{', end: '\\}\'*[\\.\']*',
-        contains: COMMON_CONTAINS
+        contains: COMMON_CONTAINS,
+        illegal: /:/
       },
       {
         className: 'comment',

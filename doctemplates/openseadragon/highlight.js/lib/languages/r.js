@@ -58,17 +58,11 @@ module.exports = function(hljs) {
 
       {
         className: 'string',
-        begin: '"',
-        end: '"',
         contains: [hljs.BACKSLASH_ESCAPE],
-        relevance: 0
-      },
-      {
-        className: 'string',
-        begin: "'",
-        end: "'",
-        contains: [hljs.BACKSLASH_ESCAPE],
-        relevance: 0
+        variants: [
+          {begin: '"', end: '"'},
+          {begin: "'", end: "'"}
+        ]
       }
     ]
   };

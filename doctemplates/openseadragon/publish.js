@@ -170,11 +170,12 @@ function getPathFromDoclet(doclet) {
     return filepath;
 }
     
-function generate(title, docs, filename, resolveLinks, highlightSource) {
+function generate(title, pageTitle, docs, filename, resolveLinks, highlightSource) {
     resolveLinks = resolveLinks === false ? false : true;
 
     var docData = {
-        title: title,
+        title: title || ('OpenSeadragon ' + pageTitle),
+        pageTitle: pageTitle,
         docs: docs
     };
     
@@ -230,7 +231,7 @@ function generateSourceFiles(sourceFiles, encoding) {
             source.code = helper.htmlsafe(source.code);
         }
 
-        generate('Source: ' + sourceFiles[file].shortened, [source], sourceOutfile,
+        generate(null, 'Source: ' + sourceFiles[file].shortened, [source], sourceOutfile,
             false, true);
     });
 }
@@ -594,16 +595,21 @@ exports.publish = function(taffyData, opts, tutorials) {
         generateSourceFiles(sourceFiles, opts.encoding);
     }
 
-    if (members.globals.length) { generate('Global', [{kind: 'globalobj'}], globalUrl); }
+    if (members.globals.length) { generate(null, 'Global', [{kind: 'globalobj'}], globalUrl); }
     
     // index page displays information from package.json and lists files
     var files = find({kind: 'file'}),
         packages = find({kind: 'package'});
 
-    generate('Index',
+    //**debug**
+    if (debugMode) {
+        debugHtml += ('<h3>mainpage docs</h3>\n<pre class="source-code">\ndocs =\n' + JSON.stringify(packages.concat([{kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}]), null, "  ") + '</pre>\n');
+    }
+    //**debug**
+    generate('OpenSeadragon API', 'OpenSeadragon API',
         packages.concat(
             [{kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}]
-        ).concat(files),
+        ),//.concat(files),
     indexUrl);
 
     // set up the lists that we'll use to generate pages
@@ -616,27 +622,27 @@ exports.publish = function(taffyData, opts, tutorials) {
     Object.keys(helper.longnameToUrl).forEach(function(longname) {
         var myClasses = helper.find(classes, {longname: longname});
         if (myClasses.length) {
-            generate('Class: ' + myClasses[0].name, myClasses, helper.longnameToUrl[longname]);
+            generate(null, 'Class: ' + myClasses[0].name, myClasses, helper.longnameToUrl[longname]);
         }
         
         var myModules = helper.find(modules, {longname: longname});
         if (myModules.length) {
-            generate('Module: ' + myModules[0].name, myModules, helper.longnameToUrl[longname]);
+            generate(null, 'Module: ' + myModules[0].name, myModules, helper.longnameToUrl[longname]);
         }
 
         var myNamespaces = helper.find(namespaces, {longname: longname});
         if (myNamespaces.length) {
-            generate('Namespace: ' + myNamespaces[0].name, myNamespaces, helper.longnameToUrl[longname]);
+            generate(null, 'Namespace: ' + myNamespaces[0].name, myNamespaces, helper.longnameToUrl[longname]);
         }
         
         var myMixins = helper.find(mixins, {longname: longname});
         if (myMixins.length) {
-            generate('Mixin: ' + myMixins[0].name, myMixins, helper.longnameToUrl[longname]);
+            generate(null, 'Mixin: ' + myMixins[0].name, myMixins, helper.longnameToUrl[longname]);
         }
 
         var myExternals = helper.find(externals, {longname: longname});
         if (myExternals.length) {
-            generate('External: ' + myExternals[0].name, myExternals, helper.longnameToUrl[longname]);
+            generate(null, 'External: ' + myExternals[0].name, myExternals, helper.longnameToUrl[longname]);
         }
     });
 

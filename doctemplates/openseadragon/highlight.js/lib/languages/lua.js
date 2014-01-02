@@ -32,8 +32,7 @@ module.exports = function(hljs) {
     contains: COMMENTS.concat([
       {
         className: 'function',
-        beginWithKeyword: true, end: '\\)',
-        keywords: 'function',
+        beginKeywords: 'function', end: '\\)',
         contains: [
           {
             className: 'title',

@@ -25,47 +25,45 @@ module.exports = function(hljs) {
     keywords: KEYWORDS
   };
   var EXPRESSIONS = [
-    // Numbers
     hljs.BINARY_NUMBER_MODE,
     hljs.inherit(hljs.C_NUMBER_MODE, {starts: {end: '(\\s*/)?', relevance: 0}}), // a number tries to eat the following slash to prevent treating it as a regexp
-    // Strings
     {
       className: 'string',
-      begin: '\'\'\'', end: '\'\'\'',
-      contains: [hljs.BACKSLASH_ESCAPE]
-    },
-    {
-      className: 'string',
-      begin: '\'', end: '\'',
-      contains: [hljs.BACKSLASH_ESCAPE],
-      relevance: 0
-    },
-    {
-      className: 'string',
-      begin: '"""', end: '"""',
-      contains: [hljs.BACKSLASH_ESCAPE, SUBST]
-    },
-    {
-      className: 'string',
-      begin: '"', end: '"',
-      contains: [hljs.BACKSLASH_ESCAPE, SUBST],
-      relevance: 0
-    },
-    // RegExps
-    {
-      className: 'regexp',
-      begin: '///', end: '///',
-      contains: [SUBST, hljs.HASH_COMMENT_MODE]
-    },
-    {
-      className: 'regexp', begin: '//[gim]*',
-      relevance: 0
+      variants: [
+        {
+          begin: /'''/, end: /'''/,
+          contains: [hljs.BACKSLASH_ESCAPE]
+        },
+        {
+          begin: /'/, end: /'/,
+          contains: [hljs.BACKSLASH_ESCAPE]
+        },
+        {
+          begin: /"""/, end: /"""/,
+          contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        },
+        {
+          begin: /"/, end: /"/,
+          contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        }
+      ]
     },
     {
       className: 'regexp',
-      begin: '/\\S(\\\\.|[^\\n])*?/[gim]*(?=\\s|\\W|$)' // \S is required to parse x / 2 / 3 as two divisions
+      variants: [
+        {
+          begin: '///', end: '///',
+          contains: [SUBST, hljs.HASH_COMMENT_MODE]
+        },
+        {
+          begin: '//[gim]*',
+          relevance: 0
+        },
+        {
+          begin: '/\\S(\\\\.|[^\\n])*?/[gim]*(?=\\s|\\W|$)' // \S is required to parse x / 2 / 3 as two divisions
+        }
+      ]
     },
-
     {
       className: 'property',
       begin: '@' + JS_IDENT_RE
@@ -107,14 +105,14 @@ module.exports = function(hljs) {
       },
       {
         className: 'class',
-        beginWithKeyword: true, keywords: 'class',
+        beginKeywords: 'class',
         end: '$',
-        illegal: '[:\\[\\]]',
+        illegal: /[:="\[\]]/,
         contains: [
           {
-            beginWithKeyword: true, keywords: 'extends',
+            beginKeywords: 'extends',
             endsWithParent: true,
-            illegal: ':',
+            illegal: /[:="\[\]]/,
             contains: [TITLE]
           },
           TITLE
@@ -123,7 +121,8 @@ module.exports = function(hljs) {
       {
         className: 'attribute',
         begin: JS_IDENT_RE + ':', end: ':',
-        returnBegin: true, excludeEnd: true
+        returnBegin: true, excludeEnd: true,
+        relevance: 0
       }
     ])
   };

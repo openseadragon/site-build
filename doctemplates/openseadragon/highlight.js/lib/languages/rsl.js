@@ -25,13 +25,11 @@ module.exports = function(hljs) {
       },
       {
         className: 'shader',
-        beginWithKeyword: true, end: '\\(',
-        keywords: 'surface displacement light volume imager'
+        beginKeywords: 'surface displacement light volume imager', end: '\\('
       },
       {
         className: 'shading',
-        beginWithKeyword: true, end: '\\(',
-        keywords: 'illuminate illuminance gather'
+        beginKeywords: 'illuminate illuminance gather', end: '\\('
       }
     ]
   };

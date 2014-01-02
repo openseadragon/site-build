@@ -23,8 +23,7 @@ module.exports = function(hljs) {
     contains: [
       {
         className: 'class',
-        beginWithKeyword: true, end: '{',
-        keywords: 'class interface delegate namespace',
+        beginKeywords: 'class interface delegate namespace', end: '{',
         illegal: '[^,:\\n\\s\\.]',
         contains: [
           {
