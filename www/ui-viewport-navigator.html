@@ -85,6 +85,59 @@ into which the navigator should be overlayed.
 <!--==================================================================-->
 
 <div class="description">
+    <h3>Navigator Overlay Absolute Position</h3>
+    <p>In addition to the corners, the navigator can be positioned at a specific
+        size and location.</p>
+
+</div>
+
+
+<div class="demoarea">
+    <div class="demoheading">
+        Viewport with Navigator at an Absolute Location 
+    </div>
+    <div id="contentDiv4" class="openseadragon"></div>
+</div>
+
+<script type="text/javascript">
+    OpenSeadragon({
+        id:            "contentDiv4",
+        prefixUrl:     "/openseadragon/images/",
+        tileSources:   "/example-images/highsmith/highsmith.dzi",
+        showNavigator:  true,
+        navigatorPosition: "ABSOLUTE",
+        navigatorTop:      "40px",
+        navigatorLeft:     "4px",
+        navigatorHeight:   "120px",
+        navigatorWidth:    "145px",
+    });
+</script>
+
+<p>
+The relevant configuration options are shown below. The
+<code>navigatorPosition</code> attribute is set to <code>"ABSOLUTE"</code>
+and the <code>navigatorTop</code>, <code>navigatorLeft</code>,
+<code>navigatorHeight</code>, and <code>navigatorWidth</code>
+attributes define the size and location of the navigator.
+</p>
+
+<pre>
+    OpenSeadragon({
+        ...
+        showNavigator:  true,
+        navigatorPosition: "ABSOLUTE",
+        navigatorTop:      "40px",
+        navigatorLeft:     "4px",
+        navigatorHeight:   "120px",
+        navigatorWidth:    "145px",
+        ...
+    });
+
+</pre>
+
+<!--==================================================================-->
+
+<div class="description">
     <h3>Custom Navigator Location</h3>
     <p>Instead of placing the navigator overtop of the main image, the navigator
     may be placed elsewhere in the web page as illustrated in the example below.
