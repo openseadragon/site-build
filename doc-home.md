@@ -19,3 +19,6 @@ You will, of course, need zooming image data to work with. See [Creating Zooming
 For more information on the options object you pass in to `OpenSeadragon()`, see [OpenSeadragon.Options](OpenSeadragon.html#Options). To learn more about the viewer that it creates, see [OpenSeadragon.Viewer](OpenSeadragon.Viewer.html). For programmatic control of zoom and pan, see [OpenSeadragon.Viewport](OpenSeadragon.Viewport.html).
 
 For other advanced topics, see our [Examples & Features](../#examples-and-features) pages.
+
+
+If you are working directly from the file system (accessing your web page from `file:///path/to/your/file.htm`) you may need to change your browser's local files security policy so that your zooming image data can be loaded. Alternatively, you can run a local server. You can find help on both methods in [three.js documentation](https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally).
