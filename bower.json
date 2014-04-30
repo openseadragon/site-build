@@ -25,7 +25,6 @@
     "images",
     "releases",
     "www",
-    ".gitignore",
     "Gruntfile.js",
     "README.md",
     "doc-conf.json",
