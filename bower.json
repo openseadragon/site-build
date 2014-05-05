@@ -15,21 +15,6 @@
   ],
   "license": "New BSD license",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests",
-    "css",
-    "doctemplates",
-    "images",
-    "releases",
-    "www",
-    "Gruntfile.js",
-    "README.md",
-    "doc-conf.json",
-    "doc-home.md",
-    "package.json",
-    "site-build.sublime-project"
+    "./!(built-openseadragon)"
   ]
 }
