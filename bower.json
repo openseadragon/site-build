@@ -22,7 +22,7 @@
     "tests",
     "css",
     "doctemplates",
-    "./images",
+    "/images",
     "releases",
     "www",
     "Gruntfile.js",
