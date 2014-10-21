@@ -35,7 +35,7 @@
 
 <script type="text/javascript">
 
-    OpenSeadragon({
+    var viewer = OpenSeadragon({
         id:             "contentDiv",
         prefixUrl:      "/openseadragon/images/",
         toolbar:        "toolbarDiv",
@@ -88,12 +88,11 @@
         
     });
     
+    viewer.addHandler("page", function (data) {
+        document.getElementById("currentpage").innerHTML = ( data.page + 1 ) + " of 3";
+    });
     
-    contentDiv.addHandler("page", update_page_info );
-
-    function update_page_info(data) {
-        document.getElementById('currentpage').innerHTML = ( data.page + 1 ) + ' of 3';
-    }
+    
     
 </script>
 
@@ -118,20 +117,16 @@ OpenSeadragon({
 <p>
 The interface in this example updates the current page numbers in the label
 &quot;N of 3&quot;. This is achieved by adding a handler to the 'page' event using
-<code>addHandler</code>.
+<code><a href="http://openseadragon.github.io/docs/OpenSeadragon.EventSource.html#addHandler">addHandler</a> </code>.
 </p>
 <pre>
-OpenSeadragon({
-    ...
-    id: "viewer"
+var viewer = OpenSeadragon({
     ...
  });
 
-viewer.addHandler("page", update_page_info );
-
-function update_page_info(data) {
-    document.getElementById('currentpage').innerHTML = ( data.page + 1 ) + ' of 3';
-}
+viewer.addHandler("page", function (data) {
+    document.getElementById("currentpage").innerHTML = ( data.page + 1 ) + " of 3";
+});
 
 
 </pre>
