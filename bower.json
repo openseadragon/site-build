@@ -6,7 +6,7 @@
     "openseadragon"
   ],
   "description": "An open-source, web-based viewer for zoomable images, implemented in pure JavaScript.",
-  "main": "built-openseadragon/openseadragon/openseadragon.min.js",
+  "main": ["built-openseadragon/openseadragon/openseadragon.min.js", "built-openseadragon/openseadragon/openseadragon.min.js.map"],
   "keywords": [
     "zoom",
     "images",
