@@ -35,7 +35,7 @@ module.exports = function(grunt) {
         "ui-zoom-and-pan": "Viewport Zoom and Pan",
         "ui-overlays": "Overlays",
         "ui-keyboard-navigation": "Keyboard Navigation",
-        "ui-customize-tooltips": "Customize tooltips",
+        "ui-customize-tooltips": "Customize Tooltips",
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images"
     };
