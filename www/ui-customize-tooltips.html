@@ -1,0 +1,95 @@
+     
+
+<h2>example: customize the tooltips and errors</h2>
+<p>
+
+The default strings are as follows
+</p>
+<pre>
+var I18N = {
+  Errors: {
+    Dzc:            "Sorry, we don't support Deep Zoom Collections!",
+    Dzi:            "Hmm, this doesn't appear to be a valid Deep Zoom Image.",
+    Xml:            "Hmm, this doesn't appear to be a valid Deep Zoom Image.",
+    ImageFormat:    "Sorry, we don't support {0}-based Deep Zoom Images.",
+    Security:       "It looks like a security restriction stopped us from " +
+                    "loading this Deep Zoom Image.",
+    Status:         "This space unintentionally left blank ({0} {1}).",
+    OpenFailed:     "Unable to open {0}: {1}"
+  },
+
+  Tooltips: {
+    FullPage:       "Toggle full page",
+    Home:           "Go home",
+    ZoomIn:         "Zoom in",
+    ZoomOut:        "Zoom out",
+    NextPage:       "Next page",
+    PreviousPage:   "Previous page",
+    RotateLeft:     "Rotate left",
+    RotateRight:    "Rotate right"
+  }
+};
+
+
+
+</pre>
+<p>The OpenSeadragon Tooltips and Errors are in English by default.</p>
+
+<div class="description">
+    <h3>Tooltip and Errors customization</h3>
+</div>
+
+<div class="demoarea">
+    <div class="demoheading">
+      Tooltip and string customization
+    </div>
+   
+    <p>
+      In this example the tooltips of the buttons for Home, ZoomOut, ZoomIn and Fullpage, 
+      have been translated into Thai using 
+        
+<code><a href="https://openseadragon.github.io/docs/OpenSeadragon.html#setString">OpenSeadragon.setString()</a></code>.
+  </p>
+  <p>      
+  <i>(Hover the mouse over the buttons to see tooltip)</i>
+
+  </p>
+
+     <div id="contentDiv" class="openseadragon"></div>
+</div>
+
+<h3>Code</h3>
+
+<script type="text/javascript">
+    
+    OpenSeadragon.setString("Tooltips.Home","จัดรูปไว้กลางจอ");
+    OpenSeadragon.setString("Tooltips.ZoomOut","ย่อ");
+    OpenSeadragon.setString("Tooltips.ZoomIn", "ขยาย");
+    OpenSeadragon.setString("Tooltips.FullPage","เต็มจอ");
+
+
+    OpenSeadragon({
+        id:            "contentDiv",
+        prefixUrl:     "/openseadragon/images/",
+        tileSources:   "/example-images/highsmith/highsmith.dzi"
+    });
+
+
+    
+</script>
+
+
+<pre>
+   
+   OpenSeadragon.setString("Tooltips.Home","จัดรูปไว้กลางจอ");
+   OpenSeadragon.setString("Tooltips.ZoomOut","ย่อ");
+   OpenSeadragon.setString("Tooltips.ZoomIn", "ขยาย");
+   OpenSeadragon.setString("Tooltips.FullPage","เต็มจอ");
+
+   OpenSeadragon({
+    ...
+  });
+</pre>
+
+
+
