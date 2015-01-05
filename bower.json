@@ -1,12 +1,15 @@
 {
   "name": "openseadragon",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "homepage": "http://openseadragon.github.io/",
   "authors": [
     "openseadragon"
   ],
   "description": "An open-source, web-based viewer for zoomable images, implemented in pure JavaScript.",
-  "main": ["built-openseadragon/openseadragon/openseadragon.min.js", "built-openseadragon/openseadragon/openseadragon.min.js.map"],
+  "main": [
+    "built-openseadragon/openseadragon/openseadragon.min.js",
+    "built-openseadragon/openseadragon/openseadragon.min.js.map"
+  ],
   "keywords": [
     "zoom",
     "images",
