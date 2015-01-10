@@ -1,24 +1,70 @@
 <h2>Viewport Coordinates</h2>
-<p>OpenSeadragon zooms your images to fit into your webpage. To do this, it uses three coordinate systems: Image, Page, and Viewport.</p>
+<p>OpenSeadragon zooms your images to fit into your webpage. To do this, it uses three coordinate systems: Image, Web, and Viewport.</p>
 <p><strong>Image</strong> coordinates are the actual pixels of your image. If the image is 1000px wide, its left side is at x = 0, and its right side is x = 1000.</p>
-<p><strong>Page</strong> coordinates are the normal "pixel" coordinates of the webpage. Note that this may not be actual screen pixels, if you're on a "retina" display.</p>
-<p><strong>Viewport</strong> coordinates are an arbitrary coordinate system that OpenSeadragon uses to allow you to lay things out, and to be a neutral space between image and page coordinates. They allow you to forget about how many pixels are in your image, and just think in terms of relative locations (i.e. halfway down the image).</p>
+<p><strong>Web</strong> coordinates are the normal "pixel" coordinates of the webpage. Note that this may not be physical screen pixels, if you're on a "retina" display.</p>
+<p><strong>Viewport</strong> coordinates are an arbitrary coordinate system that OpenSeadragon uses to allow you to lay things out, and to be a neutral space between image and web coordinates. They allow you to forget about how many pixels are in your image, and just think in terms of relative locations (i.e. halfway down the image).</p>
 <p>By default, a single image will be placed with its left side at viewport x = 0 and its right side at viewport x = 1. The default top is at at viewport y = 0 and its bottom is wherever is appropriate for the image's aspect ratio. For instance, the bottom of a square image would be at y = 1, but the bottom of an image that's twice as wide as it is tall would be at y = 0.5.</p>
 <p>Viewport coordinates become more interesting with multiple images in the same viewer. When you open the images, or add them later, you can specify x, y, and either width or height. If you specify the width, it will set the height automatically based on the aspect ratio; likewise for width if you specify height. It's entirely up to you where and how big you place your images, regardless of their resolution. You can mix high-resolution and low-resolution images side by side.</p>
-<p>Different OpenSeadragon functions work with different systems; for instance, the <a href="/docs/OpenSeadragon.MouseTracker.html">MouseTracker</a> generally deals with page coordinates, whereas the <a href="/docs/OpenSeadragon.Viewport.html">Viewport</a> generally deals with viewport coordinates. The documentation for each function should make it clear. If you need to convert between coordinate systems, Viewport and <a href="/docs/OpenSeadragon.TiledImage.html">TiledImage</a> have functions that do so.</p>
+<p>Different OpenSeadragon functions work with different systems; for instance, the <a href="/docs/OpenSeadragon.MouseTracker.html">MouseTracker</a> generally deals with web coordinates, whereas the <a href="/docs/OpenSeadragon.Viewport.html">Viewport</a> generally deals with viewport coordinates. The documentation for each function should make it clear. If you need to convert between coordinate systems, Viewport and <a href="/docs/OpenSeadragon.TiledImage.html">TiledImage</a> have functions that do so.</p>
 <h3>Example</h3>
-<p>If you want to know where the user clicks in image coordinates, you could do:</p>
+<p>Here you can see the three coordinate systems as you mouse over the image:</p>
+<div style="padding: 0 1.5em; height: 500px;">
+    <div class="info" style="float: left; width: 200px;"></div>
+    <div id="openseadragon1" style="float: right; width: 500px; height: 500px; background: black;"></div>
+</div>
+<script>
+    var highsmith = {
+        Image: {
+            xmlns: "http://schemas.microsoft.com/deepzoom/2008",
+            Url: "http://openseadragon.github.io/example-images/highsmith/highsmith_files/",
+            Format: "jpg",
+            Overlap: "2",
+            TileSize: "256",
+            Size: {
+                Height: "9221",
+                Width:  "7026"
+            }
+        }
+    };
+
+    var viewer = OpenSeadragon({
+        id: "openseadragon1",
+        prefixUrl: "/openseadragon/images/",
+        tileSources: highsmith
+    });
+
+    viewer.addHandler('open', function() {
+        var infoEl = document.querySelectorAll('.info')[0];
+
+        var tracker = new OpenSeadragon.MouseTracker({
+            element: viewer.container,
+            moveHandler: function(event) {
+                var webPoint = event.position;
+                var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
+                var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+                infoEl.innerHTML = 'Web:<br>' + webPoint.toString() + 
+                    '<br><br>Viewport:<br>' + viewportPoint.toString() +
+                    '<br><br>Image:<br>' + imagePoint.toString();
+            }
+        });  
+
+        tracker.setTracking(true);          
+    });
+</script>
+<p>Here's how you would do the same, but for click: 
 <pre>// Assuming we have an OpenSeadragon Viewer called "viewer", we can catch the clicks 
 // with addHandler like so:
 viewer.addHandler('canvas-click', function(target, info) {
+    // The canvas-click event gives us a position in web coordinates.
+    var webPoint = event.position;
 
-    // The canvas-click event gives us a position in page coordinates; first step is to convert
-    // that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
-    var viewportPoint = viewer.viewport.pointFromPixel(info.position);
+    // Convert that to viewport coordinates, the lingua franca of OpenSeadragon coordinates.
+    var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
 
-    // Next we convert from viewport coordinates to image coordinates.
-    var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint.x, viewportPoint.y);
+    // Convert from viewport coordinates to image coordinates.
+    var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
 
-    // Print the results.
-    console.log(imagePoint.x, imagePoint.y);
+    // Show the results.
+    console.log(webPoint.toString(), viewportPoint.toString(), imagePoint.toString());
 });</pre>
