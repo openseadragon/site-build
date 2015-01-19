@@ -6,13 +6,20 @@
 <p>By default, a single image will be placed with its left side at viewport x = 0 and its right side at viewport x = 1. The default top is at at viewport y = 0 and its bottom is wherever is appropriate for the image's aspect ratio. For instance, the bottom of a square image would be at y = 1, but the bottom of an image that's twice as wide as it is tall would be at y = 0.5.</p>
 <p>Viewport coordinates become more interesting with multiple images in the same viewer. When you open the images, or add them later, you can specify x, y, and either width or height. If you specify the width, it will set the height automatically based on the aspect ratio; likewise for width if you specify height. It's entirely up to you where and how big you place your images, regardless of their resolution. You can mix high-resolution and low-resolution images side by side.</p>
 <p>Different OpenSeadragon functions work with different systems; for instance, the <a href="/docs/OpenSeadragon.MouseTracker.html">MouseTracker</a> generally deals with web coordinates, whereas the <a href="/docs/OpenSeadragon.Viewport.html">Viewport</a> generally deals with viewport coordinates. The documentation for each function should make it clear. If you need to convert between coordinate systems, Viewport and <a href="/docs/OpenSeadragon.TiledImage.html">TiledImage</a> have functions that do so.</p>
+<p>Also see the <a href="https://github.com/msalsbery/OpenSeadragonImagingHelper">OpenSeadragonImagingHelper</a> plugin, which has additional functions for working with the OpenSeadragon coordinate systems. 
 <h3>Example</h3>
-<p>Here you can see the three coordinate systems as you mouse over the image:</p>
+<p>Here you can see the three coordinate systems as you mouse over the image. It also shows your zoom level, both in terms of the regular viewport zoom (where 1 means the image width fits the viewport exactly) and the <a href="http://openseadragon.github.io/docs/OpenSeadragon.Viewport.html#viewportToImageZoom">image zoom</a> (where 1 means the image is being shown at its full resolution).</p>
 <div style="padding: 0 1.5em; height: 500px;">
-    <div class="info" style="float: left; width: 200px;"></div>
-    <div id="openseadragon1" style="float: right; width: 500px; height: 500px; background: black;"></div>
+    <div class="info" style="float: left; width: 200px;">
+        <div class="position"></div>
+        <div class="zoom" style="margin-top: 3em;"></div>
+    </div>
+    <div id="openseadragon1" style="float: right; width: 380px; height: 500px; background: black;"></div>
 </div>
 <script>
+    var positionEl = document.querySelectorAll('.info .position')[0];
+    var zoomEl = document.querySelectorAll('.info .zoom')[0];
+
     var highsmith = {
         Image: {
             xmlns: "http://schemas.microsoft.com/deepzoom/2008",
@@ -33,8 +40,15 @@
         tileSources: highsmith
     });
 
+    var updateZoom = function() {
+        var zoom = viewer.viewport.getZoom(true);
+        var imageZoom = viewer.viewport.viewportToImageZoom(zoom);
+
+        zoomEl.innerHTML = 'Zoom:<br>' + (Math.round(zoom * 100) / 100) + 
+            '<br><br>Image Zoom:<br>' + (Math.round(imageZoom * 100) / 100);
+    }
+
     viewer.addHandler('open', function() {
-        var infoEl = document.querySelectorAll('.info')[0];
 
         var tracker = new OpenSeadragon.MouseTracker({
             element: viewer.container,
@@ -42,17 +56,23 @@
                 var webPoint = event.position;
                 var viewportPoint = viewer.viewport.pointFromPixel(webPoint);
                 var imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
+                var zoom = viewer.viewport.getZoom(true);
+                var imageZoom = viewer.viewport.viewportToImageZoom(zoom);
 
-                infoEl.innerHTML = 'Web:<br>' + webPoint.toString() + 
+                positionEl.innerHTML = 'Web:<br>' + webPoint.toString() + 
                     '<br><br>Viewport:<br>' + viewportPoint.toString() +
                     '<br><br>Image:<br>' + imagePoint.toString();
+                
+                updateZoom();     
             }
         });  
 
-        tracker.setTracking(true);          
+        tracker.setTracking(true);  
+
+        viewer.addHandler('animation', updateZoom);   
     });
 </script>
-<p>Here's how you would do the same, but for click: 
+<p>Here's a code sample coordinate conversion, based on clicks: 
 <pre>// Assuming we have an OpenSeadragon Viewer called "viewer", we can catch the clicks 
 // with addHandler like so:
 viewer.addHandler('canvas-click', function(target, info) {
