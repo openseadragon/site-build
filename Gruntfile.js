@@ -26,8 +26,8 @@ module.exports = function(grunt) {
         "tilesource-iiif": "IIIF Tile Source",
         "tilesource-legacy": "Legacy Tile Source",
         "tilesource-zoomit": "Zoom.it Tile Source",
-        "tilesource-sequence": "Tile Source Sequence",
-        "tilesource-collection": "Tile Source Collections",
+        "tilesource-sequence": "Sequence Mode",
+        "tilesource-collection": "Collection Mode",
         "ui-binding-custom-buttons": "Binding Custom Buttons",
         "ui-reference-strip": "Image Reference Strip",
         "ui-toolbar": "Toolbar",
@@ -39,7 +39,8 @@ module.exports = function(grunt) {
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images",
         "viewport-coordinates": "Viewport Coordinates",
-        "in-the-wild": "OpenSeadragon in the Wild"
+        "in-the-wild": "OpenSeadragon in the Wild",
+        "multi-image": "Multi-Image"
     };
 
     // ----------
