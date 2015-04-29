@@ -38,7 +38,8 @@ module.exports = function(grunt) {
         "ui-customize-tooltips": "Customize Tooltips",
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images",
-        "viewport-coordinates": "Viewport Coordinates"
+        "viewport-coordinates": "Viewport Coordinates",
+        "in-the-wild": "OpenSeadragon in the Wild"
     };
 
     // ----------
