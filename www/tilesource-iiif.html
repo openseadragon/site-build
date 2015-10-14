@@ -144,6 +144,7 @@ OpenSeadragon({
             OpenSeadragon({
                 id:            "example-xmlhttprequest-for-info-json",
                 prefixUrl:     "/openseadragon/images/",
+                sequenceMode:  true,
                 tileSources:   [
                     "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000001.jp2/info.json",
                     "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000002.jp2/info.json",
@@ -169,7 +170,7 @@ OpenSeadragon({
     "@context": "http://iiif.io/api/image/2/context.json",
     "@id": "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000004.jp2",
     "height": 7200,
-    "width": 5434
+    "width": 5434,
     "profile": [ "http://iiif.io/api/image/2/level2.json" ],
     "protocol": "http://iiif.io/api/image",
     "tiles": [{
@@ -180,7 +181,8 @@ OpenSeadragon({
 <pre>
 OpenSeadragon({
     ...
-    tileSources:   [
+    sequenceMode: true,
+    tileSources: [
         "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000001.jp2/info.json",
         "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000002.jp2/info.json",
         "http://libimages.princeton.edu/loris2/pudl0001%2F4609321%2Fs42%2F00000003.jp2/info.json",
