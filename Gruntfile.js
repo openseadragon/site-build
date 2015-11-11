@@ -26,6 +26,7 @@ module.exports = function(grunt) {
         "tilesource-iiif": "IIIF Tile Source",
         "tilesource-legacy": "Legacy Tile Source",
         "tilesource-zoomit": "Zoom.it Tile Source",
+        "tilesource-image": "Image Tile Source",
         "tilesource-sequence": "Sequence Mode",
         "tilesource-collection": "Collection Mode",
         "ui-binding-custom-buttons": "Binding Custom Buttons",

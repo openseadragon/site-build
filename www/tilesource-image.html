@@ -1,0 +1,89 @@
+<h2>example: image tile source</h2>
+
+<p>
+    If you have a simple image that you would like to display in OpenSeadragon,
+    you can do so by using the Image Tile Source.
+</p>
+
+<p>
+    Note that using the Image Tile Source for big images will have a
+    performance impact. In that case, consider
+    <a href="/examples/creating-zooming-images/">building a pyramid</a>.
+</p>
+
+<div class="description">
+    <h3>Inline Configuration</h3>
+    <p>
+        Inline Configuration just consists in setting the type of the tile
+        source to 'image' and to provide the URL of the image.
+    </p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Example Inline Configuration for an Image
+    </div>
+    <div id="example-inline-configuration-for-image"
+         class="openseadragon">
+        <script type="text/javascript">
+            OpenSeadragon({
+                id:            "example-inline-configuration-for-image",
+                prefixUrl:     "/openseadragon/images/",
+                tileSources:   {
+                    type: 'image',
+                    url:  '/example-images/grand-canyon-landscape-overlooking.jpg'
+                }
+            });
+        </script>
+        <noscript>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
+            <img src='/example-images/grand-canyon-landscape-overlooking.jpg'
+                 height='600'/>
+        </noscript>
+    </div>
+    <pre>
+OpenSeadragon({
+    ...
+    tileSources: {
+        type: 'image',
+        url:  '/example-images/grand-canyon-landscape-overlooking.jpg'
+    }
+    ...
+});
+    </pre>
+</div>
+<p>
+    By default, the Image Tile Source tries to build an internal pyramid to
+    avoid aliasing when zoomed out. To disable this feature, you can set the
+    'buildPyramid' flag to false:
+</p>
+<pre>
+OpenSeadragon({
+    ...
+    tileSources: {
+        type: 'image',
+        url:  '/example-images/grand-canyon-landscape-overlooking.jpg',
+        buildPyramid: false
+    }
+    ...
+});
+</pre>
+<p>
+    If the image is fetched from another domain, the pyramid can not be built
+    without
+    <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS">CORS</a>
+    support.<br>
+    If the image server has CORS headers, you can set the cross origin policy
+    and the withCredentials flag like this:
+</p>
+<pre>
+OpenSeadragon({
+    ...
+    tileSources: {
+        type: 'image',
+        url:  'http://cors-enabled-server.org/my-image.png',
+        crossOriginPolicy: 'Anonymous'
+        ajaxWithCredentials: false
+    }
+    ...
+});
+</pre>
