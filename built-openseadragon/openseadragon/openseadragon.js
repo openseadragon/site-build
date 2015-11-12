@@ -1,6 +1,6 @@
 //! OpenSeadragon 2.1.0
 //! Built on 2015-11-12
-//! Git commit: v2.1.0-0-404a248
+//! Git commit: v2.1.0-3-b2c17b5
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -12881,10 +12881,11 @@ function configureFromObject( tileSource, configuration ){
             }
             return context;
         },
-        /**
-         * @private Build the differents levels of the pyramid if possible
-         * (canvas API enabled and no canvas tainting issue)
-         */
+
+        // private
+        //
+        // Builds the differents levels of the pyramid if possible
+        // (i.e. if canvas API enabled and no canvas tainting issue).
         _buildLevels: function () {
             var levels = [{
                     url: this._image.src,
