@@ -65,6 +65,7 @@ module.exports = function(grunt) {
                 src: [
                     buildRoot + "*",
                     "!" + buildRoot + "example-images",
+                    "!" + buildRoot + "openseadragonizer",
                     "!" + buildRoot + "docs"
                 ]
             },
@@ -81,7 +82,8 @@ module.exports = function(grunt) {
                     "!" + releaseRoot + "node_modules",
                     "!" + releaseRoot + "Gruntfile.js",
                     "!" + releaseRoot + "package.json",
-                    "!" + releaseRoot + "example-images"
+                    "!" + releaseRoot + "example-images",
+                    "!" + releaseRoot + "openseadragonizer"
                 ],
                 options: {
                     force: true
@@ -167,7 +169,7 @@ module.exports = function(grunt) {
     // Copies needed files to the release folder.
     grunt.registerTask("copy:release", function() {
         grunt.file.recurse(buildRoot, function(abspath, rootdir, subdir, filename) {
-            if (subdir && /^example-images/.test(subdir)) {
+            if (subdir && /^(example-images|openseadragonizer)/.test(subdir)) {
                 return;
             }
 
