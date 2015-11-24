@@ -1,0 +1,107 @@
+<h2>example: rotation</h2>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+
+<p>
+    The viewer can be rotated either programmatically or by activating the
+    corresponding controls in the user interface.
+</p>
+
+<div class="description">
+    <h3>Enabling rotation buttons</h3>
+    <p>
+        If you just want to let the user rotate the viewer, you can simply
+        add the rotation controls and enable the pinch rotate on tactile
+        devices. You can also specify an initial rotation.
+    </p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Viewer with rotation buttons
+    </div>
+    <div id="example-buttons" class="openseadragon">
+        <script type="text/javascript">
+            OpenSeadragon({
+                id:            "example-buttons",
+                prefixUrl:     "/openseadragon/images/",
+                tileSources:   "/example-images/highsmith/highsmith.dzi",
+                degrees:       90,
+                showRotationControl: true,
+                gestureSettingsTouch: {
+                    pinchRotate: true
+                }
+            });
+        </script>
+        <noscript>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
+            <img src='/example-images/highsmith/01967v.jpg' height='600'/>
+        </noscript>
+    </div>
+    <pre>
+OpenSeadragon({
+    ...
+    // Initial rotation angle
+    degrees: 90,
+    // Show rotation buttons
+    showRotationControl: true,
+    // Enable touch rotation on tactile devices
+    gestureSettingsTouch: {
+        pinchRotate: true
+    }
+});
+    </pre>
+</div>
+
+<div class="description">
+    <h3>Programmatically set the rotation angle</h3>
+    <p>
+        To have more control over the rotation, you can set it via the
+        <a href="/docs/OpenSeadragon.Viewport.html#setRotation">Viewport.setRotation</a>
+        method.
+    </p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Use the slider bar to set the rotation angle
+    </div>
+    <div id="slider" style="margin: 10px"></div>
+    <div id="example-programmatically" class="openseadragon">
+        <script type="text/javascript">
+            var viewer = OpenSeadragon({
+                id:            "example-programmatically",
+                prefixUrl:     "/openseadragon/images/",
+                tileSources:   "/example-images/highsmith/highsmith.dzi"
+            });
+
+            $("#slider").slider({
+                min: 0,
+                max: 360,
+                slide: function(event, ui) {
+                    viewer.viewport.setRotation(ui.value);
+                }
+            });
+        </script>
+        <noscript>
+            <p>OpenSeadragon is not available unless JavaScript is enabled.</p>
+            <img src='/example-images/highsmith/01967v.jpg' height='600'/>
+        </noscript>
+    </div>
+    <pre>
+var viewer = OpenSeadragon({
+    id:            "example-programmatically",
+    prefixUrl:     "/openseadragon/images/",
+    tileSources:   "/example-images/highsmith/highsmith.dzi"
+});
+
+// Using jQuery UI slider
+$("#slider").slider({
+    min: 0,
+    max: 360,
+    slide: function(event, ui) {
+        viewer.viewport.setRotation(ui.value);
+    }
+});
+    </pre>
+</div>
