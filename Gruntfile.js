@@ -197,6 +197,11 @@ module.exports = function(grunt) {
     grunt.registerTask("publish", ["build", "doc", "clean:release", "copy:release"]);
 
     // ----------
+    // Dev task.
+    // Builds, fires up a server and watches for changes.
+    grunt.registerTask("dev", ["build", "connect", "watch"]);
+
+    // ----------
     // Default task.
     // Cleans the built files out of ../openseadragon.github.com, builds, and copies newly built ones over.
     grunt.registerTask("default", ["build"]);
