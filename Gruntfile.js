@@ -106,7 +106,8 @@ module.exports = function(grunt) {
             src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
-                configure: 'doc-conf.json'
+                configure: 'doc-conf.json',
+                private: false
             }
         }
     });
