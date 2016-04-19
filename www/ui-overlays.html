@@ -1,6 +1,8 @@
 <h2>example: overlays</h2>
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.js"></script>
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
 
 <p>Overlays are an important mechanism for displaying additional information
 on a zoomable image.  Below we present a few examples of how to
@@ -209,7 +211,7 @@ OpenSeadragon({
 
 <div class="demoarea">
     <div class="demoheading">
-        Point Overlays
+        Fixed size Overlays
     </div>
     <img id="right-arrow-overlay"
          src="http://upload.wikimedia.org/wikipedia/commons/7/7a/Red_Arrow_Right.svg"
@@ -367,7 +369,6 @@ OpenSeadragon({
                 preserveViewport: true,
                 sequenceMode:  true,
                 overlays: [{
-                    minLevel: 8,
                     px: 6425,
                     py: 0,
                     id: 'html-overlay'
@@ -680,6 +681,110 @@ $("#toggle-overlay").click(function() {
         });
     }
     overlay = !overlay;
+});
+</pre>
+</div>
+
+<div class="description">
+    <h3>Overlays and rotation</h3>
+    <p>
+        By default, the overlays get rotated with the viewport. One can
+        change this behavior by setting the rotation mode property.
+        NO_ROTATION will ignore the rotation. If both width and height are
+        specified, BOUNDING_BOX will adapt the size of the overlay to contains
+        the rotated rectangle.
+    </p>
+</div>
+
+<div class="demoarea">
+    <div class="demoheading">
+        Use the slider bar to set the rotation angle
+    </div>
+    <div id="slider" style="margin: 10px"></div>
+    <img id="right-arrow-overlay-no-rotate"
+         src="http://upload.wikimedia.org/wikipedia/commons/7/7a/Red_Arrow_Right.svg"
+         alt="Right arrow"
+         width="20">
+    <div id="example-overlay-rotation" class="openseadragon"/>
+    <style>
+    #overlay-rotation-exact {
+        opacity:    0.4;
+        background-color: #7FFF00;
+    }
+    #overlay-rotation-bounding-box {
+        opacity:    0.4;
+        background-color: #E9DC51;
+    }
+    </style>
+    <script type="text/javascript">
+        var viewer = OpenSeadragon({
+            id:            "example-overlay-rotation",
+            prefixUrl:     "/openseadragon/images/",
+            tileSources: [{
+                    minLevel: 8,
+                    width: 6425,
+                    height: 8535,
+                    tileSize: 256,
+                    tileOverlap: 1,
+                    getTileUrl: chronicling_america_example(16)
+                }],
+            overlays: [{
+                id: 'overlay-rotation-exact',
+                x: 0.059,
+                y: 0.08,
+                width: 0.46,
+                height: 0.59,
+                rotationMode: OpenSeadragon.OverlayRotationMode.EXACT
+            }, {
+                id: 'right-arrow-overlay-no-rotate',
+                x: 0.492,
+                y: 0.496,
+                placement: OpenSeadragon.Placement.RIGHT,
+                rotationMode: OpenSeadragon.OverlayRotationMode.NO_ROTATION
+            }, {
+                id: 'overlay-rotation-bounding-box',
+                x: 0.72,
+                y: 1,
+                width: 0.12,
+                height: 0.18,
+                rotationMode: OpenSeadragon.OverlayRotationMode.BOUNDING_BOX
+            }]
+        });
+        $("#slider").slider({
+            min: -180,
+            max: 180,
+            slide: function(event, ui) {
+                viewer.viewport.setRotation(ui.value);
+            }
+        });
+    </script>
+    </div>
+
+<pre>
+var viewer = OpenSeadragon({
+    id:            "example-runtime-overlay",
+    ...,
+    overlays: [{
+        id: 'overlay-rotation-exact', // Green overlay
+        x: 0.059,
+        y: 0.08,
+        width: 0.46,
+        height: 0.59,
+        rotationMode: OpenSeadragon.OverlayRotationMode.EXACT
+    }, {
+        id: 'right-arrow-overlay-no-rotate', // Arrow pointing to the tip of the hair
+        x: 0.492,
+        y: 0.496,
+        placement: OpenSeadragon.Placement.RIGHT,
+        rotationMode: OpenSeadragon.OverlayRotationMode.NO_ROTATION
+    }, {
+        id: 'overlay-rotation-bounding-box', // Yellow overlay
+        x: 0.72,
+        y: 1,
+        width: 0.12,
+        height: 0.18,
+        rotationMode: OpenSeadragon.OverlayRotationMode.BOUNDING_BOX
+    }]
 });
 </pre>
 </div>
