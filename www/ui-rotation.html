@@ -76,8 +76,8 @@ OpenSeadragon({
             });
 
             $("#slider").slider({
-                min: 0,
-                max: 360,
+                min: -180,
+                max: 180,
                 slide: function(event, ui) {
                     viewer.viewport.setRotation(ui.value);
                 }
@@ -97,8 +97,8 @@ var viewer = OpenSeadragon({
 
 // Using jQuery UI slider
 $("#slider").slider({
-    min: 0,
-    max: 360,
+    min: -180,
+    max: 180,
     slide: function(event, ui) {
         viewer.viewport.setRotation(ui.value);
     }
