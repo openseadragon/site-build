@@ -48,7 +48,7 @@ module.exports = function(grunt) {
     // ----------
     function getVersion() {
         var data = grunt.file.read(builtSourceUnMinified);
-        var matches = data.match(/@version\s*OpenSeadragon\s*(.*)\s*/);
+        var matches = data.match(/@version\s*openseadragon\s*(.*)\s*/);
         if (matches && matches.length == 2) {
             return matches[1];
         }
@@ -106,7 +106,8 @@ module.exports = function(grunt) {
             src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
-                configure: 'doc-conf.json'
+                configure: 'doc-conf.json',
+                private: false
             }
         }
     });
