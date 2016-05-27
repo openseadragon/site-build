@@ -18,7 +18,7 @@ OpenSeadragon will also return an AMD module when required with a loader like [R
 
 You will, of course, need zooming image data to work with. See [Creating Zooming Images](/examples/creating-zooming-images/).
 
-For more information on the options object you pass in to `OpenSeadragon()`, see [OpenSeadragon.Options](OpenSeadragon.html#Options). To learn more about the viewer that it creates, see [OpenSeadragon.Viewer](OpenSeadragon.Viewer.html). For programmatic control of zoom and pan, see [OpenSeadragon.Viewport](OpenSeadragon.Viewport.html).
+For more information on the options object you pass in to `OpenSeadragon()`, see [OpenSeadragon.Options](OpenSeadragon.html#.Options). To learn more about the viewer that it creates, see [OpenSeadragon.Viewer](OpenSeadragon.Viewer.html). For programmatic control of zoom and pan, see [OpenSeadragon.Viewport](OpenSeadragon.Viewport.html).
 
 For other advanced topics, see our [Examples & Features](../#examples-and-features) pages.
 
