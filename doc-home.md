@@ -1,6 +1,6 @@
 ## Getting Started
 
- OpenSeadragon has no external dependencies. To install, [download](../#download) and copy the `openseadragon` folder into your web root or static files directory, add it to your page, and create a viewer with the [OpenSeadragon()](module-OpenSeadragon.html) function.
+ OpenSeadragon has no external dependencies. To install, [download](../#download) and copy the `openseadragon` folder into your web root or static files directory, add it to your page, and create a viewer with [new OpenSeadragon.Viewer(options)](OpenSeadragon.Viewer.html#Viewer) or `OpenSeadragon(options)` for short.
 
 Here is an example of basic usage:
 
