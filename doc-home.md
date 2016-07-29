@@ -14,7 +14,7 @@ Here is an example of basic usage:
         });
     </script>
 
-OpenSeadragon will also return an AMD module when required with a loader like [Require.js](http://requirejs.org/).
+OpenSeadragon will also return an AMD or CommonJs module when required with a loader like [Require.js](http://requirejs.org/), [Webpack](https://webpack.github.io/) or [Browserify](http://browserify.org/).
 
 You will, of course, need zooming image data to work with. See [Creating Zooming Images](/examples/creating-zooming-images/).
 
