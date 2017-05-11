@@ -102,7 +102,7 @@ module.exports = function(grunt) {
             files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
         },
-        jsdoc : { 
+        jsdoc : {
             src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
@@ -118,6 +118,10 @@ module.exports = function(grunt) {
     grunt.registerTask("make:www", function() {
         var base = grunt.file.read("www/base.html");
         var version = getVersion();
+        
+        var shortVersion = version.split('.');
+        shortVersion.pop();
+        shortVersion = shortVersion.join('.');
 
         var make = function(src, dest, title) {
             var content = grunt.file.read(src);
@@ -125,6 +129,7 @@ module.exports = function(grunt) {
                 data: {
                     title: title,
                     version: version,
+                    shortVersion: shortVersion,
                     content: content
                 }
             });
@@ -133,7 +138,7 @@ module.exports = function(grunt) {
         };
 
         for (var key in examples) {
-            make("www/" + key + ".html", 
+            make("www/" + key + ".html",
                 buildRoot + "examples/" + key + "/index.html",
                 examples[key] + " | ");
         }
@@ -150,7 +155,7 @@ module.exports = function(grunt) {
     grunt.registerTask("copy:build", function() {
         var copyOne = function(from, to) {
             grunt.file.recurse(from, function(abspath, rootdir, subdir, filename) {
-                var dest = buildRoot 
+                var dest = buildRoot
                     + to
                     + "/"
                     + (subdir ? subdir + "/" : "")
