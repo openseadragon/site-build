@@ -1,0 +1,54 @@
+<h2>
+    example: zoomify tile support
+</h2>
+<p>
+    <a href="http://www.zoomify.com/">Zoomify</a> was a popular viewer to display large images in the past with Flash (and now without it, of course). It is still used in various places, because it is not only a viewer, but a tile builder too and it has some enterprise features. Its popularity was related to the fact that an extension was added to a popular commercial image application. An old description of the format can be found <a href="https://ecommons.cornell.edu/bitstream/handle/1813/5410/Introducing_Zoomify_Image.pdf">here</a>.
+</p>
+<p>
+    The tile sources can be produced by the commercial tool Zoomify, but scripts were written for common web languages (see <a href="/examples/creating-zooming-images/">creating zooming images</a>). Other common viewers support this format, for example <a href="https://openlayers.org/en/latest/examples/zoomify.html">OpenLayers</a>.
+</p>
+<p>
+    OpenSeadragon supports Zoomify tiles thanks to <a href="https://github.com/foobarable">foobarable</a>.
+</p>
+
+<div class="description">
+    <h3>Inline Configuration for Zoomify</h3>
+    <p>
+        Currently, only inline configuration is supported, because Zoomify metadata are not in a standard xml file.
+    </p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Example Inline Configuration for Zoomify
+    </div>
+    <div id="example-inline-configuration-for-zoomify"
+         class="openseadragon">
+    </div>
+    <p>
+        Supply all necessary information in the <code>tilesource</code> object. A minimal example object for this method looks like this:
+    </p>
+<pre>
+OpenSeadragon({
+    ...
+    tileSources: [{
+        type:       "zoomifytileservice",
+        width:      7026,
+        height:     9221,
+        tilesUrl:   "/test/data/zoomify/"
+    }]
+    ...
+});</pre>
+</div>
+<script type="text/javascript">
+    OpenSeadragon({
+        id:             "example-inline-configuration-for-zoomify",
+        prefixUrl:      "/openseadragon/images/",
+        showNavigator:  true,
+        tileSources:    [{
+            type:       "zoomifytileservice",
+            width:      7026,
+            height:     9221,
+            tilesUrl:   "/example-images/highsmith/highsmith_zdata/"
+        }]
+    });
+</script>
