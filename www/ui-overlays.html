@@ -619,21 +619,21 @@ OpenSeadragon({
         ...
     }]
 }).addOnceHandler('open', function(event) {
-      ...
-      // MouseTracker is required for links to function in overlays
-      new OpenSeadragon.MouseTracker({
+    ...
+    // MouseTracker is required for links to function in overlays
+    new OpenSeadragon.MouseTracker({
         element: 'html-overlay',
         clickHandler: function(event) {
-          var target = event.originalEvent.target;
-          if (target.matches('a')) {
-            if (target.getAttribute('target') === '_blank') {
-              window.open(target.getAttribute('href'));
-            } else {
-              location.href = target.getAttribute('href');
+            var target = event.originalEvent.target;
+            if (target.matches('a')) {
+                if (target.getAttribute('target') === '_blank') {
+                    window.open(target.getAttribute('href'));
+                } else {
+                    location.href = target.getAttribute('href');
+                }
             }
-          }
         }
-      });
+    });
 });
 </pre>
 </div>
