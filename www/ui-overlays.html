@@ -527,13 +527,13 @@ OpenSeadragon({
                 viewer.viewport.fitBounds(new OpenSeadragon.Rect(0, 0, 1.5, 1.32), true);
                 new OpenSeadragon.MouseTracker({
                   element: 'html-overlay',
-                  clickHandler: function(e) {
-                    var $target = $(e.originalEvent.target);
-                    if ($target.is('a')) {
-                      if ($target.attr('target') === '_blank') {
-                        window.open($target.attr('href'));
+                  clickHandler: function(event) {
+                    var target = event.originalEvent.target;
+                    if (target.matches('a')) {
+                      if (target.getAttribute('target') === '_blank') {
+                        window.open(target.getAttribute('href'));
                       } else {
-                        location.href = $target.attr('href');
+                        location.href = target.getAttribute('href');
                       }
                     }
                   }
@@ -618,7 +618,22 @@ OpenSeadragon({
     },{
         ...
     }]
-    ...
+}).addOnceHandler('open', function(event) {
+      ...
+      // MouseTracker is required for links to function in overlays
+      new OpenSeadragon.MouseTracker({
+        element: 'html-overlay',
+        clickHandler: function(event) {
+          var target = event.originalEvent.target;
+          if (target.matches('a')) {
+            if (target.getAttribute('target') === '_blank') {
+              window.open(target.getAttribute('href'));
+            } else {
+              location.href = target.getAttribute('href');
+            }
+          }
+        }
+      });
 });
 </pre>
 </div>
