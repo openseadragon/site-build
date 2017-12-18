@@ -673,7 +673,7 @@ OpenSeadragon({
             }]
         });
         var overlay = false;
-        $("#toggle-overlay").click(function() {
+        document.querySelector('#toggle-overlay').addEventListener('click', function() {
             if (overlay) {
                 runtimeViewer.removeOverlay("runtime-overlay");
             } else {
@@ -696,7 +696,7 @@ var viewer = OpenSeadragon({
     ...
 });
 var overlay = false;
-$("#toggle-overlay").click(function() {
+document.querySelector('#toggle-overlay').addEventListener('click', function() {
     if (overlay) {
         viewer.removeOverlay("runtime-overlay");
     } else {
