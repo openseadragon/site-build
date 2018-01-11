@@ -23,4 +23,4 @@ For more information on the options object you pass in to `OpenSeadragon()`, see
 For other advanced topics, see our [Examples & Features](../#examples-and-features) pages.
 
 
-If you are working directly from the file system (accessing your web page from `file:///path/to/your/file.htm`) you may need to change your browser's local files security policy so that your zooming image data can be loaded. Alternatively, you can run a local server. You can find help on both methods in [three.js documentation](https://github.com/mrdoob/three.js/wiki/How-to-run-things-locally).
+If you are working directly from the file system (accessing your web page from `file:///path/to/your/file.htm`) you may need to change your browser's local files security policy so that your zooming image data can be loaded. Alternatively, you can run a local server. You can find help on both methods in [three.js documentation](https://threejs.org/docs/#manual/introduction/How-to-run-thing-locally).
