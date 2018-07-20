@@ -6,17 +6,17 @@
       {
       background-color: lightgrey;
       }
-      
+
     </style>
 
 <h2>example: keyboard navigation</h2>
 
-<p>The viewer supports keyboard operations to complement the drag and scroll 
+<p>The viewer supports keyboard operations to complement the drag and scroll
 (zoom) mouse interactions.</p>
 
 <p>
   To interact via the keyboard, the focus must be on the viewer.
-  In this example the focus is set using 
+  In this example the focus is set using
   <code>document.getElementById('contentDiv').querySelector('.openseadragon-canvas').focus();</code>
 </p>
 
@@ -32,6 +32,9 @@
     <li><strong>[ 0 ]</strong> - zoom / move viewport <strong>home</strong></li>
     <li><strong>[ - / _, shift+W, shift+up arrow ]</strong> - zoom viewport <strong>out</strong></li>
     <li><strong>[ = / +, shift+S, shift+down arrow ]</strong> - zoom viewport <strong>in</strong></li>
+    <li><strong>[ r ]</strong> - rotate <strong>clockwise</strong></li>
+    <li><strong>[ R ]</strong> - rotate <strong>counterclockwise</strong></li>
+    <li><strong>[ f ]</strong> - flip <strong>horizontally</strong></li>
 </ul>
 
 <div class="description">
@@ -55,12 +58,5 @@
 
     viewer.addHandler('open', function (event) {
         document.getElementById('contentDiv').querySelector('.openseadragon-canvas').focus();
-    });    
+    });
 </script>
-
-
-
-
-
-
-
