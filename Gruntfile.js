@@ -39,6 +39,7 @@ module.exports = function(grunt) {
         "ui-rotation": "Rotation",
         "ui-keyboard-navigation": "Keyboard Navigation",
         "ui-customize-tooltips": "Customize Tooltips",
+        "ui-tiledimage-polygon-cropping" : "Crop TiledImage with Polygons",
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images",
         "viewport-coordinates": "Viewport Coordinates",
