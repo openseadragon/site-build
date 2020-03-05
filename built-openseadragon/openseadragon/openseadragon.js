@@ -1,6 +1,6 @@
 //! openseadragon 2.4.2
 //! Built on 2020-03-05
-//! Git commit: v2.4.2-0-c450749
+//! Git commit: v2.4.2-2-4c64042
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -17785,7 +17785,7 @@ $.Drawer.prototype = {
     /**
      * This function will create multiple polygon paths on the drawing context by provided polygons,
      * then clip the context to the paths.
-     * @param {(OpenSeadragon.Point[])[]} polygons - an array of polygons. A polygon is an array of OpenSeadragon.Point
+     * @param {OpenSeadragon.Point[][]} polygons - an array of polygons. A polygon is an array of OpenSeadragon.Point
      * @param {Boolean} useSketch - Whether to use the sketch canvas or not.
      */
     clipWithPolygons: function (polygons, useSketch) {
@@ -20612,7 +20612,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
     /**
      * Sets an array of polygons to crop the TiledImage during draw tiles.
      * The render function will use the default non-zero winding rule.
-     * @param Polygons represented in an array of point object in image coordinates.
+     * @param {OpenSeadragon.Point[][]} polygons - represented in an array of point object in image coordinates.
      * Example format: [
      *  [{x: 197, y:172}, {x: 226, y:172}, {x: 226, y:198}, {x: 197, y:198}], // First polygon
      *  [{x: 328, y:200}, {x: 330, y:199}, {x: 332, y:201}, {x: 329, y:202}]  // Second polygon
