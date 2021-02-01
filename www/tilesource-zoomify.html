@@ -31,20 +31,14 @@
 OpenSeadragon({
     ...
     tileSources: [{
+        //required	
         type:       "zoomifytileservice",
         width:      7026,
         height:     9221,
-        tilesUrl:   "/test/data/zoomify/"
-    }]
-    ...
-});</pre>
-<p>Starting from version 2.4.3 (forthcoming), the following options are available:</p>
-<pre>OpenSeadragon({
-    ...
-    tileSources: [{
-		...
-		tileSize: 256,
-		fileFormat: 'jpg'
+        tilesUrl:   "/test/data/zoomify/",
+        //optional
+        tileSize: 256,
+        fileFormat: 'jpg'	
     }]
     ...
 });</pre>
