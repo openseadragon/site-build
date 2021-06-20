@@ -31,10 +31,14 @@
 OpenSeadragon({
     ...
     tileSources: [{
+        //required	
         type:       "zoomifytileservice",
         width:      7026,
         height:     9221,
-        tilesUrl:   "/test/data/zoomify/"
+        tilesUrl:   "/test/data/zoomify/",
+        //optional
+        tileSize: 256,
+        fileFormat: 'jpg'	
     }]
     ...
 });</pre>
