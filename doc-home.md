@@ -1,6 +1,6 @@
 ## Getting Started
 
- OpenSeadragon has no external dependencies. To install, [download](../#download) and copy the `openseadragon` folder into your web root or static files directory, add it to your page, and create a viewer with [new OpenSeadragon.Viewer(options)](OpenSeadragon.Viewer.html#Viewer) or `OpenSeadragon(options)` for short.
+OpenSeadragon has no external dependencies. To install, [download](../#download) and copy the `openseadragon` folder into your web root or static files directory, add it to your page, and create a viewer with [new OpenSeadragon.Viewer(options)](OpenSeadragon.Viewer.html#Viewer) or `OpenSeadragon(options)` for short.
 
 Here is an example of basic usage:
 
@@ -24,3 +24,17 @@ For other advanced topics, see our [Examples & Features](../#examples-and-featur
 
 
 If you are working directly from the file system (accessing your web page from `file:///path/to/your/file.htm`) you may need to change your browser's local files security policy so that your zooming image data can be loaded. Alternatively, you can run a local server. You can find help on both methods in [three.js documentation](https://threejs.org/docs/#manual/introduction/How-to-run-things-locally).
+
+### Important note for Angular users
+
+By default Angular enables change detection in all imported code, which introduces a lot of CPU load in UI intensive libraries. To avoid this, you must create `Openseadragon` object out of [NgZone](https://angular.io/guide/zone). Instead of
+
+    const viewer = OpenSeadragon(options);
+
+use
+
+    const viewer = this.ngZone.runOutsideAngular(() =>
+      OpenSeadragon(options)
+    );
+
+More info in [Angular documentation](https://angular.io/guide/zone#ngzone-run-and-runoutsideofangular).
