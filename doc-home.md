@@ -37,4 +37,4 @@ use
       OpenSeadragon(options)
     );
 
-More info in [Angular documentation](https://angular.io/guide/zone#ngzone-run-and-runoutsideofangular).
+More info in the [Angular documentation](https://angular.io/guide/zone#ngzone-run-and-runoutsideofangular).
