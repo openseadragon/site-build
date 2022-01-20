@@ -8,6 +8,6 @@
     "grunt-contrib-connect": "^3.0.0",
     "grunt-contrib-watch": "^1.1.0",
     "grunt-jsdoc": "^2.4.1",
-    "marked": "^2.0.0"
+    "marked": "^4.0.10"
   }
 }
