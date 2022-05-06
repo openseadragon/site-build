@@ -44,7 +44,8 @@ module.exports = function(grunt) {
         "creating-zooming-images": "Creating Zooming Images",
         "viewport-coordinates": "Viewport Coordinates",
         "in-the-wild": "OpenSeadragon in the Wild",
-        "multi-image": "Multi-Image"
+        "multi-image": "Multi-Image",
+        "advanced-data-model": "Advanced data model with TileSource"
     };
 
     // ----------
