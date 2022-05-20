@@ -1,4 +1,4 @@
-<h2>Advanced Data Models with custom TileSource</h2>
+<h2>Advanced Data Models with Custom TileSource</h2>
 
 <p>
    Since 2022, OpenSeadragon also supports custom tile data format, loading
@@ -25,16 +25,6 @@
         functions.
     </p>
 </div>
-
-<p>  
-    This all seems a lot of fun.<br> 
-    Yes. But also be prepared for a lot of broken things. Most probably you will
-    encounter various problems such as CORS policy violation, even though your
-    code is theoretically correct. Some services do may not for example respond 
-    to the preflight request OPTIONS and will thus refuse to use AJAX api to load
-    the data from the server. Guess what happened while writing this tutorial...
-</p>
-<br>
 <p>
     Before jumping right to the examples, let's first understand how
     OpenSeadragon handles tile loading. <b>When we mention overriding 
@@ -50,37 +40,51 @@
 <p>        
     The <code>ImageJob</code> instance then in return executes 
     <code>downloadTileStart</code> method, also a member of 
-    <code>TileSource</code>. <code>ImageJob.prototype.finish()</code>
-    notifies the ImageLoader about the job completion and the data gets
-    pulled into the system.
+    <code>TileSource</code>. <code>ImageJob.prototype.finish()</code> (a method
+    that must be called from <code>downloadTileStart</code> in all cases
+    except when aborting the job) notifies the ImageLoader about the job 
+    completion and status, and the data (if any) gets pulled into the system.
 </p>
 <p>    
-    Last but not least, several other functions must be may be necessary
+    Last but not least, other functions may be necessary
     to override, especially if you change the default tile data type 
-    (<code>Image</code>).
+    (<code>Image</code>). <b>Changing the data type means you have to override
+    all methods that perform tile caching</b> (<code>*TileCache*()</code> 
+    like signature). Overriding cache key genereration may or might not be
+    necessary.
 </p>
 <p>    
-    <code>getTileHashKey</code> should be overrided in cases your URL
+    <code>getTileHashKey</code> should be overridden in cases your URL
     does not uniquely distingish between different tile data. In other words,
     if it is possible for two same tile URLs to contain different data, 
     you should override this method. Usually this can happen when you
-    send the tile corrdinates in <b>POST</b> data. Usually, it is a good
+    send the tile corrdinates in <b>POST</b> data. It is a good
     idea to create the cache key based on tile coordinates, e.g. 
     <code>level</code>, <code>x</code> and <code>y</code>. On the other hand,
-    if you know that some tiles <b>allways</b> have the same data although being 
-    on different positions, you might speed up the application by makeing the
+    if you know that some tiles <b>always</b> have the same data although being 
+    on different positions, you can speed up the application by making the
     key equal for such tiles.
 </p>
 <p>    
-    
     Due to flexible ways of loading the data, <code>hasTransparency</code>
-    method should be also overrided to specify whether the certain tile source
-    contains trasparency. Usually the default implementation should work for you
-    (as all do), but with advanced features it might happen you experience 
+    method should be also overridden to specify whether the certain tile source
+    contains transparency. Usually the default implementation should work for you, 
+    but with advanced features it might happen you experience 
     artifacts during the viewing, like stacking of several tile images atop each
     other and then vanishing when the viewer stops moving. In that case, use
     this method to specify the trasparency flag correctly. 
 </p>
+
+<div class="description">
+    <h3>(Re)Implementation of Tile Data Fetching</h3>
+    <p>
+        Below is an implementation of custom tile downloading.
+        A new <code>fetch</code> API is used to distinguish between
+        the original implementation and the new approach. The
+        <code>TileSource</code> can furthermore perform custom
+        handling of faulty tiles.
+    </p>
+</div>
 
 <div class="demoarea">
     <div class="demoheading">
@@ -89,15 +93,14 @@
     <div id="example-custom-tilesource-advanced" 
          class="openseadragon" >
     </div>
-    <p>
-        Below is an implementation of custom tile downloading.
-        A new <code>fetch</code> is used to distinguish between
-        the original implementation and the new approach.
-    </p>
     <p>        
-        Furthermore, we use our freedom to handle failed requests
-        in different way. For documentation specifics, please, 
-        see JSDoc of corresponding functions.
+        There are two things you can notice. First, tile cache is used extensively
+        for repeating/mirroring the image, and so failed tiles form a periodic 
+        pattern. Secondly, we use our freedom to handle failed requests by 
+        drawing a custom failure message on the tile. 
+        For documentation specifics, please, 
+        see <a href="/docs/OpenSeadragon.TileSource.html" 
+        target="_blank">the API documentation</a>.
     </p>
     <p>        
         In this example, we override existing tile source implementation, 
@@ -291,20 +294,19 @@
         loadTilesWithAjax:  true, // no effect
         tileSources: [
             "/example-images/highsmith/highsmith.dzi"
-        ]   
+        ]  
     });
     </script>
 </div>
 
 <p>Notice that we do not have to re-define any of the methods dealing with
-transparency and caching. This is because</p>
-<ul>
-    <li><code>finish()</code> is called with an <code>Image</code> object</li>
-    <li>URL uniquely distinguishes between tiles with unique data</li> 
-    <li>URL contains 'jpg', a string that will make OSD realize this data is 
-    not transparent (see the default <code>hasTransparency</code>
-    implementation)</li>
-</ul>
+transparency and caching. This is because: <code>finish()</code> is called 
+with an <code>Image</code> object; URL uniquely distinguishes between tiles 
+with unique data; and URL contains 'jpg', a string that will make OSD realize 
+this data is not transparent (see the default <code>hasTransparency</code>
+implementation).
+</p>
+
 <p>
     <b>Tip:</b>  if you experience timeouts, make sure <code>finish()</code> 
     gets called.
@@ -345,7 +347,8 @@ OpenSeadragon({
         height: 1024*1024*1024,
         width:  1024*1024*1024,
         tileSize: 256,
-        minLevel: 9,
+        minLevel: 9,     
+        //fractal parameter        
         maxIterations: 100,
         getTileUrl: function(level, x, y) {
             //note that we still have to implement getTileUrl
@@ -375,9 +378,9 @@ OpenSeadragon({
             };
     
             let z = {a: 0, b: 0};
-            for(let i=0;i<this.maxIterations;i++){
+            for(let i=0;i&lt;this.maxIterations;i++){
                 squareAndAddPoint(z, refPoint);
-                if(length(z)>2) return i/this.maxIterations;
+                if(length(z)&gt;2) return i/this.maxIterations;
             }
             return 1.0;
         },
@@ -390,7 +393,7 @@ OpenSeadragon({
             size.width = Math.floor(size.width);
             size.height = Math.floor(size.height);
     
-            if (size.width < 1 || size.height < 1) {
+            if (size.width &lt; 1 || size.height &lt; 1) {
                 canvas.width = 1;
                 canvas.height = 1;
                 context.finish(ctx);
@@ -408,9 +411,9 @@ OpenSeadragon({
              bounds.height = bounds.height * 2.5;
     
             var imagedata = ctx.createImageData(size.width, size.height);
-            for (let x = 0; x < size.width; x++) {
+            for (let x = 0; x &lt; size.width; x++) {
     
-                for (let y = 0; y < size.height; y++) {
+                for (let y = 0; y &lt; size.height; y++) {
                     let index = (y * size.width + x) * 4;
                     imagedata.data[index] = Math.floor(this.iterateMandelbrot({
                         a: bounds.x + bounds.width * ((x + 1) / size.width),
@@ -421,7 +424,7 @@ OpenSeadragon({
                 }
             }
             ctx.putImageData(imagedata, 0, 0);
-            // note: we output contex2D!
+            // note: we output context2D!
             context.finish(ctx);
         },
         downloadTileAbort: function(context) {
@@ -456,7 +459,7 @@ OpenSeadragon({
         },
     
         getTileCacheDataAsContext2D: function(cache) {
-            // our data is already contex2D - what a luck!
+            // our data is already context2D - what a luck!
             return cache._data;
         }
     }
@@ -475,6 +478,7 @@ OpenSeadragon({
         width:  1024*1024*1024,
         tileSize: 256,
         minLevel: 9,
+        //fractal parameter
         maxIterations: 100,
         getTileUrl: function(level, x, y) {
             //note that we still have to implement getTileUrl
@@ -550,7 +554,7 @@ OpenSeadragon({
                 }
             }
             ctx.putImageData(imagedata, 0, 0);
-            // note: we output contex2D!
+            // note: we output context2D!
             context.finish(ctx);
         },
         downloadTileAbort: function(context) {
@@ -586,7 +590,7 @@ OpenSeadragon({
         },
     
         getTileCacheDataAsContext2D: function(cache) {
-            // our data is already contex2D - what a luck!
+            // our data is already context2D - what a luck!
             return cache._data;
         }
     }
@@ -601,21 +605,24 @@ OpenSeadragon({
 </p>
 <p>
     Notice that we have to re-define methods dealing with
-    caching except for <code>getTileCacheKey()</code>, because we rely on
-    the default implementation using URL. If we returned an empty string (also
+    caching because we changed the data type we use within the system;
+    except for <code>getTileCacheKey()</code>: we rely on
+    the default key generation using URL. If we returned an empty string (also
     a correct solution), we would have to override <code>getTileCacheKey()
-    </code>.
+    </code>, but since we are forced to define the url getter, we may as well
+    as re-use it for the cache key creation.
 </p>
 <p>
     In order to use the tile cache, we define how the cache is created: we
-    are given the cache context object and the data object we gave to succesfull
+    are given the cache context object and the data object we gave to succesful
     <code>job.finish(...)</code> call. For OpenSeadragon to be able to work
     with such a generic approach, two methods must be implemented, that
     convert the data to <code>RenderingContext2D</code> and <code>Image</code>
     objects. It does not mean these objects will be created, only if needed.
-    Plugins might require to access the data as image objects, and also the 
-    default drawing strategies work either with canvas context (canvas strategy)
-    or image object (html div strategy). But, unlike the default behaviour,
-    we can avoid the creation of <code>Image</code> object, since we work
-    by default with canvas and OSD is mostly used with canvas drawing strategy.
+    Plugins might require to access the data as <code>Image</code> objects, 
+    and also the default drawing strategies work either with canvas
+    context (canvas strategy) or image object (html div strategy). But, 
+    unlike the default behaviour, we can avoid the creation of 
+    <code>Image</code> object, since we work by default with canvas 
+    and OSD is mostly used with canvas drawing strategy anyway.
 </p>
