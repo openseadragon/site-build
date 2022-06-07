@@ -4,11 +4,11 @@
    Since 2022, OpenSeadragon also supports custom tile data format, loading
    and caching procedures. This example goes through the process.
 
-   First, please, make sure you are familiar with <a 
-   href="/examples/tilesource-custom/">custom tile source</a>s. The main 
+   First, please, make sure you are familiar with <a
+   href="/examples/tilesource-custom/">custom tile source</a>s. The main
    information needed is right within the first paragraph, summarized here:
 </p>
-<p>   
+<p>
    <b>A Custom Tile Source can be created via inline configuration by specifying
    a single function named <code>getTileUrl</code>, along with the required
    values for <code>height</code> and <code>width</code> ...  additionally, any
@@ -27,52 +27,52 @@
 </div>
 <p>
     Before jumping right to the examples, let's first understand how
-    OpenSeadragon handles tile loading. <b>When we mention overriding 
-    a default member method, we always say this with respect to 
+    OpenSeadragon handles tile loading. <b>When we mention overriding
+    a default member method, we always say this with respect to
     <code>TileSource</code> class hierarchy.</b>
     When a tile data is missing, an
     <code>ImageLoader</code> instance gets new job assigned with
     <code>ImageJob</code> instance. This instance receives all necessary
     data extracted from methods of the <code>TileSource</code>, namely
     <code>getTileUrl</code>, <code>getTilePostData</code>, <code>
-    getTileAjaxHeaders</code>. 
+    getTileAjaxHeaders</code>.
 </p>
-<p>        
-    The <code>ImageJob</code> instance then in return executes 
-    <code>downloadTileStart</code> method, also a member of 
+<p>
+    The <code>ImageJob</code> instance then in return executes
+    <code>downloadTileStart</code> method, also a member of
     <code>TileSource</code>. <code>ImageJob.prototype.finish()</code> (a method
     that must be called from <code>downloadTileStart</code> in all cases
-    except when aborting the job) notifies the ImageLoader about the job 
+    except when aborting the job) notifies the ImageLoader about the job
     completion and status, and the data (if any) gets pulled into the system.
 </p>
-<p>    
+<p>
     Last but not least, other functions may be necessary
-    to override, especially if you change the default tile data type 
+    to override, especially if you change the default tile data type
     (<code>Image</code>). <b>Changing the data type means you have to override
-    all methods that perform tile caching</b> (<code>*TileCache*()</code> 
-    like signature). Overriding cache key genereration may or might not be
+    all methods that perform tile caching</b> (<code>*TileCache*()</code>
+    like signature). Overriding cache key generation may or might not be
     necessary.
 </p>
-<p>    
+<p>
     <code>getTileHashKey</code> should be overridden in cases your URL
-    does not uniquely distingish between different tile data. In other words,
-    if it is possible for two same tile URLs to contain different data, 
+    does not uniquely distinguish between different tile data. In other words,
+    if it is possible for two same tile URLs to contain different data,
     you should override this method. Usually this can happen when you
-    send the tile corrdinates in <b>POST</b> data. It is a good
-    idea to create the cache key based on tile coordinates, e.g. 
+    send the tile coordinates in <b>POST</b> data. It is a good
+    idea to create the cache key based on tile coordinates, e.g.
     <code>level</code>, <code>x</code> and <code>y</code>. On the other hand,
-    if you know that some tiles <b>always</b> have the same data although being 
+    if you know that some tiles <b>always</b> have the same data although being
     on different positions, you can speed up the application by making the
     key equal for such tiles.
 </p>
-<p>    
+<p>
     Due to flexible ways of loading the data, <code>hasTransparency</code>
     method should be also overridden to specify whether the certain tile source
-    contains transparency. Usually the default implementation should work for you, 
-    but with advanced features it might happen you experience 
+    contains transparency. Usually the default implementation should work for you,
+    but with advanced features it might happen you experience
     artifacts during the viewing, like stacking of several tile images atop each
     other and then vanishing when the viewer stops moving. In that case, use
-    this method to specify the trasparency flag correctly. 
+    this method to specify the transparency flag correctly.
 </p>
 
 <div class="description">
@@ -90,231 +90,231 @@
     <div class="demoheading">
         Example: re-defining the tile downloading process
     </div>
-    <div id="example-custom-tilesource-advanced" 
+    <div id="example-custom-tilesource-advanced"
          class="openseadragon" >
     </div>
-    <p>        
+    <p>
         There are two things you can notice. First, tile cache is used extensively
-        for repeating/mirroring the image, and so failed tiles form a periodic 
-        pattern. Secondly, we use our freedom to handle failed requests by 
-        drawing a custom failure message on the tile. 
-        For documentation specifics, please, 
-        see <a href="/docs/OpenSeadragon.TileSource.html" 
+        for repeating/mirroring the image, and so failed tiles form a periodic
+        pattern. Secondly, we use our freedom to handle failed requests by
+        drawing a custom failure message on the tile.
+        For documentation specifics, please,
+        see <a href="/docs/OpenSeadragon.TileSource.html"
         target="_blank">the API documentation</a>.
     </p>
-    <p>        
-        In this example, we override existing tile source implementation, 
+    <p>
+        In this example, we override existing tile source implementation,
         but it does not matter: you can also plug them in within an inline
         specification.
     </p>
-<pre>
-    //see https://stackoverflow.com/questions/41996814/how-to-abort-a-fetch-request
-    //we need to provide the possibility to abort fetch(...)
-    function myFetch(input, init) {
-        let controller = new AbortController();
-        let signal = controller.signal;
-        init = Object.assign({signal}, init);
-        let promise = fetch(input, init);
-        promise.controller = controller;
-        return promise;
-    }  
-    
-    OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
-            getTilePostData: function( level, x, y ) {
-                //here we exploit the POST API, a handy shortcut to pass ourselves
-                //an instance to the tile object
-                //return tile;
-                return {width: this.getTileWidth(), height: this.getTileHeight()};
-            },
-            getTileAjaxHeaders: function( level, x, y ) {
-                // to avoid CORS problems
-                return {
-                    'Content-Type': 'application/octet-stream',
-                    'Access-Control-Allow-Origin': '*'
-                };
-            },
-            downloadTileStart: function(imageJob) {
-                // namespace where we attach our properties to avoid
-                // collision with API
-                let context = imageJob.userData;
-                context.image = new Image();
-                
-                // in all scenarios, unless abort() is called, make
-                // sure imageJob.finish() gets executed!
-                context.image.onerror = context.image.onabort = function() {
-                    imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
-                };
-                context.image.onload = function() {
-                    imageJob.finish(context.image, context.promise);
-                };
-                
-                function createErrorImageURL(e) {
-                    let canvas = document.createElement('canvas');
-                    let context = canvas.getContext('2d');
-                    
-                    //yay, postData = tile instance
-                    let tile = imageJob.postData;
-                    canvas.width = tile.width;
-                    canvas.height = tile.height;
-                    context.font = "80px Georgia";
-                    context.fillStyle = "#ff2200";
-                    context.fillText(e, 5, 120);
-                    return canvas.toDataURL("image/jpeg");
-                }
-                            
-                // note we ignore some imageJob properties such as 
-                // 'loadWithAjax'. This means preventing OSD from using
-                // ajax will have no effect as we force it to do so.
-                // Make sure you implement all the features the official
-                // implementation do if you want to keep them.
-                context.promise = myFetch(imageJob.src, {
-                    method: "GET",
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    credentials: 'same-origin',
-                    headers: imageJob.ajaxHeaders || {},
-                    body: null
-                }).then(data => {
-                    //to spice up things, emulate faulty source
-                    if (Math.random() > 0.7) throw "Oh no!";
-                    return data.blob();
-                }).then(blob => {
-                    context.image.src = URL.createObjectURL(blob);
-                }).catch(e => {
-                    context.image.src = createErrorImageURL(e);
-                }); 
-            
-            },
-            downloadTileAbort: function(imageJob) {
-                //we can abort thanks to myFetch() implementation
-                imageJob.userData.promise.abort();
-            } 
-        });
-         
-    OpenSeadragon({
-        id:            "example-custom-tilesource-advanced",
-        prefixUrl:     "/openseadragon/images/",
-        navigatorSizeRatio: 0.25,
-        wrapHorizontal:     true,
-        loadTilesWithAjax:  true, // no effect
-        tileSources: [
-            "/example-images/highsmith/highsmith.dzi"
-        ]   
+    <pre>
+//see https://stackoverflow.com/questions/41996814/how-to-abort-a-fetch-request
+//we need to provide the possibility to abort fetch(...)
+function myFetch(input, init) {
+    let controller = new AbortController();
+    let signal = controller.signal;
+    init = Object.assign({signal}, init);
+    let promise = fetch(input, init);
+    promise.controller = controller;
+    return promise;
+}
+
+OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
+        getTilePostData: function( level, x, y ) {
+            //here we exploit the POST API, a handy shortcut to pass ourselves
+            //an instance to the tile object
+            //return tile;
+            return {width: this.getTileWidth(), height: this.getTileHeight()};
+        },
+        getTileAjaxHeaders: function( level, x, y ) {
+            // to avoid CORS problems
+            return {
+                'Content-Type': 'application/octet-stream',
+                'Access-Control-Allow-Origin': '*'
+            };
+        },
+        downloadTileStart: function(imageJob) {
+            // namespace where we attach our properties to avoid
+            // collision with API
+            let context = imageJob.userData;
+            context.image = new Image();
+
+            // in all scenarios, unless abort() is called, make
+            // sure imageJob.finish() gets executed!
+            context.image.onerror = context.image.onabort = function() {
+                imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
+            };
+            context.image.onload = function() {
+                imageJob.finish(context.image, context.promise);
+            };
+
+            function createErrorImageURL(e) {
+                let canvas = document.createElement('canvas');
+                let context = canvas.getContext('2d');
+
+                //yay, postData = tile instance
+                let tile = imageJob.postData;
+                canvas.width = tile.width;
+                canvas.height = tile.height;
+                context.font = "80px Georgia";
+                context.fillStyle = "#ff2200";
+                context.fillText(e, 5, 120);
+                return canvas.toDataURL("image/jpeg");
+            }
+
+            // note we ignore some imageJob properties such as
+            // 'loadWithAjax'. This means preventing OSD from using
+            // ajax will have no effect as we force it to do so.
+            // Make sure you implement all the features the official
+            // implementation do if you want to keep them.
+            context.promise = myFetch(imageJob.src, {
+                method: "GET",
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                headers: imageJob.ajaxHeaders || {},
+                body: null
+            }).then(data => {
+                //to spice up things, emulate faulty source
+                if (Math.random() > 0.7) throw "Oh no!";
+                return data.blob();
+            }).then(blob => {
+                context.image.src = URL.createObjectURL(blob);
+            }).catch(e => {
+                context.image.src = createErrorImageURL(e);
+            });
+
+        },
+        downloadTileAbort: function(imageJob) {
+            //we can abort thanks to myFetch() implementation
+            imageJob.userData.promise.abort();
+        }
     });
+
+OpenSeadragon({
+    id:            "example-custom-tilesource-advanced",
+    prefixUrl:     "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    wrapHorizontal:     true,
+    loadTilesWithAjax:  true, // no effect
+    tileSources: [
+        "/example-images/highsmith/highsmith.dzi"
+    ]
+});
     </pre>
     <script>
-    //see https://stackoverflow.com/questions/41996814/how-to-abort-a-fetch-request
-    //we need to provide the possibility to abort fetch(...)
-    function myFetch(input, init) {
-        let controller = new AbortController();
-        let signal = controller.signal;
-        init = Object.assign({signal}, init);
-        let promise = fetch(input, init);
-        promise.controller = controller;
-        return promise;
-    }  
-    
-    OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
-            getTilePostData: function( level, x, y ) {
-                //here we exploit the POST API, a handy shortcut to pass ourselves
-                //an instance to the tile object
-                //return tile;
-                return {width: this.getTileWidth(), height: this.getTileHeight()};
-            },
-            getTileAjaxHeaders: function( level, x, y ) {
-                // to avoid CORS problems
-                return {
-                    'Content-Type': 'application/octet-stream',
-                    'Access-Control-Allow-Origin': '*'
-                };
-            },
-            downloadTileStart: function(imageJob) {
-                // namespace where we attach our properties to avoid
-                // collision with API
-                let context = imageJob.userData;
-                context.image = new Image();
-                
-                // in all scenarios, unless abort() is called, make
-                // sure imageJob.finish() gets executed!
-                context.image.onerror = context.image.onabort = function() {
-                    imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
-                };
-                context.image.onload = function() {
-                    imageJob.finish(context.image, context.promise);
-                };
-                
-                function createErrorImageURL(e) {
-                    let canvas = document.createElement('canvas');
-                    let context = canvas.getContext('2d');
-                    
-                    //yay, postData = tile instance
-                    let tile = imageJob.postData;
-                    canvas.width = tile.width;
-                    canvas.height = tile.height;
-                    context.font = "80px Georgia";
-                    context.fillStyle = "#ff2200";
-                    context.fillText(e, 5, 120);
-                    return canvas.toDataURL("image/jpeg");
-                }
-                            
-                // note we ignore some imageJob properties such as 
-                // 'loadWithAjax'. This means preventing OSD from using
-                // ajax will have no effect as we force it to do so.
-                // Make sure you implement all the features the official
-                // implementation do if you want to keep them.
-                context.promise = myFetch(imageJob.src, {
-                    method: "GET",
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    credentials: 'same-origin',
-                    headers: imageJob.ajaxHeaders || {},
-                    body: null
-                }).then(data => {
-                    //to spice up things, emulate faulty source
-                    if (Math.random() > 0.7) throw "Oh no!";
-                    return data.blob();
-                }).then(blob => {
-                    context.image.src = URL.createObjectURL(blob);
-                }).catch(e => {
-                    context.image.src = createErrorImageURL(e);
-                }); 
-            
-            },
-            downloadTileAbort: function(imageJob) {
-                //we can abort thanks to myFetch() implementation
-                imageJob.userData.promise.abort();
-            } 
-        });
-         
-    OpenSeadragon({
-        id:            "example-custom-tilesource-advanced",
-        prefixUrl:     "/openseadragon/images/",
-        navigatorSizeRatio: 0.25,
-        wrapHorizontal:     true,
-        loadTilesWithAjax:  true, // no effect
-        tileSources: [
-            "/example-images/highsmith/highsmith.dzi"
-        ]  
+//see https://stackoverflow.com/questions/41996814/how-to-abort-a-fetch-request
+//we need to provide the possibility to abort fetch(...)
+function myFetch(input, init) {
+    let controller = new AbortController();
+    let signal = controller.signal;
+    init = Object.assign({signal}, init);
+    let promise = fetch(input, init);
+    promise.controller = controller;
+    return promise;
+}
+
+OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
+        getTilePostData: function( level, x, y ) {
+            //here we exploit the POST API, a handy shortcut to pass ourselves
+            //an instance to the tile object
+            //return tile;
+            return {width: this.getTileWidth(), height: this.getTileHeight()};
+        },
+        getTileAjaxHeaders: function( level, x, y ) {
+            // to avoid CORS problems
+            return {
+                'Content-Type': 'application/octet-stream',
+                'Access-Control-Allow-Origin': '*'
+            };
+        },
+        downloadTileStart: function(imageJob) {
+            // namespace where we attach our properties to avoid
+            // collision with API
+            let context = imageJob.userData;
+            context.image = new Image();
+
+            // in all scenarios, unless abort() is called, make
+            // sure imageJob.finish() gets executed!
+            context.image.onerror = context.image.onabort = function() {
+                imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
+            };
+            context.image.onload = function() {
+                imageJob.finish(context.image, context.promise);
+            };
+
+            function createErrorImageURL(e) {
+                let canvas = document.createElement('canvas');
+                let context = canvas.getContext('2d');
+
+                //yay, postData = tile instance
+                let tile = imageJob.postData;
+                canvas.width = tile.width;
+                canvas.height = tile.height;
+                context.font = "80px Georgia";
+                context.fillStyle = "#ff2200";
+                context.fillText(e, 5, 120);
+                return canvas.toDataURL("image/jpeg");
+            }
+
+            // note we ignore some imageJob properties such as
+            // 'loadWithAjax'. This means preventing OSD from using
+            // ajax will have no effect as we force it to do so.
+            // Make sure you implement all the features the official
+            // implementation do if you want to keep them.
+            context.promise = myFetch(imageJob.src, {
+                method: "GET",
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                headers: imageJob.ajaxHeaders || {},
+                body: null
+            }).then(data => {
+                //to spice up things, emulate faulty source
+                if (Math.random() > 0.7) throw "Oh no!";
+                return data.blob();
+            }).then(blob => {
+                context.image.src = URL.createObjectURL(blob);
+            }).catch(e => {
+                context.image.src = createErrorImageURL(e);
+            });
+
+        },
+        downloadTileAbort: function(imageJob) {
+            //we can abort thanks to myFetch() implementation
+            imageJob.userData.promise.abort();
+        }
     });
+
+OpenSeadragon({
+    id:            "example-custom-tilesource-advanced",
+    prefixUrl:     "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    wrapHorizontal:     true,
+    loadTilesWithAjax:  true, // no effect
+    tileSources: [
+        "/example-images/highsmith/highsmith.dzi"
+    ]
+});
     </script>
 </div>
 
 <p>Notice that we do not have to re-define any of the methods dealing with
-transparency and caching. This is because: <code>finish()</code> is called 
-with an <code>Image</code> object; URL uniquely distinguishes between tiles 
-with unique data; and URL contains 'jpg', a string that will make OSD realize 
+transparency and caching. This is because: <code>finish()</code> is called
+with an <code>Image</code> object; URL uniquely distinguishes between tiles
+with unique data; and URL contains 'jpg', a string that will make OSD realize
 this data is not transparent (see the default <code>hasTransparency</code>
 implementation).
 </p>
 
 <p>
-    <b>Tip:</b>  if you experience timeouts, make sure <code>finish()</code> 
+    <b>Tip:</b>  if you experience timeouts, make sure <code>finish()</code>
     gets called.
 </p>
 
 
 <div class="description">
-    <h3>Synthetized images</h3>
+    <h3>Synthesized images</h3>
     <p>
         Sometimes, we just want to have the ability to zoom within a tiled
         space without the need for fetching data. Or, our data can be derived
@@ -327,7 +327,7 @@ implementation).
     <div class="demoheading">
         Mandelbrot Fractal with OpenSeadragon
     </div>
-    <div id="fractal" 
+    <div id="fractal"
          class="openseadragon">
     </div>
     <p>
@@ -347,8 +347,8 @@ OpenSeadragon({
         height: 1024*1024*1024,
         width:  1024*1024*1024,
         tileSize: 256,
-        minLevel: 9,     
-        //fractal parameter        
+        minLevel: 9,
+        //fractal parameter
         maxIterations: 100,
         getTileUrl: function(level, x, y) {
             //note that we still have to implement getTileUrl
@@ -358,7 +358,7 @@ OpenSeadragon({
             return `${level}/${x}-${y}`;
         },
         getTilePostData: function(level, x, y) {
-            //yup, handly post data
+            //yup, handy post data
             return {
                 dx : x,
                 dy: y,
@@ -372,15 +372,15 @@ OpenSeadragon({
                 z.a = a;
                 z.b = b;
             };
-    
+
             var length = function(z) {
                 return Math.sqrt(Math.pow(z.a, 2) + Math.pow(z.b, 2));
             };
-    
+
             let z = {a: 0, b: 0};
-            for(let i=0;i&lt;this.maxIterations;i++){
+            for(let i=0;i<this.maxIterations;i++){
                 squareAndAddPoint(z, refPoint);
-                if(length(z)&gt;2) return i/this.maxIterations;
+                if(length(z)>2) return i/this.maxIterations;
             }
             return 1.0;
         },
@@ -389,11 +389,11 @@ OpenSeadragon({
             let bounds = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, false);
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext('2d');
-    
+
             size.width = Math.floor(size.width);
             size.height = Math.floor(size.height);
-    
-            if (size.width &lt; 1 || size.height &lt; 1) {
+
+            if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
                 context.finish(ctx);
@@ -402,24 +402,24 @@ OpenSeadragon({
                 canvas.width = size.width;
                 canvas.height = size.height;
             }
-    
+
             //don't really think about the rescaling, just played with
             // linear transforms until it was centered
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
              bounds.height = bounds.height * 2.5;
-    
+
             var imagedata = ctx.createImageData(size.width, size.height);
-            for (let x = 0; x &lt; size.width; x++) {
-    
-                for (let y = 0; y &lt; size.height; y++) {
+            for (let x = 0; x < size.width; x++) {
+
+                for (let y = 0; y < size.height; y++) {
                     let index = (y * size.width + x) * 4;
                     imagedata.data[index] = Math.floor(this.iterateMandelbrot({
                         a: bounds.x + bounds.width * ((x + 1) / size.width),
                         b: bounds.y + bounds.height * ((y + 1) / size.height)
                     }) * 255);
-    
+
                     imagedata.data[index+3] = 255;
                 }
             }
@@ -428,42 +428,43 @@ OpenSeadragon({
             context.finish(ctx);
         },
         downloadTileAbort: function(context) {
-            //we could set a flag which would stop the execution
-            //and it would be right to do so, but it's not necessary
+            //we could set a flag which would stop the execution,
+            // and it would be right to do so, but it's not necessary
             // (could help in debug scenarios though, in case of cycling
             // it could kill it)
-            
+
             //pass
         },
-    
+
         createTileCache: function(cache, data) {
+            //cache is the cache object meant to attach items to
             //data is context2D, just keep the reference
             cache._data = data;
         },
-    
+
         destroyTileCache: function(cache) {
             //unset to allow GC collection
             cache._data = null;
         },
-    
+
         getTileCacheData: function(cache) {
             //just return the raw data as it was given, part of API
             return cache._data;
         },
-    
+
         getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the 
+            // not implementing all the features brings limitations to the
             // system, namely tile.getImage() will not work and also
             // html-based drawing approach will not work
             throw "Lazy to implement";
         },
-    
+
         getTileCacheDataAsContext2D: function(cache) {
             // our data is already context2D - what a luck!
             return cache._data;
         }
     }
-}); 
+});
     </pre>
     <script>
 OpenSeadragon({
@@ -488,7 +489,7 @@ OpenSeadragon({
             return `${level}/${x}-${y}`;
         },
         getTilePostData: function(level, x, y) {
-            //yup, handly post data
+            //yup, handy post data
             return {
                 dx : x,
                 dy: y,
@@ -502,11 +503,11 @@ OpenSeadragon({
                 z.a = a;
                 z.b = b;
             };
-    
+
             var length = function(z) {
                 return Math.sqrt(Math.pow(z.a, 2) + Math.pow(z.b, 2));
             };
-    
+
             let z = {a: 0, b: 0};
             for(let i=0;i<this.maxIterations;i++){
                 squareAndAddPoint(z, refPoint);
@@ -519,10 +520,10 @@ OpenSeadragon({
             let bounds = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, false);
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext('2d');
-    
+
             size.width = Math.floor(size.width);
             size.height = Math.floor(size.height);
-    
+
             if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
@@ -532,24 +533,24 @@ OpenSeadragon({
                 canvas.width = size.width;
                 canvas.height = size.height;
             }
-    
+
             //don't really think about the rescaling, just played with
             // linear transforms until it was centered
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
              bounds.height = bounds.height * 2.5;
-             
+
             var imagedata = ctx.createImageData(size.width, size.height);
             for (let x = 0; x < size.width; x++) {
-    
+
                 for (let y = 0; y < size.height; y++) {
                     let index = (y * size.width + x) * 4;
                     imagedata.data[index] = Math.floor(this.iterateMandelbrot({
                         a: bounds.x + bounds.width * ((x + 1) / size.width),
                         b: bounds.y + bounds.height * ((y + 1) / size.height)
                     }) * 255);
-    
+
                     imagedata.data[index+3] = 255;
                 }
             }
@@ -558,50 +559,50 @@ OpenSeadragon({
             context.finish(ctx);
         },
         downloadTileAbort: function(context) {
-            //we could set a flag which would stop the execution
-            //and it would be right to do so, but it's not necessary
+            //we could set a flag which would stop the execution,
+            // and it would be right to do so, but it's not necessary
             // (could help in debug scenarios though, in case of cycling
             // it could kill it)
-            
+
             //pass
         },
-    
+
         createTileCache: function(cache, data) {
             //cache is the cache object meant to attach items to
             //data is context2D, just keep the reference
             cache._data = data;
         },
-    
+
         destroyTileCache: function(cache) {
             //unset to allow GC collection
             cache._data = null;
         },
-    
+
         getTileCacheData: function(cache) {
             //just return the raw data as it was given, part of API
             return cache._data;
         },
-    
+
         getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the 
+            // not implementing all the features brings limitations to the
             // system, namely tile.getImage() will not work and also
             // html-based drawing approach will not work
             throw "Lazy to implement";
         },
-    
+
         getTileCacheDataAsContext2D: function(cache) {
             // our data is already context2D - what a luck!
             return cache._data;
         }
     }
-});    
+});
     </script>
 </div>
 
 <p>
-    Unlike in the first example, we work with <code>RenderingContext2D</code> 
-    object instead of <code>Image</code>. Also, instead of downloading we just 
-    generate it realtime. 
+    Unlike in the first example, we work with <code>RenderingContext2D</code>
+    object instead of <code>Image</code>. Also, instead of downloading we just
+    generate it realtime.
 </p>
 <p>
     Notice that we have to re-define methods dealing with
@@ -610,19 +611,19 @@ OpenSeadragon({
     the default key generation using URL. If we returned an empty string (also
     a correct solution), we would have to override <code>getTileCacheKey()
     </code>, but since we are forced to define the url getter, we may as well
-    as re-use it for the cache key creation.
+    re-use it for the cache key creation.
 </p>
 <p>
     In order to use the tile cache, we define how the cache is created: we
-    are given the cache context object and the data object we gave to succesful
+    are given the cache context object and the data object we gave to successful
     <code>job.finish(...)</code> call. For OpenSeadragon to be able to work
     with such a generic approach, two methods must be implemented, that
     convert the data to <code>RenderingContext2D</code> and <code>Image</code>
     objects. It does not mean these objects will be created, only if needed.
-    Plugins might require to access the data as <code>Image</code> objects, 
+    Plugins might require to access the data as <code>Image</code> objects,
     and also the default drawing strategies work either with canvas
-    context (canvas strategy) or image object (html div strategy). But, 
-    unlike the default behaviour, we can avoid the creation of 
-    <code>Image</code> object, since we work by default with canvas 
+    context (canvas strategy) or image object (html div strategy). But,
+    unlike the default behaviour, we can avoid the creation of
+    <code>Image</code> object, since we work by default with canvas
     and OSD is mostly used with canvas drawing strategy anyway.
 </p>
