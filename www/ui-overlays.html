@@ -785,6 +785,27 @@ document.querySelector('#toggle-overlay').addEventListener('click', function() {
                 rotationViewer.viewport.setRotation(ui.value);
             }
         });
+
+        //this is code for the next 'Overlays and events' example,
+        // adding it to a separate script tag made some browser
+        // not to fire this correctly unless dev settings were opened
+        rotationViewer.addHandler('open', () => {
+            new OpenSeadragon.MouseTracker({
+                element: document.getElementById('overlay-rotation-exact'),
+                clickHandler: e => alert('Element selected! ' + e.originalEvent.target.id),
+                contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
+            });
+            new OpenSeadragon.MouseTracker({
+                element: document.getElementById('right-arrow-overlay-no-rotate'),
+                clickHandler: e => alert('Element selected! ' + e.originalEvent.target.id),
+                contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
+            });
+            new OpenSeadragon.MouseTracker({
+                element: document.getElementById('overlay-rotation-bounding-box'),
+                clickHandler: e => alert('Element selected! ' + e.originalEvent.target.id),
+                contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
+            });
+        });
     </script>
     </div>
 
@@ -828,43 +849,24 @@ var viewer = OpenSeadragon({
     </p>
 </div>
 <div class="demoarea">
-<script type="text/javascript">
-    rotationViewer.addHandler('open', () => {
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('overlay-rotation-exact'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('right-arrow-overlay-no-rotate'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('overlay-rotation-bounding-box'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
-    });
-</script>
-Try to click on the overlay in the above example.
+Click on any overlay in the "Rotation" example above.
 <pre>
-    viewer.addHandler('open', () => {
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('overlay-rotation-exact'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('right-arrow-overlay-no-rotate'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
-        new OpenSeadragon.MouseTracker({
-            element: document.getElementById('overlay-rotation-bounding-box'),
-            pressHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-            contextMenuHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
-        });
+viewer.addHandler('open', () => {
+    new OpenSeadragon.MouseTracker({
+        element: document.getElementById('overlay-rotation-exact'),
+        clickHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
+        contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
     });
+    new OpenSeadragon.MouseTracker({
+        element: document.getElementById('right-arrow-overlay-no-rotate'),
+        clickHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
+        contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
+    });
+    new OpenSeadragon.MouseTracker({
+        element: document.getElementById('overlay-rotation-bounding-box'),
+        clickHandler: e => alert('Element clicked! ' + e.originalEvent.target.id),
+        contextMenuHandler: e => alert('Context menu fired! ' + e.originalEvent.target.id),
+    });
+});
 </pre>
 </div>
