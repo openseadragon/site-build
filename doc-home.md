@@ -14,13 +14,15 @@ Here is an example of basic usage:
         });
     </script>
 
+Important: The container you give OpenSeadragon needs to have its own width and height (like in the example above) or you won't see anything! 
+
 OpenSeadragon will also return an AMD or CommonJs module when required with a loader like [Require.js](http://requirejs.org/), [Webpack](https://webpack.github.io/) or [Browserify](http://browserify.org/).
 
 You will, of course, need zooming image data to work with. See [Creating Zooming Images](/examples/creating-zooming-images/).
 
 For more information on the options object you pass in to `OpenSeadragon()`, see [OpenSeadragon.Options](OpenSeadragon.html#.Options). To learn more about the viewer that it creates, see [OpenSeadragon.Viewer](OpenSeadragon.Viewer.html). For programmatic control of zoom and pan, see [OpenSeadragon.Viewport](OpenSeadragon.Viewport.html).
 
-For other advanced topics, see our [Examples & Features](../#examples-and-features) pages.
+For other advanced topics, see our [Examples & Features](../#examples-and-features) pages. More useful info can be found in our [FAQ](https://github.com/openseadragon/openseadragon/wiki/FAQ).
 
 
 If you are working directly from the file system (accessing your web page from `file:///path/to/your/file.htm`) you may need to change your browser's local files security policy so that your zooming image data can be loaded. Alternatively, you can run a local server. You can find help on both methods in [three.js documentation](https://threejs.org/docs/#manual/introduction/How-to-run-things-locally).
