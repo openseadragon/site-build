@@ -1,0 +1,311 @@
+<h2>Data Type Concept in OpenSeadragon</h2>
+
+<p>
+    Data types define how OpenSeadragon knows, how to handle interaction between modular parts of its
+    architecture. There are multiple <code>TileSource</code>s that can insert to the system any data such
+    as zip archives, strings, XML nodes... On the other side stands <code>Drawer</code>s that require
+    the data in formats they can work with - <code>CanvasDrawer</code> with <code>Canvas</code> or <code>Image</code>
+    objects, <code>WebGLDrawer</code> with GPU textures. To add insult to the injury, there can be multiple plugins that interact in the system, and
+    convert the data to yet a different format.
+</p>
+<p>
+    For all this to work, OpenSeadragon must provide each component with data type it needs, and
+    reason about the cheapest conversion cost between formats. It must also support asynchronous processing,
+    because not every conversion can be done directly (see <code>image.onload</code>).
+</p>
+
+<div class="description">
+    <h3>Supported Types and Naming Conventions</h3>
+</div>
+<p>
+    The type syntax should follow JavaScript naming style,
+    <code>lowerCamelCase</code>. Types should be as <b>tightly</b> descriptive, as possible.
+    Example:
+</p>
+<p>
+    If you provide a type <code>string</code> to the system with your image URI, you have basically
+    broken the whole logics. OpenSeadragon does not know that your string is actually URI, and does not
+    know what to do with your data to convert it, for example, to an Image.
+</p>
+<p>
+    Seems simple? Well, <b>URI</b> is too generic - it can be any resource specification, not just
+    an internet resource location. But if we use <b>URL</b> instead, we are still not guaranteed that
+    OpenSeadragon will handle our data correctly - it can point to a text, a binary, a HTML page...
+</p>
+<p>
+    Therefore, always think of a name for your type that encapsulates all its behavior to avoid
+    collisions with other types (WebGL <code>canvas</code> vs Context2D <code>canvas</code>).
+    OpenSeadragon supports the following types out of the box:
+</p>
+    <ul style="list-style-type: disc">
+    <li>
+        <code>image</code>: a data item is <code>Image</code> object as we know it from DOM
+    </li>
+    <li>
+        <code>webImageUrl</code>: a string value interpretable as a URL with image data (image URL or data URL)
+    </li>
+    <li>
+        <code>context2d</code>: a <code>CanvasRenderingContext2D</code> object
+    </li>
+    <li>
+        <i>internal formats</i>: internal, often dynamically-named formats for drawer logics, mentioned here
+        just for the sake of completeness
+    </li>
+</ul>
+<p>
+There are methods <code>OpenSeadragon.convertor.learn()</code> and <code>OpenSeadragon.convertor.learnDestroy()</code>
+you can use to add custom types to the system.
+</p>
+
+
+<div class="description">
+    <h3>Conversion of Data</h3>
+</div>
+<p>
+    Adding support for custom data type in the system is not complicated. You can use both
+    synchronous and asynchronous logics. In order for your data to be fully comaptible with the system,
+    a type should define three convertors: a convertor to some other existing type,
+    copy-convertor (will be explained later), and optionally also convertor from an existing type to our own
+    type (going back, not necessarily from the same type).
+</p>
+
+<p>
+    If you are familiar with mathematical graphs, you can imagine convertors like directional edges
+    between nodes (types), with edge costs (conversion costs).
+</p>
+<p>
+    See the following pseudocode on how to work with convertors:
+</p>
+
+<pre>
+OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
+    //data comes as type A, provide type B
+    return data.asTypeB();
+}, 1, 1);
+
+// or asynchronous:
+OpenSeadragon.convertor.learn("typeA", "typeB", async (tile, data) => {
+    const data = await data.asTypeBAsync();
+    return data;  // yes, we could just return data.asAsync(..), but we want to explicitly show await usage
+}, 1, 1);
+
+// or promise version:
+OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
+    //data comes as type A, provide type B
+    return new Promise(resolve => {
+        data.convertToTypeBWithCallBack(() => resolve());
+    });
+}, 1, 1);
+</pre>
+
+<div class="description">
+    <h3>Destructors</h3>
+</div>
+<p>
+    If you work with a data objects that should be freed, you should provide a destructor
+    for the type as well. OpenSeadragon will call it for you once the data is not needed,
+    ensuring low memory footprint on the session. The following code is taken directly from
+    OpenSeadragon, where canvas objects are freed to avoid issues with Apple devices.
+    This feature is also especially useful with WebGL textures.
+</p>
+
+<pre>
+OpenSeadragon.convertor.learnDestroy("context2d", ctx => {
+    ctx.canvas.width = 0;
+    ctx.canvas.height = 0;
+});
+</pre>
+</p>
+
+<div class="description">
+    <h3>Optimizing Data Transfer</h3>
+    <p>
+        For performant code, provide convertors for multiple built-in data types,
+        and set accurate conversion cost estimation.
+    </p>
+</div>
+<p>
+    So far we avoided the mysterious <code>1, 1</code> parameters at the end of the
+    convertor. These are conversion cost evaluators. OpenSeadragon will use these
+    to find the cheapest conversion path should there be available multiple options.
+</p>
+<p>
+    The arguments estimate conversion cost using power argument (first) and multiplier argument (second):
+</p>
+<ul>
+    <li>
+        If you do a linear pass over the pixels, you set values <code>1, 1</code> because
+        if there are <code>n</code> pixels, the cost is <code>1 * n<sup>1</sup></code>
+    </li>
+    <li>
+        If you need to look for each pixels on all the other pixels, i.e. O(n<sup>2</sup>),
+        you set arguments as <code>2, 1</code>.
+    </li>
+    <li>
+        You can use power argument <code>0</code> for instant computations, or use <code>Math.log</code>,
+        <code>Math.sqrt</code> for more accurate estimations depending on your knowledge.
+    </li>
+</ul>
+
+<div class="description">
+    <h3>Providing 'Copy Constructors'</h3>
+    <p>
+        For data to be use-able in the system, a <b>copy</b> logics need to be defined, too.
+    </p>
+</div>
+<p>
+    Copy constructors are needed once you start adjusting OpenSeadragon behavior, for example
+    with plugins. With vanilla rendering, they are typically not necessary. Copy constructor
+    <b>either must return a full object copy, or return immutable reference</b>. If you fail
+    to keep this rule, you can experience artifacts on the screen.
+</p>
+<pre>
+// copy constructor is just conversion to itself
+OpenSeadragon.convertor.learn("same", "same", (tile, data) => {
+    return data.clone();
+}, 1, 1);
+</pre>
+
+<div class="description">
+    <h3>Example Custom TileSource</h3>
+    <p>Here, we download a plaintext, and render it on each tile repeatedly with different background.</p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Example: adding support for custom type
+    </div>
+    <div id="example-custom-tilesource-advanced" class="openseadragon">
+    </div>
+    <p>
+        If you need to work with a data type not on the list, you must
+        specify a conversion to <b>at least one</b> of the built-in types.
+        These conversions are <b>directional</b>, meaning if you provide
+        a conversion from <code>MyAwesomeType</code> to <code>image</code> only,
+        you can download the data as <code>myAwesomeType</code>, but you cannot
+        for example request OpenSeadragon to give you <code>myAwesomeType</code>
+        object within <i>Tile data invalidation routine</i> TODO link.
+
+    </p>
+    <pre>
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+OpenSeadragon.convertor.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
+    return text;
+}, 0, 1);
+
+// We don't provide convertor context2d -> myAwesomeType, since we won't be needing it
+OpenSeadragon.convertor.learn("myAwesomeType", "context2d", (tile, text) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = tile.sourceBounds.width;
+    canvas.height = tile.sourceBounds.height;
+    const context = canvas.getContext('2d');
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, getRandomColor());
+    gradient.addColorStop(1, getRandomColor());
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.font = 'bold 30px Arial';
+    context.fillStyle = '#FFFFFF';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    return context;
+}, 1, Math.sqrt(2)); // sometimes it is hard to estimate the cost, let just say
+// the cost is sure greater than n, at least by factor of sqrt(2) - text render
+
+OpenSeadragon({
+    id:            "example-custom-tilesource-advanced",
+    prefixUrl:     "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    wrapHorizontal:     true,
+    loadTilesWithAjax:  true, // no effect
+    tileSources:   {
+        height: 1024,
+        width:  1024,
+        tileSize: 256,
+        minLevel: 9,
+        getTileUrl: function(level, x, y) {
+            return `${level}/${x}-${y}`;
+        },
+        downloadTileStart: function(imageJob) {
+            imageJob.finish("すごい！", null, "myAwesomeType");
+        },
+        downloadTileAbort: function(context) {
+            //pass
+        },
+    }
+});
+    </pre>
+    <script>
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        OpenSeadragon.convertor.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
+            return text;
+        }, 0, 1);
+
+        // We don't provide convertor context2d -> myAwesomeType, since we won't be needing it
+        OpenSeadragon.convertor.learn("myAwesomeType", "context2d", (tile, text) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = tile.sourceBounds.width;
+            canvas.height = tile.sourceBounds.height;
+            const context = canvas.getContext('2d');
+
+            const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, getRandomColor());
+            gradient.addColorStop(1, getRandomColor());
+
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            context.font = 'bold 30px Arial';
+            context.fillStyle = '#FFFFFF';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+            return context;
+        }, 1, Math.sqrt(2)); // sometimes it is hard to estimate the cost, let just say
+        // the cost is sure greater than n, at least by factor of sqrt(2) - text render
+
+        OpenSeadragon({
+            id:            "example-custom-tilesource-advanced",
+            prefixUrl:     "/openseadragon/images/",
+            navigatorSizeRatio: 0.25,
+            wrapHorizontal:     true,
+            loadTilesWithAjax:  true, // no effect
+            tileSources:   {
+                height: 1024,
+                width:  1024,
+                tileSize: 256,
+                minLevel: 9,
+                getTileUrl: function(level, x, y) {
+                    return `${level}/${x}-${y}`;
+                },
+                downloadTileStart: function(imageJob) {
+                    imageJob.finish("すごい！", null, "myAwesomeType");
+                },
+                downloadTileAbort: function(context) {
+                    //pass
+                },
+            }
+        });
+    </script>
+</div>

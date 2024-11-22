@@ -1,0 +1,340 @@
+<h2>Plugins for Data Modification</h2>
+
+<p>
+    Any plugin that modifies viewer data should use <code>tile-invalidated</code>
+    event, which ensures data is updated in consistent manner.
+</p>
+<p>
+    The usage is simple: you request an invalidation once you reason it is needed
+    to update data
+</p><p>
+    <code>viewer.requestInvalidate(restoreTiles)</code>
+</p><p>
+    and provide handler for the data update
+</p><p>
+    <code>viewer.addHandler('tile-invalidated', async e => {...})</code>
+</p>
+
+
+
+<div class="description">
+    <h3>Simple Plugin Example</h3>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Example: data modification plugin
+    </div>
+    <div id="example-simple" class="openseadragon">
+    </div>
+    <p>Invalidation routine is applied also when new data arrives. Therefore, we do not need
+    to call <code>viewer.requestInvalidate()</code> since we do not do any updates.
+    Simple <code>getData()</code> and <code>setData()</code> on the event object is enough here.
+    </p>
+    <pre>
+const viewer = OpenSeadragon({
+    id:            "example-simple",
+    prefixUrl:     "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    tileSources:   "/example-images/highsmith/highsmith.dzi",
+});
+viewer.addHandler('tile-invalidated', async e => {
+    // Get the canvas and context
+    const ctx = await e.getData('context2d');
+    const canvas = ctx.canvas;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const width = canvas.width;
+    const height = canvas.height;
+    </pre>
+    <button style="margin-left: 55px" onclick="const el=document.getElementById('edge-detection');el.style.display='block';this.style.display='none';">... more ...</button>
+    <pre id="edge-detection" style="display: none">
+    function toGrayscale(data) {
+        const grayData = new Uint8ClampedArray(data.length / 4);
+        for (let i = 0; i < data.length; i += 4) {
+            const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+            grayData[i / 4] = avg;
+        }
+        return grayData;
+    }
+
+    function sobelEdgeDetection(grayData, width, height) {
+        const sobelX = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+        const sobelY = [[-1, -2, -1], [ 0, 0, 0], [ 1, 2, 1]];
+
+        const gradient = new Uint8ClampedArray(grayData.length);
+
+        for (let y = 1; y < height - 1; y++) {
+            for (let x = 1; x < width - 1; x++) {
+                let gx = 0, gy = 0;
+
+                // Apply Sobel kernels
+                for (let ky = -1; ky <= 1; ky++) {
+                    for (let kx = -1; kx <= 1; kx++) {
+                        const pixelVal = grayData[(y + ky) * width + (x + kx)];
+                        gx += pixelVal * sobelX[ky + 1][kx + 1];
+                        gy += pixelVal * sobelY[ky + 1][kx + 1];
+                    }
+                }
+
+                // Calculate gradient magnitude
+                const magnitude = Math.sqrt(gx * gx + gy * gy);
+                gradient[y * width + x] = magnitude > 255 ? 255 : magnitude;
+            }
+        }
+        return gradient;
+    }
+
+    function drawEdges(ctx, gradient, width, height) {
+        const outputImage = ctx.createImageData(width, height);
+        for (let i = 0; i < gradient.length; i++) {
+            const value = gradient[i];
+            outputImage.data[i * 4] = value;
+            outputImage.data[i * 4 + 1] = value;
+            outputImage.data[i * 4 + 2] = value;
+            outputImage.data[i * 4 + 3] = 255;
+        }
+        ctx.putImageData(outputImage, 0, 0);
+    }
+    </pre>
+    <pre>
+    const grayData = toGrayscale(imageData.data);
+    const edges = sobelEdgeDetection(grayData, width, height);
+    drawEdges(ctx, edges, width, height);
+    await e.setData(ctx, "context2d");
+});
+    </pre>
+    <script>
+        const viewer = OpenSeadragon({
+            id:            "example-simple",
+            prefixUrl:     "/openseadragon/images/",
+            navigatorSizeRatio: 0.25,
+            tileSources:   "/example-images/highsmith/highsmith.dzi",
+        });
+        viewer.addHandler('tile-invalidated', async e => {
+            // Get the canvas and context
+            const ctx = await e.getData('context2d');
+            const canvas = ctx.canvas;
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const width = canvas.width;
+            const height = canvas.height;
+
+            function toGrayscale(data) {
+                const grayData = new Uint8ClampedArray(data.length / 4);
+                for (let i = 0; i < data.length; i += 4) {
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    grayData[i / 4] = avg;
+                }
+                return grayData;
+            }
+
+            function sobelEdgeDetection(grayData, width, height) {
+                const sobelX = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
+                const sobelY = [[-1, -2, -1], [ 0, 0, 0], [ 1, 2, 1]];
+
+                const gradient = new Uint8ClampedArray(grayData.length);
+
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        let gx = 0, gy = 0;
+
+                        // Apply Sobel kernels
+                        for (let ky = -1; ky <= 1; ky++) {
+                            for (let kx = -1; kx <= 1; kx++) {
+                                const pixelVal = grayData[(y + ky) * width + (x + kx)];
+                                gx += pixelVal * sobelX[ky + 1][kx + 1];
+                                gy += pixelVal * sobelY[ky + 1][kx + 1];
+                            }
+                        }
+
+                        // Calculate gradient magnitude
+                        const magnitude = Math.sqrt(gx * gx + gy * gy);
+                        gradient[y * width + x] = magnitude > 255 ? 255 : magnitude;
+                    }
+                }
+                return gradient;
+            }
+
+            function drawEdges(ctx, gradient, width, height) {
+                const outputImage = ctx.createImageData(width, height);
+                for (let i = 0; i < gradient.length; i++) {
+                    const value = gradient[i];
+                    outputImage.data[i * 4] = value;
+                    outputImage.data[i * 4 + 1] = value;
+                    outputImage.data[i * 4 + 2] = value;
+                    outputImage.data[i * 4 + 3] = 255;
+                }
+                ctx.putImageData(outputImage, 0, 0);
+            }
+
+            const grayData = toGrayscale(imageData.data);
+            const edges = sobelEdgeDetection(grayData, width, height);
+            drawEdges(ctx, edges, width, height);
+            await e.setData(ctx, "context2d");
+        });
+    </script>
+</div>
+
+
+
+
+<div class="description">
+    <h3>Plugin Priorities</h3>
+</div>
+<p>
+    If you develop a plugin, you should make order of your event handlers configurable, so that
+    users can control when your plugin is applied.
+</p>
+<pre>
+const eventOrderPriority = options.eventOrderPriority;
+viewer.addHandler('tile-invalidated', async e => {
+    ... do something ...
+}, null, eventOrderPriority);
+</pre>
+<p>
+    This way, your plugin gets applied based on
+    <code>eventOrderPriority</code> and thus users can control
+    which plugin gets applied first. See <a href="/docs/OpenSeadragon.EventSource.html">handler priority argument</a>.
+</p>
+
+
+<div class="description">
+    <h3>Selecting the Base Data</h3>
+</div>
+<p>
+    Plugin can request, whether to start from the original data, or whether to update the current viewport
+    state. Using <code>viewer.requestInvalidate(false)</code> makes your code receive the data on the viewport,
+    so that you can <i>stack</i> changes. You can also request data reset at any point in the event routine
+    using <code>resetData()</code>:
+</p>
+<pre>
+viewer.addHandler('tile-invalidated', async e => {
+    e.resetData(); //throw away any possible previous changes
+    const freshData = await e.getData('image');
+    ... etc ...
+}, null, eventOrderPriority);
+</pre>
+<p>
+    But beware of the data consistency, see section below.
+</p>
+
+<div class="description">
+    <h3>Outdated Events</h3>
+</div>
+<p>
+    It might happen that you request invalidation while a different event
+    still runs. You can tell simply by using:
+</p>
+<pre>
+await viewer.requestInvalidate();  // await finishing
+</pre>
+<p>
+    So if you have e.g. a range slider for user-controlled input,
+    you might trigger too many updates at once. You can exit outdated
+    (no longer valid) processes by checking <code>e.outdated()</code>
+    flag.
+</p>
+<pre>
+viewer.addHandler('tile-invalidated', async e => {
+    ... some expensive computation ...
+    if (e.outdated()) return;
+    ... etc ...
+}, null, eventOrderPriority);
+</pre>
+<p>
+    Note though, with <code>requestInvalidate(false)</code> some tiles
+    might finish before you realized the current data is no longer needed,
+    and the viewport might show inconsistent state.
+</p>
+<p>
+    Removal of <code>if (e.outdated()) return;</code> <b>will not help!</b>
+    The viewer also considers output of such events pointless and throws away
+    any results. This scenario is not yet well-supported, and you must ensure
+    no overlapping events are triggered in this specific case.
+</p>
+
+
+<div class="description">
+    <h3>Practical considerations</h3>
+</div>
+<p>
+    With knowledge of what drawers are being used you can optimize
+    your events. <code>getData()</code> might force unnecessary
+    processing, <code>setData()</code> might force system to do
+    additional type conversions. A good idea is to work with <code>context2d</code>
+    type, which is flexible enough for processing, but also provides
+    image data through <code>canvas</code> reference, directly usable in
+    most drawers.
+</p>
+
+
+<div class="description">
+    <h2>In the Depth</h2>
+    <p>Understanding invalidation routine.</p>
+</div>
+
+<p>
+    Update routine keeps a working cache bound to the event. This cache is not
+    part of the system, and it is a copy of data from the tile.
+    Once the data is ready, we atomically swap data under the renderer, and
+    new data gets displayed. Therefore, when you finish there is one last
+    step in the event where we ask the underlying drawer what type it requires
+    (<code>getRequiredDataFormats()</code>) and potentially convert the data.
+</p>
+<p>
+    Some drawers might not be compatible with the type directly, but want to keep
+    it nevertheless. WebGL renderer uses <i>internal</i> cache that
+    keeps reference to the uploaded texture, but the cache from outside
+    looks like a context2d or image cache (but with a weird type name).
+    This way we keep reference to the data shown at screen and support conversion
+    back to, for example, canvas context 2D object.
+</p>
+<p>
+    While you can add custom data to the tile using cache-related methods (get/set/create),
+    it is probably a not good idea. Cache invalidation runs on <b>every data-unique tile</b>,
+    both in the viewer and navigator. It might not be executed though on <i>every tile</i>.
+</p>
+<div class="description">
+    <h3>Are all tiles updated?</h3>
+</div>
+<p>
+    No. But all data items are. Tile equality is decided using <b>getTileCacheKey()</b>. If this item returns equal
+    value for two tiles, invalidation is executed only on one of the two, and references
+    to the data are later updated on both.
+</p>
+<p>
+    So if you have <i>same data but want to apply different processing</i> (e.g. vignetting),
+    you must also make sure these tiles have different (original) cache key. This will force
+    you downloading the same data several times. However, this scenario is not expected
+    to be frequent, and thus it is not optionally supported.
+</p>
+
+
+<div class="description">
+    <h3>Invalidation in Drawers</h3>
+</div>
+<p>
+    If you happen to attempt implementing a drawer logics, you usually provide
+    custom data convertors for the target type you require for rendering.
+</p>
+<p>
+    If you need the system to re-convert every data item (e.g. you upload
+    textures as WebGL renderer and parameters have changed such as texture wrap
+    or filter), you can also use <code>this.viewer.requestInvalidate()</code>.
+    Note though, that you should also change your type name, since the system
+    might not do anything if it realizes there is no data to update and types are
+    fitting.
+</p>
+<p>
+    So you should change your type names and update the return value of
+    <code>getRequiredDataFormats()</code>. Furthermore, you should
+    keep for the time of being old types in <code>getSupportedDataFormats()</code>,
+    and optionally remove them once processing done:
+</p>
+<pre>
+    ...
+    const newFormats = this.generateNewTypeNamesAndImplementConvertorAndDestructorLogics();
+    this._supportedFormats.push(...newFormats);  // variable returned by getSupportedDataFormats
+    this._requiredFormats = newFormats;          // variable returned by getRequiredDataFormats
+    await this.viewer.requestInvalidate();       // forces re-execution since type has changed
+    // optionally keep updated:  this._supportedFormats = newFormats;
+    ...
+</pre>

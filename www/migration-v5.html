@@ -1,0 +1,33 @@
+<h2>Migration From v4 (and below) to v5</h2>
+
+<p>
+   Version 5 brings WebGL Renderer to the game. It is a default renderer from now on, and there might be possible
+    considerations:
+
+    <ul style="list-style-type: disc">
+    <li>
+        it might cause issues with (older) devices
+    </li>
+    <li>
+        problems with tained data, make sure you download images from the same domain, or set <code>crossOriginPolicy: 'Anonymous'</code>
+    </li>
+    <li>
+        tile data is not directly modifiable since it now lives on the GPU, therefore <code>tile-drawing</code>-based
+        functions do not work
+    </li>
+    <li>
+        in general, any data modification might be problematic, so plugins like OpenSeadragon Filtering will
+        not likely work
+    </li>
+    </ul>
+
+    If you experience issues, you might consider sticking with the Context2D canvas drawer. We will
+    be also grateful for any feedbacks on issues with devices.
+
+<pre>
+const viewer = OpenSeadragon({
+    ....
+    drawer: 'canvas'
+});
+</pre>
+</p>
