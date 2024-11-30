@@ -309,3 +309,12 @@ OpenSeadragon({
         });
     </script>
 </div>
+
+<div class="description">
+    <h3>Removing Async Support</h3>
+</div>
+OpenSeadragon supports <code>supportsAsync</code> option that can remove asynchronous execution.
+However, if you need to enable this you have to make sure there is no asynchronous function
+used anywhere. OpenSeadragon on its own does not add asynchronous logics; the only exception
+is convertor to <code>image</code> type. This scenario is watched for and if the system triggers
+such conversion, it will throw an error.
