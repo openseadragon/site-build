@@ -49,7 +49,7 @@ module.exports = function(grunt) {
         "migration-v5": "Migration notes from v1-v4 to v5",
         "migration-v6": "Migration notes from v5 to v6",
         "data-types": "Data Types in OpenSeadragon",
-        "data-plugins": "Plugins for Data Modification"
+        "data-modifications": "Data Modification Pipeline"
     };
 
     // ----------

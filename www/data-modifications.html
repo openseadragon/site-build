@@ -1,4 +1,4 @@
-<h2>Plugins for Data Modification</h2>
+<h2>Data Modification Pipeline</h2>
 
 <p>
     Any plugin that modifies viewer data should use <code>tile-invalidated</code>
@@ -8,13 +8,19 @@
     The usage is simple: you request an invalidation once you reason it is needed
     to update data
 </p><p>
-    <code>viewer.requestInvalidate(restoreTiles)</code>
+    <code>viewer.requestInvalidate()</code>
 </p><p>
     and provide handler for the data update
 </p><p>
     <code>viewer.addHandler('tile-invalidated', async e => {...})</code>
 </p>
-
+<p>
+    The invalidation event request <code>requestInvalidate(restoreTiles)</code> takes one optional
+    argument <code>restoreTiles</code> (default <code>true</code>), which controls whether
+    tile data will be reset in the event, or not. If tile data is not reset, invalidation will
+    continue from the previous state - this way, we can accumulate modifications, compute changes
+    incrementally.
+</p>
 
 
 <div class="description">
