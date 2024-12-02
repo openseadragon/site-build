@@ -1,8 +1,7 @@
 <h2>Advanced Data Models with Custom TileSource</h2>
 
 <p>
-   Since 2022, OpenSeadragon also supports custom tile data format, loading
-   and caching procedures. This example goes through the process.
+   Since 2022, OpenSeadragon also supports custom tile data retrieval.
 
    First, please, make sure you are familiar with <a
    href="/examples/tilesource-custom/">custom tile source</a>s. The main
@@ -16,13 +15,19 @@
    can be overridden.</b>
 </p>
 
+<p>
+    It is also good to know, what data types in OpenSeadragon are. Supported ones include
+    <code>image</code>, <code>context2d</code> and <code>webImageUrl</code>.
+
+    You can learn more about <a href="/examples/data-types/"><i>data types</i> here</a>.
+</p>
+
 <div class="description">
     <h3>Advanced Data Models with OpenSeadragon</h3>
     <p>
-        By default, tile data in OpenSeadragon is represented by an <i>Image</i>
-        object. This, along with the process of tile loading and caching, can
-        be further customized by overriding appropriate TileSource member
-        functions.
+        OpenSeadragon supports any data you might need to use. Just download
+        whatever format you desire, and tell OpenSeadragon how to use this
+        format!
     </p>
 </div>
 <p>
@@ -44,14 +49,9 @@
     that must be called from <code>downloadTileStart</code> in all cases
     except when aborting the job) notifies the ImageLoader about the job
     completion and status, and the data (if any) gets pulled into the system.
-</p>
-<p>
-    Last but not least, other functions may be necessary
-    to override, especially if you change the default tile data type
-    (<code>Image</code>). <b>Changing the data type means you have to override
-    all methods that perform tile caching</b> (<code>*TileCache*()</code>
-    like signature). Overriding cache key generation may or might not be
-    necessary.
+    Upon data submission, you must provide a data type you submit, and
+    optionally provide type convertors in case your format is not supported
+    by default.
 </p>
 <p>
     <code>getTileHashKey</code> should be overridden in cases your URL
@@ -142,10 +142,11 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
+                // as a fallback compatibility, you can provide error mesage instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
-                imageJob.finish(context.image, context.promise);
+                imageJob.finish(context.image, context.promise, "context2d");
             };
 
             function createErrorImageURL(e) {
@@ -237,10 +238,12 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
+                // as a fallback compatibility, you can provide error mesage instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
-                imageJob.finish(context.image, context.promise);
+                // we provide image data type, since we submit an image object
+                imageJob.finish(context.image, context.promise, "image");
             };
 
             function createErrorImageURL(e) {
@@ -396,7 +399,7 @@ OpenSeadragon({
             if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
-                context.finish(ctx);
+                context.finish(ctx, null, "context2d");
                 return;
             } else {
                 canvas.width = size.width;
@@ -408,7 +411,7 @@ OpenSeadragon({
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
-             bounds.height = bounds.height * 2.5;
+            bounds.height = bounds.height * 2.5;
 
             var imagedata = ctx.createImageData(size.width, size.height);
             for (let x = 0; x < size.width; x++) {
@@ -425,7 +428,7 @@ OpenSeadragon({
             }
             ctx.putImageData(imagedata, 0, 0);
             // note: we output context2D!
-            context.finish(ctx);
+            context.finish(ctx, null, "context2d");
         },
         downloadTileAbort: function(context) {
             //we could set a flag which would stop the execution,
@@ -435,34 +438,6 @@ OpenSeadragon({
 
             //pass
         },
-
-        createTileCache: function(cache, data) {
-            //cache is the cache object meant to attach items to
-            //data is context2D, just keep the reference
-            cache._data = data;
-        },
-
-        destroyTileCache: function(cache) {
-            //unset to allow GC collection
-            cache._data = null;
-        },
-
-        getTileCacheData: function(cache) {
-            //just return the raw data as it was given, part of API
-            return cache._data;
-        },
-
-        getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the
-            // system, namely tile.getImage() will not work and also
-            // html-based drawing approach will not work
-            throw "Lazy to implement";
-        },
-
-        getTileCacheDataAsContext2D: function(cache) {
-            // our data is already context2D - what a luck!
-            return cache._data;
-        }
     }
 });
     </pre>
@@ -527,7 +502,7 @@ OpenSeadragon({
             if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
-                context.finish(ctx);
+                context.finish(ctx, null, "context2d");
                 return;
             } else {
                 canvas.width = size.width;
@@ -539,7 +514,7 @@ OpenSeadragon({
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
-             bounds.height = bounds.height * 2.5;
+            bounds.height = bounds.height * 2.5;
 
             var imagedata = ctx.createImageData(size.width, size.height);
             for (let x = 0; x < size.width; x++) {
@@ -556,7 +531,7 @@ OpenSeadragon({
             }
             ctx.putImageData(imagedata, 0, 0);
             // note: we output context2D!
-            context.finish(ctx);
+            context.finish(ctx, null, "context2d");
         },
         downloadTileAbort: function(context) {
             //we could set a flag which would stop the execution,
@@ -566,34 +541,6 @@ OpenSeadragon({
 
             //pass
         },
-
-        createTileCache: function(cache, data) {
-            //cache is the cache object meant to attach items to
-            //data is context2D, just keep the reference
-            cache._data = data;
-        },
-
-        destroyTileCache: function(cache) {
-            //unset to allow GC collection
-            cache._data = null;
-        },
-
-        getTileCacheData: function(cache) {
-            //just return the raw data as it was given, part of API
-            return cache._data;
-        },
-
-        getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the
-            // system, namely tile.getImage() will not work and also
-            // html-based drawing approach will not work
-            throw "Lazy to implement";
-        },
-
-        getTileCacheDataAsContext2D: function(cache) {
-            // our data is already context2D - what a luck!
-            return cache._data;
-        }
     }
 });
     </script>
@@ -605,13 +552,6 @@ OpenSeadragon({
     generate it realtime.
 </p>
 
-<p>
-    In OpenSeadragon, cache is used unless <code>context2D</code> property of
-    <code>Tile</code> instance exists. By default, cached data can be used AS-IS.
-    But when touching the downloading logics and finishing with different data
-    than <code>Image</code> object, you have to implement also <code>*TileCache*</code>
-    methods.
-</p>
 
 <p>
     Note that we do not have to re-define <code>getTileCacheKey()</code>: we rely on
@@ -622,21 +562,8 @@ OpenSeadragon({
     re-use it for the cache key creation.
 </p>
 <p>
-    In order to use the tile cache, we define how the cache is created: we
-    are given the cache context object and the data object we gave to successful
-    <code>job.finish(...)</code> call. For OpenSeadragon to be able to work
-    with such a generic approach, two methods must be implemented, that
-    convert the data to <code>RenderingContext2D</code> and <code>Image</code>
-    objects. It does not mean these objects will be created, only if needed.
-    Plugins might require to access the data as <code>Image</code> objects,
-    and also the default drawing strategies work either with canvas
-    context (canvas strategy) or image object (html div strategy). But,
-    unlike the default behaviour, we can avoid the creation of
-    <code>Image</code> object, since we work by default with canvas
-    and OpenSeadragon is mostly used with canvas drawing strategy anyway.
+    Since we do not work with a data type that is not supported out of box,
+    we can just stop here and any drawer or plugin can use our data to
+    modify it, and render it.
 </p>
-<p>
-    <b>Performance caveat:</b> <code>getTileCacheData[...]</code>
-    functions are among other things used to access the data when rendering,
-    it is a good idea to execute only optimized code and store results to return them immediately.
-</p>
+
