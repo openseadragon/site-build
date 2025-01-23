@@ -1,12 +1,12 @@
 <h2>Data Type Concept in OpenSeadragon</h2>
 
 <p>
-    Data types define how OpenSeadragon knows, how to handle interaction between modular parts of its
-    architecture. There are multiple <code>TileSource</code>s that can insert to the system any data such
+    Data types define how OpenSeadragon knows how to handle interaction between modular parts of its
+    architecture. There are multiple <code>TileSource</code>s that can insert into the system any data such
     as zip archives, strings, XML nodes... On the other side stands <code>Drawer</code>s that require
     the data in formats they can work with - <code>CanvasDrawer</code> with <code>Canvas</code> or <code>Image</code>
     objects, <code>WebGLDrawer</code> with GPU textures. To add insult to the injury, there can be multiple plugins that interact in the system, and
-    convert the data to yet a different format.
+    convert the data to yet another format.
 </p>
 <p>
     For all this to work, OpenSeadragon must provide each component with data type it needs, and
@@ -62,10 +62,10 @@ you can use to add custom types to the system.
     <h3>Conversion of Data</h3>
 </div>
 <p>
-    Adding support for custom data type in the system is not complicated. You can use both
-    synchronous and asynchronous logics. In order for your data to be fully comaptible with the system,
+    Adding support for a custom data type in the system is not complicated. You can use both
+    synchronous and asynchronous logics. In order for your data to be fully compatible with the system,
     a type should define three convertors: a convertor to some other existing type,
-    copy-convertor (will be explained later), and optionally also convertor from an existing type to our own
+    copy-convertor (will be explained later), and optionally also a convertor from an existing type to our own
     type (going back, not necessarily from the same type).
 </p>
 
@@ -155,7 +155,7 @@ OpenSeadragon.convertor.learnDestroy("context2d", ctx => {
 </div>
 <p>
     Copy constructors are needed once you start adjusting OpenSeadragon behavior, for example
-    with plugins. With vanilla rendering, they are typically not necessary. Copy constructor
+    with plugins. With vanilla rendering, they are typically not necessary. A copy constructor
     <b>either must return a full object copy, or return immutable reference</b>. If you fail
     to keep this rule, you can experience artifacts on the screen.
 </p>
@@ -281,7 +281,7 @@ OpenSeadragon({
             context.fillText(text, canvas.width / 2, canvas.height / 2);
 
             return context;
-        }, 1, Math.sqrt(2)); // sometimes it is hard to estimate the cost, let just say
+        }, 1, Math.sqrt(2)); // sometimes it is hard to estimate the cost, let's just say
         // the cost is sure greater than n, at least by factor of sqrt(2) - text render
 
         OpenSeadragon({
