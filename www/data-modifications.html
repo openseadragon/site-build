@@ -319,7 +319,7 @@ viewer.addHandler('tile-invalidated', async e => {
 </div>
 <p>
     If you happen to attempt implementing a drawer logics, you usually provide
-    custom data convertors for the target type you require for rendering.
+    custom data converters for the target type you require for rendering.
 </p>
 <p>
     If you need the system to re-convert every data item (e.g. you upload
@@ -337,7 +337,7 @@ viewer.addHandler('tile-invalidated', async e => {
 </p>
 <pre>
     ...
-    const newFormats = this.generateNewTypeNamesAndImplementConvertorAndDestructorLogics();
+    const newFormats = this.generateNewTypeNamesAndImplementConverterAndDestructorLogics();
     this._supportedFormats.push(...newFormats);  // variable returned by getSupportedDataFormats
     this._requiredFormats = newFormats;          // variable returned by getRequiredDataFormats
     await this.viewer.requestInvalidate();       // forces re-execution since type has changed
