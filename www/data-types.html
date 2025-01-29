@@ -47,10 +47,6 @@
     <li>
         <code>context2d</code>: a <code>CanvasRenderingContext2D</code> object
     </li>
-    <li>
-        <i>internal formats</i>: internal, often dynamically-named formats for drawer logics, mentioned here
-        just for the sake of completeness
-    </li>
 </ul>
 <p>
 There are methods <code>OpenSeadragon.convertor.learn()</code> and <code>OpenSeadragon.convertor.learnDestroy()</code>
@@ -312,8 +308,12 @@ OpenSeadragon({
 <div class="description">
     <h3>Removing Async Support</h3>
 </div>
-OpenSeadragon supports <code>supportsAsync</code> option that can remove asynchronous execution.
-However, if you need to enable this you have to make sure there is no asynchronous function
-used anywhere. OpenSeadragon on its own does not add asynchronous logics; the only exception
-is convertor to <code>image</code> type. This scenario is watched for and if the system triggers
-such conversion, it will throw an error.
+<a href="/docs/OpenSeadragon.html#.Options">OpenSeadragon viewer options</a> also have
+<code>supportsAsync: false</code> option that can remove asynchronous execution. OpenSeadragon
+methods then ensure any API call executes synchronously.
+
+However, if you need to disable asynchronous behavior, you have to make sure there is no asynchronous function
+used anywhere. That means any <code>raiseEventAwaiting</code> handles must not be async functions, and
+all data type conversion logics must be synchronous too. OpenSeadragon on its own does not add asynchronous logics;
+the only exception is convertor to <code>image</code> type. This one specific scenario is watched for and if
+the system tries to convert data to <code>image</code>, it will notify you in the console.
