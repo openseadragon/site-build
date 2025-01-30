@@ -142,7 +142,7 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
-                // as a fallback compatibility, you can provide error mesage instead of type upon failure
+                // as a fallback compatibility, you can provide error message instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
@@ -238,7 +238,7 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
-                // as a fallback compatibility, you can provide error mesage instead of type upon failure
+                // as a fallback compatibility, you can provide error message instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
@@ -534,7 +534,7 @@ OpenSeadragon({
             context.finish(ctx, null, "context2d");
         },
         downloadTileAbort: function(context) {
-            //we could set a flag which would stop the execution,
+            // we could set a flag which would stop the execution,
             // and it would be right to do so, but it's not necessary
             // (could help in debug scenarios though, in case of cycling
             // it could kill it)
@@ -547,7 +547,7 @@ OpenSeadragon({
 </div>
 
 <p>
-    Unlike in the first example, we work with <code>RenderingContext2D</code>
+    Unlike in the first example, we are working with <code>RenderingContext2D</code>
     object instead of <code>Image</code>. Also, instead of downloading we just
     generate it realtime.
 </p>
@@ -557,12 +557,12 @@ OpenSeadragon({
     Note that we do not have to re-define <code>getTileCacheKey()</code>: we rely on
     the default key generation using URL. If we had returned an empty string in
     <code>getTileUrl</code> (also
-    a correct solution), we would have to override <code>getTileCacheKey()
-    </code>, but since we are forced to define the url getter, we may as well
+    a correct solution), we would have to override <code>getTileCacheKey()</code>, 
+    but since we are forced to define the url getter, we may as well
     re-use it for the cache key creation.
 </p>
 <p>
-    Since we do not work with a data type that is not supported out of box,
+    Since we are working with a data type that is supported out of box,
     we can just stop here and any drawer or plugin can use our data to
     modify it, and render it.
 </p>

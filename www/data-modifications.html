@@ -1,24 +1,24 @@
 <h2>Data Modification Pipeline</h2>
 
 <p>
-    Any plugin that modifies viewer data should use <code>tile-invalidated</code>
-    event, which ensures data is updated in consistent manner.
+    Any plugin that modifies viewer data should use the <code>tile-invalidated</code>
+    event, which ensures data is updated in a consistent manner.
 </p>
 <p>
     The usage is simple: you request an invalidation once you reason it is needed
-    to update data
+    to update the data
 </p><p>
     <code>viewer.requestInvalidate()</code>
 </p><p>
-    and provide handler for the data update
+    and provide a handler for the data update
 </p><p>
     <code>viewer.addHandler('tile-invalidated', async e => {...})</code>
 </p>
 <p>
     The invalidation event request <code>requestInvalidate(restoreTiles)</code> takes one optional
     argument <code>restoreTiles</code> (default <code>true</code>), which controls whether
-    tile data will be reset in the event, or not. If tile data is not reset, invalidation will
-    continue from the previous state - this way, we can accumulate modifications, compute changes
+    tile data will be reset in the event or not. If tile data is not reset, invalidation will
+    continue from the previous state - this way, we can accumulate modifications, computing changes
     incrementally.
 </p>
 
@@ -32,8 +32,8 @@
     </div>
     <div id="example-simple" class="openseadragon">
     </div>
-    <p>Invalidation routine is applied also when new data arrives. Therefore, we do not need
-    to call <code>viewer.requestInvalidate()</code> since we do not do any updates.
+    <p>The invalidation routine is applied also when new data arrives. Therefore, we do not need
+    to call <code>viewer.requestInvalidate()</code> since we are not doing any updates.
     Simple <code>getData()</code> and <code>setData()</code> on the event object is enough here.
     </p>
     <pre>
@@ -186,7 +186,7 @@ viewer.addHandler('tile-invalidated', async e => {
     <h3>Plugin Priorities</h3>
 </div>
 <p>
-    If you develop a plugin, you should make order of your event handlers configurable, so that
+    If you develop a plugin, you should make the order of your event handlers configurable, so that
     users can control when your plugin is applied.
 </p>
 <pre>
@@ -206,9 +206,9 @@ viewer.addHandler('tile-invalidated', async e => {
     <h3>Selecting the Base Data</h3>
 </div>
 <p>
-    Plugin can request, whether to start from the original data, or whether to update the current viewport
+    Your plugin can request whether to start from the original data or whether to update the current viewport
     state. Using <code>viewer.requestInvalidate(false)</code> makes your code receive the data on the viewport,
-    so that you can <i>stack</i> changes. You can also request data reset at any point in the event routine
+    so that you can <i>stack</i> changes. You can also request a data reset at any point in the event routine
     using <code>resetData()</code>:
 </p>
 <pre>
@@ -219,7 +219,7 @@ viewer.addHandler('tile-invalidated', async e => {
 }, null, eventOrderPriority);
 </pre>
 <p>
-    But beware of the data consistency, see section below.
+    But beware of data consistency; see section below.
 </p>
 
 <div class="description">
@@ -227,7 +227,7 @@ viewer.addHandler('tile-invalidated', async e => {
 </div>
 <p>
     It might happen that you request invalidation while a different event
-    still runs. You can tell simply by using:
+    is running. You can tell simply by using:
 </p>
 <pre>
 await viewer.requestInvalidate();  // await finishing
@@ -247,7 +247,7 @@ viewer.addHandler('tile-invalidated', async e => {
 </pre>
 <p>
     Note though, with <code>requestInvalidate(false)</code> some tiles
-    might finish before you realized the current data is no longer needed,
+    might finish before you realize the current data is no longer needed,
     and the viewport might show inconsistent state.
 </p>
 <p>
@@ -265,51 +265,51 @@ viewer.addHandler('tile-invalidated', async e => {
     With knowledge of what drawers are being used you can optimize
     your events. <code>getData()</code> might force unnecessary
     processing, <code>setData()</code> might force system to do
-    additional type conversions. A good idea is to work with <code>context2d</code>
+    additional type conversions. A good idea is to work with the <code>context2d</code>
     type, which is flexible enough for processing, but also provides
-    image data through <code>canvas</code> reference, directly usable in
+    image data through a <code>canvas</code> reference, directly usable in
     most drawers.
 </p>
 
 
 <div class="description">
-    <h2>In the Depth</h2>
-    <p>Understanding invalidation routine.</p>
+    <h2>In Depth</h2>
+    <p>Understanding the invalidation routine.</p>
 </div>
 
 <p>
-    Update routine keeps a working cache bound to the event. This cache is not
-    part of the system, and it is a copy of data from the tile.
-    Once the data is ready, we atomically swap data under the renderer, and
+    The update routine keeps a working cache bound to the event. This cache is not
+    part of the system; it is a copy of data from the tile.
+    Once the data is ready, we atomically swap the data under the renderer, and the
     new data gets displayed. Therefore, when you finish there is one last
     step in the event where we ask the underlying drawer what type it requires
     (<code>getRequiredDataFormats()</code>) and potentially convert the data.
 </p>
 <p>
     Some drawers might not be compatible with the type directly, but want to keep
-    it nevertheless. WebGL renderer uses <i>internal</i> cache that
+    it nevertheless. The WebGL renderer uses an <i>internal</i> cache that
     keeps reference to the uploaded texture, but the cache from outside
     looks like a context2d or image cache (but with a weird type name).
-    This way we keep reference to the data shown at screen and support conversion
-    back to, for example, canvas context 2D object.
+    This way we keep a reference to the data shown on screen and support conversion
+    back to, for example, a canvas context 2D object.
 </p>
 <p>
     While you can add custom data to the tile using cache-related methods (get/set/create),
-    it is probably a not good idea. Cache invalidation runs on <b>every data-unique tile</b>,
+    it is probably not a good idea. Cache invalidation runs on <b>every data-unique tile</b>,
     both in the viewer and navigator. It might not be executed though on <i>every tile</i>.
 </p>
 <div class="description">
     <h3>Are all tiles updated?</h3>
 </div>
 <p>
-    No. But all data items are. Tile equality is decided using <b>getTileCacheKey()</b>. If this item returns equal
+    No. But all data items are. Tile equality is decided using <b>getTileCacheKey()</b>. If this item returns an equal
     value for two tiles, invalidation is executed only on one of the two, and references
     to the data are later updated on both.
 </p>
 <p>
-    So if you have <i>same data but want to apply different processing</i> (e.g. vignetting),
-    you must also make sure these tiles have different (original) cache key. This will force
-    you downloading the same data several times. However, this scenario is not expected
+    So if you have the <i>same data but want to apply different processing</i> (e.g. vignetting),
+    you must also make sure these tiles have different (original) cache keys. This will force
+    you to download the same data several times. However, this scenario is not expected
     to be frequent, and thus it is not optionally supported.
 </p>
 
@@ -318,7 +318,7 @@ viewer.addHandler('tile-invalidated', async e => {
     <h3>Invalidation in Drawers</h3>
 </div>
 <p>
-    If you happen to attempt implementing a drawer logics, you usually provide
+    If you happen to attempt implementing drawer logic, you will usually provide
     custom data converters for the target type you require for rendering.
 </p>
 <p>
