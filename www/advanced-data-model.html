@@ -142,7 +142,8 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
-                // as a fallback compatibility, you can provide error message instead of type upon failure
+                // as a fallback compatibility, you can provide error message
+                // instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
@@ -388,8 +389,10 @@ OpenSeadragon({
             return 1.0;
         },
         downloadTileStart: function(context) {
-            let size = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, true);
-            let bounds = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, false);
+            let size = this.getTileBounds(context.postData.level, context.postData.dx,
+                context.postData.dy, true);
+            let bounds = this.getTileBounds(context.postData.level, context.postData.dx,
+                context.postData.dy, false);
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext('2d');
 

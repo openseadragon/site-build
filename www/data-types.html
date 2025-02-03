@@ -82,7 +82,8 @@ OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
 // or asynchronous:
 OpenSeadragon.convertor.learn("typeA", "typeB", async (tile, data) => {
     const data = await data.asTypeBAsync();
-    return data;  // yes, we could just return data.asAsync(..), but we want to explicitly show await usage
+    return data;  // yes, we could just return data.asAsync(..), but we want
+                  // to explicitly show await usage
 }, 1, 1);
 
 // or promise version:
