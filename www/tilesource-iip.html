@@ -38,7 +38,7 @@
 </p>
 
 <p>
-    OpenSeadragon supports the IIP API from version 5.0.2 onwards.
+    OpenSeadragon supports the IIP API from version 6.0.0 onwards.
 </p>
 
 <div class="description">
@@ -58,6 +58,7 @@
             OpenSeadragon({
                 id:            "iip-example",
                 prefixUrl:     "/openseadragon/images/",
+                drawer:        "canvas",
                 tileSources:   {
                     iipsrv: "https://merovingio.c2rmf.cnrs.fr/fcgi-bin/iipsrv.fcgi",
                     image: "HD7.tif"
@@ -102,6 +103,7 @@ OpenSeadragon({
             OpenSeadragon({
                 id:            "transform",
                 prefixUrl:     "/openseadragon/images/",
+                drawer:        "canvas",
                 showNavigator: true,
                 tileSources:   {
                     iipsrv: "https://merovingio.c2rmf.cnrs.fr/fcgi-bin/iipsrv.fcgi",
