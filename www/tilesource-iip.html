@@ -1,24 +1,6 @@
 <style type="text/css">
-  div.openseadragon div.caption{
-    bottom: 0;
-    right: 0;
-    position: absolute;
-    color: white;
-    padding: 0.5em;
-    background: black;
-    opacity: 0.6;
-    z-index: 1;
-    width: auto;
-    margin: 0.5em;
-    border-radius: 0.3em;
-    box-shadow: 4px 4px 4px rgba(0,0,0,0.8);
-    font-size: 70%;
-    transition: opacity 0.5s ease-in-out;
-  }
-  div.openseadragon div.caption a { color: white; }
-  div.openseadragon div.caption a:visited { color: white; }
-  div.openseadragon div.caption:hover { opacity: 0.9; }
- </style>
+  div.openseadragon { position: relative; }
+</style>
 
 <h2>
     example: internet imaging procotol support
@@ -51,14 +33,15 @@
     <div class="demoheading">
         Basic Example
     </div>
-    <div id="iip-example" 
-         class="openseadragon" style="position:relative">
-         <div class="caption"><b><a href="https://collections.louvre.fr/ark:/53355/cl010060753">La Vierge au Diadème Bleu</a><br/><i>Raphael / Giovanni Penni</i></b><br/>Musée du Louvre<br/>Copyright &copy; 2024 C2RMF</div>
+    <div id="basic-example" class="openseadragon">
+        <div class="caption"><b><a href="https://collections.louvre.fr/ark:/53355/cl010060753">La Vierge au Diadème Bleu</a><br/><i>Raphael / Giovanni Penni</i></b><br/>Musée du Louvre<br/>Copyright &copy; 2024 C2RMF</div>
         <script type="text/javascript">
             OpenSeadragon({
-                id:            "iip-example",
-                prefixUrl:     "/openseadragon/images/",
-                drawer:        "canvas",
+                id:              "basic-example",
+                prefixUrl:       "/openseadragon/images/",
+                drawer:          "canvas",
+                showNavigator:   true,
+                visibilityRatio: 0.9,
                 tileSources:   {
                     iipsrv: "https://merovingio.c2rmf.cnrs.fr/fcgi-bin/iipsrv.fcgi",
                     image: "HD7.tif"
@@ -96,15 +79,15 @@ OpenSeadragon({
     <div class="demoheading">
         Advanced Example
     </div>
-    <div id="transform" 
-         class="openseadragon" style="position:relative">
+    <div id="advanced-example" class="openseadragon">
          <div class="caption">96999 x 45667 pixel OME-TIFF<br/><i>Paul Felts</i><br/><a href="https://downloads.openmicroscopy.org/images/SVS/">OME-TIFF image repository</a><br/>(Creative Commons 4.0)</div>
         <script type="text/javascript">
             OpenSeadragon({
-                id:            "transform",
-                prefixUrl:     "/openseadragon/images/",
-                drawer:        "canvas",
-                showNavigator: true,
+                id:              "advanced-example",
+                prefixUrl:       "/openseadragon/images/",
+                drawer:          "canvas",
+                visibilityRatio: 0.9,
+                showNavigator:   true,
                 tileSources:   {
                     iipsrv: "https://merovingio.c2rmf.cnrs.fr/fcgi-bin/iipsrv.fcgi",
                     image:  "77917.ome.tif",
