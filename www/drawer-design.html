@@ -44,7 +44,8 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
     constructor(options) {
         super(options);
 
-        // here, you can use custom options, prefer usage of this.options (already extended with defaults)
+        // here, you can use custom options, prefer usage of this.options (already
+        // extended with defaults)
         console.log(this.options.myCustomFlag);
     }
 
@@ -68,9 +69,10 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
      * @return {string[]}
      */
     getSupportedDataFormats() {
-        // Return an array of strings, types of data supported by the drawer. See data types tutorial if you
-        // don't know what we are talking about.
-        return ["A", "B"];  // Note. The data formats must be defined and valid! This is just for the sake of the example.
+        // Return an array of strings, types of data supported by the drawer. See data types
+        // tutorial if you don't know what we are talking about.
+        return ["A", "B"];  // Note. The data formats must be defined and valid! 
+                            // This is just for the sake of the example.
     }
 
     /**
@@ -80,17 +82,18 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
      * @return {string[]}
      */
     getRequiredDataFormats() {
-        // We can return a subset of supported formats, to force the system to convert prefferably
-        // to this subset. supported can be ["A", "B"], and required ["B"]. The system will use A or
-        // B when available, but upon data invalidation routine, the target format to finish with will be B.
-        // You can for example call manually invalidation routine, and after finish deprecate support for type 'A'
-        // (remove from getSupportedDataFormats output).
+        // We can return a subset of supported formats, to force the system to convert preferably
+        // to this subset. supported can be ["A", "B"], and required ["B"]. The system will use A
+        // or B when available, but upon data invalidation routine, the target format to finish
+        // with will be B. You can for example call manually invalidation routine, and after
+        // finish deprecate support for type 'A' (remove from getSupportedDataFormats output).
         return this.getSupportedDataFormats();
     }
 
     /**
      * @abstract
-     * @returns {Boolean} Whether the drawer implementation is supported by the browser. Must be overridden by extending classes.
+     * @returns {Boolean} Whether the drawer implementation is supported by the browser. Must be
+     * overridden by extending classes.
      */
     static isSupported() {
         return true;  // check whether your libs / apis are supported by the current user's browser
@@ -103,8 +106,9 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
      */
     _createDrawingElement() {
         // Most animation graphics on web is done through canvas. But you can return anything, as
-        // long as you can use it to render. This element will be accessible through ' this.canvas ' property.
-        // But it does not have to be a canvas, for example HTML drawer that positions image objects by css returns 'div'.
+        // long as you can use it to render. This element will be accessible through ' this.canvas '
+        // property. But it does not have to be a canvas, for example HTML drawer that positions
+        // image objects by css returns 'div'.
         return document.createElement('canvas');
     }
 
@@ -132,8 +136,8 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
      * {@link OpenSeadragon.Options} for more explanation.
      */
     setImageSmoothingEnabled(imageSmoothingEnabled) {
-        // TODO: switch between enabled (e.g. image data INTERPOLATION via linear or a higher order function) and
-        //       disabled - 'nearest' interpolation on the zooming
+        // TODO: switch between enabled (e.g. image data INTERPOLATION via linear or a
+        // higher order function) and disabled - 'nearest' interpolation on the zooming
     }
 
     /**
@@ -168,8 +172,8 @@ The actual drawing logics implementation looks something like this:
                 // Draw each tile. Do remember though, that tiles might overlap. See image below.
                 const data = this.getDataToDraw(tile);
                 if (!data) {
-                    // If not data available, do nothing for the tile. It is probably a system bug
-                    // or bad API usage, and the developer should be already notified elsewhere.
+                    // If data not available, do nothing for the tile. It is probably a system bug
+                    // or bad API usage, and the developer should already be notified elsewhere.
                     return;
                 }
 
@@ -180,7 +184,7 @@ The actual drawing logics implementation looks something like this:
 </pre>
 <p>The tiles you are trying to render for a single tiled image might look like this:</p>
 <img src="/images/grid.png" style="width: 100%; max-width: 450px; margin: 0 auto; display: block">
-<p>Somewhere, only level three is available, elsewhere higher resolution can be already available.
+<p>Somewhere, only level three is available, elsewhere higher resolution can already be available.
 You must use the painter's algorithm here, preferring the higher resolution data.</p>
 <p>Handy feature might be <code>this.id</code> value which can be used for unique identifiers
 for the drawing API (e.g. WebGL, WebGPU APIs).</p>
@@ -191,12 +195,13 @@ for the drawing API (e.g. WebGL, WebGPU APIs).</p>
 </div>
 <p>Some APIs like WebGL need different formats of data than those available in the OSD data types. For example,
 WebGL wants a GLuint reference to the uploaded texture on a GPU, and the <i>model</i> tile positions for the vertex
-shader. Or reference to the <i>underlying CPU data</i> in case the data is tainted and we want to itnernally fallback
+shader. Or reference to the <i>underlying CPU data</i> in case the data is tainted and we want to internally fallback
 to a different renderer.</p>
 <p>All this is quite hard to fit inside data processing pipeline, while having the flexibility available a drawer needs.
 This is the time for <b>internal cache</b></p>. It needs to be properly configured for the usage:</p>
 <pre>
-    // These options are the default drawer options, used when user does not override them in drawerOptions:
+    // These options are the default drawer options, used when user does not
+    // override them in drawerOptions:
     get defaultOptions() {
         return {
             // When enabled, the internal cache API **MUST** be implemented
@@ -231,14 +236,14 @@ This is the time for <b>internal cache</b></p>. It needs to be properly configur
 And the output value will be available in the drawing routine, i.e. <code>this.getDataToDraw(tile);</code>
 returns <code>{ data: "this data will be available when rendering the tile" }</code>.
 </p>
-    <p>Based on <code>preloadCache</code> option, the conversion happens either immediatelly upon data invalidation routine
-    or after <code>tile-loaded</code> event (when <code>true</code>), or just before rendering (otherwise). That means,
+    <p>Based on the <code>preloadCache</code> option, the conversion happens either immediately upon data invalidation routine
+    or after <code>tile-loaded</code> event (when <code>true</code>), or just before rendering (otherwise). That means
     internalCacheCreate cannot be asynchronous if <code>preloadCache</code> is disabled, since it needs to deliver data
     for the rendering immediatelly.
 </p>
 <p>
     If you need to re-validate all internal caches and re-initialize them, simply call <code>this.setInternalCacheNeedsRefresh()</code>.
-    The effect will be immediate for <code>preloadCache == false</code>. You can otherwise request invalidation event if you need
+    The effect will be immediate for <code>preloadCache == false</code>. You can otherwise request an invalidation event if you need
     the change to be applied as soon as possible, but immediate change is not guaranteed (and probably will not happen).
 </p>
 <p>Finally, you should also ensure the data is properly freed:</p>
