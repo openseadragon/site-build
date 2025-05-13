@@ -49,7 +49,7 @@
     </li>
 </ul>
 <p>
-There are methods <code>OpenSeadragon.convertor.learn()</code> and <code>OpenSeadragon.convertor.learnDestroy()</code>
+There are methods <code>OpenSeadragon.converter.learn()</code> and <code>OpenSeadragon.converter.learnDestroy()</code>
 you can use to add custom types to the system.
 </p>
 
@@ -60,33 +60,33 @@ you can use to add custom types to the system.
 <p>
     Adding support for custom data type in the system is not complicated. You can use both
     synchronous and asynchronous logics. In order for your data to be fully comaptible with the system,
-    a type should define three convertors: a convertor to some other existing type,
-    copy-convertor (will be explained later), and optionally also convertor from an existing type to our own
+    a type should define three converters: a converter to some other existing type,
+    copy-converter (will be explained later), and optionally also converter from an existing type to our own
     type (going back, not necessarily from the same type).
 </p>
 
 <p>
-    If you are familiar with mathematical graphs, you can imagine convertors like directional edges
+    If you are familiar with mathematical graphs, you can imagine converters like directional edges
     between nodes (types), with edge costs (conversion costs).
 </p>
 <p>
-    See the following pseudocode on how to work with convertors:
+    See the following pseudocode on how to work with converters:
 </p>
 
 <pre>
-OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
+OpenSeadragon.converter.learn("typeA", "typeB", (tile, data) => {
     //data comes as type A, provide type B
     return data.asTypeB();
 }, 1, 1);
 
 // or asynchronous:
-OpenSeadragon.convertor.learn("typeA", "typeB", async (tile, data) => {
+OpenSeadragon.converter.learn("typeA", "typeB", async (tile, data) => {
     const data = await data.asTypeBAsync();
     return data;  // yes, we could just return data.asAsync(..), but we want to explicitly show await usage
 }, 1, 1);
 
 // or promise version:
-OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
+OpenSeadragon.converter.learn("typeA", "typeB", (tile, data) => {
     //data comes as type A, provide type B
     return new Promise(resolve => {
         data.convertToTypeBWithCallBack(() => resolve());
@@ -106,7 +106,7 @@ OpenSeadragon.convertor.learn("typeA", "typeB", (tile, data) => {
 </p>
 
 <pre>
-OpenSeadragon.convertor.learnDestroy("context2d", ctx => {
+OpenSeadragon.converter.learnDestroy("context2d", ctx => {
     ctx.canvas.width = 0;
     ctx.canvas.height = 0;
 });
