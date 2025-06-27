@@ -21,7 +21,6 @@
     }
 
     .info-panel {
-        background: #f8f9fa;
         padding: 15px;
         border-radius: 5px;
         margin-bottom: 20px;
@@ -61,16 +60,17 @@
 
 <div class="info-panel">
     <p>OpenSeadragon allows precise image cropping using polygon shapes. This feature is useful for:</p>
-    <ul>
+    <ul style="list-style-type: disc; margin-left: 20px;">
         <li>Highlighting specific regions of interest</li>
         <li>Creating non-rectangular image masks</li>
         <li>Interactive annotation tools</li>
     </ul>
+    <p><strong>Coordinate Handling:</strong> Polygon points should be provided in <strong>image coordinates</strong> (original pixel dimensions). During rendering, OpenSeadragon converts these to viewport coordinates automatically.</p>
 </div>
 
 <h3>Implementation Guide</h3>
 
-<div class="description">
+<div>
     <h4>Polygon Format Requirements</h4>
     <p>Provide an array of polygons where each polygon is an array of <code>{x, y}</code> coordinate objects:</p>
     <pre>[
@@ -107,7 +107,7 @@ viewer.addHandler('open', function() {
     
     <div class='box-with-title'>
         <h4>Polygon Points</h4>
-        <div class="buttons">
+        <div class="buttons" style="display: flex; gap: 8px; margin: 0;">
             <button id="addPointBtn" class="btn">Add Points as Polygon</button>
             <button id="clearPointsBtn" class="btn">Clear Points</button>
         </div>
@@ -116,7 +116,7 @@ viewer.addHandler('open', function() {
     
     <div class='box-with-title'>
         <h4>Current Polygons</h4>
-        <div class="buttons">
+        <div class="buttons" style="display: flex; gap: 8px; margin: 0;">
             <button id="cropBtn" class="btn">Apply Cropping</button>
             <button id="clearPolygonsBtn" class="btn">Clear Polygons</button>
         </div>
@@ -124,21 +124,12 @@ viewer.addHandler('open', function() {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/openseadragon@3.1/build/openseadragon/openseadragon.min.js"></script>
 <script>
     // Initialize viewer with modern configuration
     var viewer = OpenSeadragon({
         id: "contentDiv",
-        prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@3.1/build/openseadragon/images/",
-        tileSources: {
-            type: 'image',
-            url: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi'
-        },
-        showNavigationControl: true,
-        gestureSettingsMouse: {
-            clickToZoom: false
-        },
-        navigatorPosition: "BOTTOM_RIGHT",
+        prefixUrl: "/openseadragon/images/",
+        tileSources: 'https://openseadragon.github.io/example-images/highsmith/highsmith.dzi',
         showZoomControl: true,
         showHomeControl: true,
         showFullPageControl: true
@@ -259,3 +250,5 @@ viewer.addHandler('open', function() {
         });
     });
 </script>
+
+
