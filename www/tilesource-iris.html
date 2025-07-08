@@ -1,0 +1,166 @@
+<h2>
+    Example: Iris TileSource Support
+</h2>
+<p>
+    The <strong>IrisTileSource</strong> is an OpenSeadragon tilesource implementation for viewing images served by an Iris-compatible tile server. It is designed to efficiently display large, high-resolution images by loading only the visible tiles at the appropriate zoom level.
+</p>
+<p>
+    The Iris API provides endpoints for retrieving image metadata and individual image tiles. OpenSeadragon's IrisTileSource fetches the metadata to determine the image's dimensions, available zoom levels, and tile layout, then requests tiles as needed while you pan and zoom.
+</p>
+
+<div class="description">
+    <h3>IrisTileSource Configuration</h3>
+    <p>
+        To use the IrisTileSource, specify the <code>type</code> as <code>IrisTileSource</code> and provide the <code>serverUrl</code> (the base URL of your Iris server) and <code>slideId</code> (the image identifier).
+    </p>
+</div>
+<div class="demoarea">
+  <div class="demoheading">
+      Example Inline Configuration for Custom Tile Sources
+  </div>
+  <div id="example-custom-tilesource" 
+       class="openseadragon" >
+  </div>
+  <p>
+      Below is a minimal inline configuration which pulls tiles from a NASA 
+      Blue Marble tile set transformed into tiles hosted on Amazon S3
+      (compliments of <a
+      href="http://mike.teczno.com/notes/blue-marble-tiles.html">
+      Michal Migurski</a>). Note that the default <code>tileSize</code> is
+      available as a property of the tile source.
+  </p>
+  <pre>
+OpenSeadragon({
+  id:            "example-custom-tilesource",
+  prefixUrl:     "/openseadragon/images/",
+  navigatorSizeRatio: 0.25,
+  wrapHorizontal:     true,
+  tileSources:   {
+      height: 512*256,
+      width:  512*256,
+      tileSize: 256,
+      minLevel: 8,
+      getTileUrl: function( level, x, y ){
+          return "http://s3.amazonaws.com/com.modestmaps.bluemarble/" +
+                  (level-8) + "-r" + y + "-c" + x + ".jpg";
+      }
+  }
+});
+  </pre>
+  <script>
+  OpenSeadragon({
+      id:                 "example-custom-tilesource",
+      prefixUrl:          "/openseadragon/images/",
+      navigatorSizeRatio: 0.25,
+      wrapHorizontal:     true,
+      tileSources:   {
+          height: 512*256,
+          width:  512*256,
+          tileSize: 256,
+          minLevel: 8,
+          getTileUrl: function( level, x, y ){
+              return "http://s3.amazonaws.com/com.modestmaps.bluemarble/"+(level-8)+"-r"+y+"-c"+x+".jpg";
+          }
+      }
+  });
+  </script>
+</div>
+<script type="text/javascript">
+    OpenSeadragon({
+        id: "example-iris-tilesource",
+        prefixUrl: "/openseadragon/images/",
+        tileSources: [{
+            type: "IrisTileSource",
+            serverUrl: "http://localhost:3000",
+            slideId: "12345"
+        }]
+    });
+</script>
+
+<div class="description">
+    <h3>Iris Metadata and Tile API</h3>
+    <p>
+        The IrisTileSource interacts with two main API endpoints:
+    </p>
+    <ul>
+        <li><strong>Metadata API:</strong> <code>/slides/{slideId}/metadata</code></li>
+        <br/>
+        <li><strong>Tile API:</strong> <code>/slides/{slideId}/layers/{layerId}/tiles/{position}</code></li>
+    </ul>
+    <p>
+        The metadata endpoint returns information about the image, including its dimensions, available layers (zoom levels), and tile layout. The tile endpoint returns the image data for a specific tile at a given layer and position.
+    </p>
+</div>
+<div class="demoarea">
+    <div class="demoheading">
+        Example Metadata Response
+    </div>
+<pre>
+{
+    "type": "slide_metadata",
+    "format": "FORMAT_B8G8R8A8",
+    "encoding": "image/jpeg",
+    "extent": {
+        "width": 1983,
+        "height": 1381,
+        "layers": [
+            {
+                "x_tiles": 8,
+                "y_tiles": 6,
+                "scale": 1
+            },
+            {
+                "x_tiles": 31,
+                "y_tiles": 22,
+                "scale": 4.0005
+            },
+            {
+                "x_tiles": 124,
+                "y_tiles": 87,
+                "scale": 16.0035
+            },
+            {
+                "x_tiles": 496,
+                "y_tiles": 346,
+                "scale": 64.0141
+            }
+        ]
+    }
+}
+</pre>
+    <p>
+        <strong>Tile URL Example:</strong><br/>
+        <code>/slides/12345/layers/2/tiles/10</code>
+    </p>
+    <div class="description">
+        <h4>How is <code>position</code> Calculated?</h4>
+        <p>
+            The <code>position</code> in the tile API URL specifies which tile to fetch within a given layer. It is calculated using the tile's <code>x</code> and <code>y</code> coordinates and the number of tiles in the <code>x</code> direction for that layer:
+        </p>
+        <pre>
+layerPosition = y * x_tiles_in_layer + x
+        </pre>
+        <p>
+            For example, if a layer has <code>x_tiles = 31</code> and you want the tile at <code>x = 2</code>, <code>y = 3</code>:
+        </p>
+        <pre>
+layerPosition = 3 * 31 + 2 = 95
+        </pre>
+        <p>
+            So the tile URL would be:
+        </p>
+        <pre>
+/slides/12345/layers/1/tiles/95
+        </pre>
+    </div>
+</div>
+
+<div class="description">
+    <h3>How It Works</h3>
+    <p>
+        When you initialize OpenSeadragon with the IrisTileSource, it first fetches the metadata for the specified slide. This metadata describes the image's size and how it is divided into tiles at each zoom level. As you pan and zoom, OpenSeadragon requests the appropriate tiles from the tile API endpoint and displays them in the viewer.
+    </p>
+    <p>
+        The IrisTileSource is ideal for large images where loading the entire image at once would be inefficient. By loading only the visible tiles, it provides a smooth and responsive viewing experience.
+    </p>
+</div>

@@ -24,6 +24,7 @@ module.exports = function(grunt) {
         "tilesource-osm": "OpenStreetMap Tile Source",
         "tilesource-tms": "Tiled Map Service Tile Source",
         "tilesource-iiif": "IIIF Tile Source",
+        "tilesource-iris": "IRIS Tile Source",
         "tilesource-legacy": "Legacy Tile Source",
         "tilesource-zoomify": "Zoomify Tile Source",
         "tilesource-zoomit": "Zoom.it Tile Source",
