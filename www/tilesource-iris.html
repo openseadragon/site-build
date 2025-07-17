@@ -16,18 +16,13 @@
 </div>
 <div class="demoarea">
   <div class="demoheading">
-      Example Inline Configuration for Custom Tile Sources
+      Example Inline Configuration for Iris TileSource
   </div>
   <div id="example-custom-tilesource" 
        class="openseadragon" >
   </div>
   <p>
-      Below is a minimal inline configuration which pulls tiles from a NASA 
-      Blue Marble tile set transformed into tiles hosted on Amazon S3
-      (compliments of <a
-      href="http://mike.teczno.com/notes/blue-marble-tiles.html">
-      Michal Migurski</a>). Note that the default <code>tileSize</code> is
-      available as a property of the tile source.
+      Below is a minimal inline configuration which pulls tiles from an Iris-compatible tile server using the IrisTileSource. The <code>serverUrl</code> and <code>slideId</code> are required to specify the image source.
   </p>
   <pre>
 OpenSeadragon({
@@ -36,46 +31,26 @@ OpenSeadragon({
   navigatorSizeRatio: 0.25,
   wrapHorizontal:     true,
   tileSources:   {
-      height: 512*256,
-      width:  512*256,
-      tileSize: 256,
-      minLevel: 8,
-      getTileUrl: function( level, x, y ){
-          return "http://s3.amazonaws.com/com.modestmaps.bluemarble/" +
-                  (level-8) + "-r" + y + "-c" + x + ".jpg";
-      }
+      type: "iris",
+      serverUrl: "https://examples.restful.irisdigitalpathology.org/",
+      slideId: "cervix_2x_jpeg"
   }
 });
   </pre>
   <script>
-  OpenSeadragon({
-      id:                 "example-custom-tilesource",
-      prefixUrl:          "/openseadragon/images/",
-      navigatorSizeRatio: 0.25,
-      wrapHorizontal:     true,
-      tileSources:   {
-          height: 512*256,
-          width:  512*256,
-          tileSize: 256,
-          minLevel: 8,
-          getTileUrl: function( level, x, y ){
-              return "http://s3.amazonaws.com/com.modestmaps.bluemarble/"+(level-8)+"-r"+y+"-c"+x+".jpg";
-          }
-      }
-  });
+    OpenSeadragon({
+        id:                 "example-custom-tilesource",
+        prefixUrl:          "/openseadragon/images/",
+        navigatorSizeRatio: 0.25,
+        wrapHorizontal:     true,
+        tileSources:   {
+            type: "iris",
+            serverUrl: "https://examples.restful.irisdigitalpathology.org/",
+            slideId: "cervix_2x_jpeg"
+        }
+    });
   </script>
 </div>
-<script type="text/javascript">
-    OpenSeadragon({
-        id: "example-iris-tilesource",
-        prefixUrl: "/openseadragon/images/",
-        tileSources: [{
-            type: "iris",
-            serverUrl: "http://localhost:3000",
-            slideId: "12345"
-        }]
-    });
-</script>
 
 <div class="description">
     <h3>Iris API Information</h3>
