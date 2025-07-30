@@ -22,31 +22,32 @@
        class="openseadragon" >
   </div>
   <p>
-      Below is a minimal inline configuration which pulls tiles from an Iris-compatible tile server using the IrisTileSource. The <code>serverUrl</code> and <code>slideId</code> are required to specify the image source.
+      Below is a minimal inline configuration which pulls tiles from an Iris-compatible tile server using the IrisTileSource. The <code>type</code>, <code>serverUrl</code>, and <code>slideId</code> are required to specify the image source.
   </p>
-  <pre>
-OpenSeadragon({
-  id:            "example-custom-tilesource",
-  prefixUrl:     "/openseadragon/images/",
-  navigatorSizeRatio: 0.25,
-  wrapHorizontal:     true,
-  tileSources:   {
-      type: "iris",
-      serverUrl: "https://examples.restful.irisdigitalpathology.org/",
-      slideId: "cervix_2x_jpeg"
-  }
+  <pre>OpenSeadragon({
+    id:                 "example-custom-tilesource",
+    prefixUrl:          "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    wrapHorizontal:     true,
+    tileSources:   {
+        type:              "iris",
+        serverUrl:         "https://examples.restful.irisdigitalpathology.org",
+        slideId:           "cervix_2x_jpeg",
+        crossOriginPolicy: "Anonymous"
+    }
 });
   </pre>
   <script>
     OpenSeadragon({
-        id:                 "example-custom-tilesource",
-        prefixUrl:          "/openseadragon/images/",
+        id: "example-custom-tilesource",
+        prefixUrl: "/openseadragon/images/",
         navigatorSizeRatio: 0.25,
-        wrapHorizontal:     true,
-        tileSources:   {
+        wrapHorizontal: true,
+        tileSources: {
             type: "iris",
-            serverUrl: "https://examples.restful.irisdigitalpathology.org/",
-            slideId: "cervix_2x_jpeg"
+            serverUrl: "https://examples.restful.irisdigitalpathology.org",
+            slideId: "cervix_2x_jpeg",
+            crossOriginPolicy: "Anonymous"
         }
     });
   </script>
