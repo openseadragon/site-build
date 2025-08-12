@@ -99,6 +99,15 @@ module.exports = function(grunt) {
                     port: 9000,
                     base: buildRoot
                 }
+            },
+            // ---- NEW: keepalive target for local dev server ----
+            keepalive: {
+                options: {
+                    port: 9000,
+                    base: '.',
+                    keepalive: true,
+                    open: false
+                }
             }
         },
         watch: {
