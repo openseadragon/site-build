@@ -19,7 +19,7 @@
 <div class="description">
     <h3>Inline Configuration for Custom Tile Sources</h3>
     <p>
-        Minimally, an inline configuration for a custom tile source only needs 
+        Minimally, an inline configuration for a custom tile source only needs
         to implement the <code>getTileUrl</code> interface and provide a
         height and width for the maximum resolution of the image.
     </p>
@@ -28,11 +28,11 @@
     <div class="demoheading">
         Example Inline Configuration for Custom Tile Sources
     </div>
-    <div id="example-custom-tilesource" 
+    <div id="example-custom-tilesource"
          class="openseadragon" >
     </div>
     <p>
-        Below is a minimal inline configuration which pulls tiles from a NASA 
+        Below is a minimal inline configuration which pulls tiles from a NASA
         Blue Marble tile set transformed into tiles hosted on Amazon S3
         (compliments of <a
         href="http://mike.teczno.com/notes/blue-marble-tiles.html">
@@ -89,8 +89,8 @@ OpenSeadragon({
     <div class="demoheading">
         Another Inline Configuration for Custom Tile Sources
     </div>
-    <div id="example2-custom-tilesource" 
-         class="openseadragon" 
+    <div id="example2-custom-tilesource"
+         class="openseadragon"
          style='background-color:#aaa'>
     </div>
     <p>
@@ -152,3 +152,168 @@ OpenSeadragon({
     });
     </script>
 </div>
+
+
+<div class="description">
+    <h3>Understanding TileSource in Depth</h3>
+    <p>
+        OpenSeadragon's support for custom tile sources is very generic and can suit most usecases.
+        Learn how to take advantage of the <code>TileSource</code> class to create your own tile sources.
+        <b>Warning</b>. Note that unlike OpenSlide and other popular WSI systems, OpenSeadragon treats <code>level 0</code>
+        as the smallest resolution available. The reason is that when rendering, we often go from the lowest resolution down in pyramid,
+        starting always from 0. But often, data-processing systems decide what level to work with relatively against
+        the highest native resolution in the data, and such systems thus benefit
+        from having the native resolution level as index 0.
+    </p>
+</div>
+
+<p>
+    TileSource to be provided explicitly as an argument, or implicitly using string, object, or other definition.
+    Explicit supplying can do whatever you want as long as the instance is conformant with TileSource API, which
+    is discussed above: implement <code>getTileUrl</code> method and provide necessary properties.
+    Implicit tile source configured as any argument like a custom object must be named <code>[MyNamePrefix]TileSource</code>,
+    attached to the <code>OpenSeadragon</code> namespace, and implement <code>supports</code> method.
+    This method decides whether the tile source is used by the viewer when searching for suitable source logics.
+</p>
+<p>
+    Note that OSD tries to <b>parse XML- and JSON-like strings</b>—if such a string is provided,
+    it is first parsed, and then the result is used as a tile source argument.
+</p>
+<pre>
+OpenSeadragon.MyCustomTileSource = class extends OpenSeadragon.TileSource {
+    supports(data, url) {
+        return data.myCustomType && data.myCustomType === "myCustomTileSource";
+    }
+}
+</pre>
+<p>
+    ... and later on ...
+</p>
+<pre>
+OpenSeadragon({
+    ...
+    tileSources: { myCustomType: "myCustomTileSource", myCustomProperty: myCustomValue }
+    ...
+});
+</pre>
+
+<p>
+    Now, our custom implementation will get loaded. But that's not all. We need to first get metadata
+    about the image we will be rendering. To do so, OpenSeadragon implicitly treats a string data argument,
+    that was not successfully parsed, as a URL. Moreover, if an object is provided instead, but part
+    of the object is <code>url</code> property, then it is treated as a URL as well.
+</p>
+<p>
+    Another good thing is to remember that all properties sent in the options to the TileSource constructor
+    are attached to the TileSource instance. Note that this might override values you want to keep, like parts of the
+    TileSource API.
+</p>
+<p>
+    In both cases described above, OpenSeadragon will try to fetch the data from the URL, and if it succeeds,
+    it will use the data as to initialize the tile source. Method <code>getImageInfo</code> will be used
+    to fetch the metadata, and method <code>configure</code> then parse this metadata.
+    This is true unless you set explicitly <code>ready</code> flag to true. If it is undefined, we
+    assume that the tile source might not be ready, or the state is unknown, so we try <code>getImageInfo</code>
+    if the conditions described above apply. The minimal required metatada issued to the TileSource constructor when we expect the readiness
+    of the instace are:
+</p>
+<pre>
+    @property {Number} [options.width]
+      Width of the source image at max resolution in pixels.
+    @property {Number} [options.height]
+      Height of the source image at max resolution in pixels.
+    @property {Number} [options.tileSize]
+      The size of the tiles to assumed to make up each pyramid layer in pixels.
+      Tile size determines the point at which the image pyramid must be
+      divided into a matrix of smaller images.
+      Use options.tileWidth and options.tileHeight to support non-square tiles.
+    @property {Number} [options.tileWidth]
+      The width of the tiles to assumed to make up each pyramid layer in pixels.
+    @property {Number} [options.tileHeight]
+      The height of the tiles to assumed to make up each pyramid layer in pixels.
+    @property {Number} [options.tileOverlap]
+      The number of pixels each tile is expected to overlap touching tiles.
+    @property {Number} [options.minLevel]
+      The minimum level to attempt to load.
+    @property {Number} [options.maxLevel]
+      The maximum level to attempt to load.
+</pre>
+<p>
+    This way we can simply provide a minimalistic <code>{ myCustomType: "myCustomTileSource", url: someValue }</code>
+    argument and implement <code>configure(options, dataUrl, postData)</code> to parse the data.
+    The result of this method is sent to the constructor as an <code>options</code> object. You might be surprised you can see
+    <code>postData</code> in the argument list. Urls furthermore support <code>#</code> character, which can be used
+    together with OpenSeadragon flag <code>splitHashDataForPost</code> to detach suffix of the URL and send <code>
+    key=value&key2=value2</code> submitted as POST data, e.g. for secrets that need to be passed to the server.
+    All this is done by <code>getImageInfo</code> so if you override it, you can do something else, but
+    do not expect these things to work automatically.
+</p>
+<p>
+    You can go much further and take advantage of the full API. Below is an example with comments where we can
+    do what and why. Last thing we did not touch is the <code>ready</code> flag of the <code>options</code> object.
+    If set to true (the default value), tileSource is considered as loaded and ready to be used. If you need
+    to do some initialization before the tile source can be used, set this flag to false.
+</p>
+
+<pre>
+OpenSeadragon.MyCustomTileSource = class extends OpenSeadragon.TileSource {
+    constructor(options) {
+        // before passing to super, remove items you don't want to set to `this` and manage ready flag
+        //   but only if not set see getImageInfo()
+        if (options.ready === undefined) {
+            options.ready = false;
+        }
+        super(options);
+
+        // here, we can now do further initialization, which is guaranteed to finish before
+        // the pipeline executes as `ready = false`, for example, we can fetch auth tokens here.
+    }
+
+    supports(data, url) {
+        return data.myCustomType && data.myCustomType === "myCustomTileSource";
+    }
+
+    configure(options, dataUrl, postData) {
+        // todo parse output of getImageInfo
+        return options;
+    }
+
+    getImageInfo(url) {
+        // when you override image info function, you should make sure that you set necessary values to 'this',
+        // or provide the values to the new TileSource instance.
+
+        return fetch(url).then(response => response.json()).then(data => {
+            // this is of course not needed at all, but if we want to mimic the original logics and use configure...
+            const data = this.configure(data, url, postData);
+            // this is also not needed at all, but if we really NEED to data to go through the constructor
+            data.ready = true;
+            // ready=true is important to use this data immediately and avoid getImageInfo recursion
+            const tileSource = new OpenSeadragon.MyCustomTileSource(data);
+            this.raiseEvent('ready', {tileSource: tileSource});
+        }).catch(error => {
+            this.raiseEvent('open-failed', {
+                message: "Error loading image at " + url,
+                source: url
+            });
+        });
+    }
+
+    // Below are more advanced configurations you can make. You can compute explicitly your pyramid
+    // level scales and tile sizes, and return them in these getters based on the level index.
+
+    getLevelScale: function( level ) {
+        // here you can define custom scale per level - any scale, not only powers of 2!
+        return super.getLevelScale( level );
+    }
+
+    getTileWidth: function( level ) {
+        // here you can define custom tile dimension per level!
+        return super.getTileWidth( level );
+    }
+
+    getTileHeight: function( level ) {
+        // here you can define custom tile dimension per level!
+        return super.getTileHeight( level );
+    }
+}
+</pre>
