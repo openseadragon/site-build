@@ -123,13 +123,13 @@ OpenSeadragon.converter.learnDestroy("context2d", ctx => {
 <div class="description">
     <h3>Optimizing Data Transfer</h3>
     <p>
-        For performant code, provide convertors for multiple built-in data types,
+        For performant code, provide converters for multiple built-in data types,
         and set accurate conversion cost estimation.
     </p>
 </div>
 <p>
     So far we avoided the mysterious <code>1, 1</code> parameters at the end of the
-    convertor. These are conversion cost evaluators. OpenSeadragon will use these
+    converter. These are conversion cost evaluators. OpenSeadragon will use these
     to find the cheapest conversion path should there be available multiple options.
 </p>
 <p>
@@ -164,7 +164,7 @@ OpenSeadragon.converter.learnDestroy("context2d", ctx => {
 </p>
 <pre>
 // copy constructor is just conversion to itself
-OpenSeadragon.convertor.learn("same", "same", (tile, data) => {
+OpenSeadragon.converter.learn("same", "same", (tile, data) => {
     return data.clone();
 }, 1, 1);
 </pre>
@@ -198,12 +198,12 @@ function getRandomColor() {
     return color;
 }
 
-OpenSeadragon.convertor.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
+OpenSeadragon.converter.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
     return text;
 }, 0, 1);
 
-// We don't provide convertor context2d -> myAwesomeType, since we won't be needing it
-OpenSeadragon.convertor.learn("myAwesomeType", "context2d", (tile, text) => {
+// We don't provide converter context2d -> myAwesomeType, since we won't be needing it
+OpenSeadragon.converter.learn("myAwesomeType", "context2d", (tile, text) => {
     const canvas = document.createElement('canvas');
     canvas.width = tile.sourceBounds.width;
     canvas.height = tile.sourceBounds.height;
@@ -259,12 +259,12 @@ OpenSeadragon({
             return color;
         }
 
-        OpenSeadragon.convertor.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
+        OpenSeadragon.converter.learn("myAwesomeType", "myAwesomeType", (tile, text) => {
             return text;
         }, 0, 1);
 
-        // We don't provide convertor context2d -> myAwesomeType, since we won't be needing it
-        OpenSeadragon.convertor.learn("myAwesomeType", "context2d", (tile, text) => {
+        // We don't provide converter context2d -> myAwesomeType, since we won't be needing it
+        OpenSeadragon.converter.learn("myAwesomeType", "context2d", (tile, text) => {
             const canvas = document.createElement('canvas');
             canvas.width = tile.sourceBounds.width;
             canvas.height = tile.sourceBounds.height;
@@ -322,5 +322,5 @@ methods then ensure any API call executes synchronously.
 However, if you need to disable asynchronous behavior, you have to make sure there is no asynchronous function
 used anywhere. That means any <code>raiseEventAwaiting</code> handles must not be async functions, and
 all data type conversion logics must be synchronous too. OpenSeadragon on its own does not add asynchronous logics;
-the only exception is convertor to <code>image</code> type. This one specific scenario is watched for and if
+the only exception is conversion to <code>image</code> type. This one specific scenario is watched for and if
 the system tries to convert data to <code>image</code>, it will notify you in the console.
