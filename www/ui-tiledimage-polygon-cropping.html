@@ -69,9 +69,6 @@
     }
 </style>
 
-<!-- Load OpenSeadragon library (MUST come before your JS code) -->
-<script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script>
-
 <h2>Polygon Cropping for TiledImages</h2>
 
 <div class="info-panel">
@@ -138,7 +135,7 @@ viewer.addHandler('open', function() {
     var viewer = OpenSeadragon({
         id: "contentDiv",
         prefixUrl: "/openseadragon/images/",
-        tileSources: "https://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
+        tileSources: "/example-images/highsmith/highsmith.dzi",
         showZoomControl: true,
         showHomeControl: true,
         showFullPageControl: true,
@@ -170,63 +167,24 @@ viewer.addHandler('open', function() {
         ]
     ];
 
-    let pointOverlayIds = [];
+    let pointOverlays = [];
 
     function clearPointOverlays() {
-        pointOverlayIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) viewer.removeOverlay(el);
+        pointOverlays.forEach(overlay => {
+            viewer.removeOverlay(overlay);
         });
-        pointOverlayIds = [];
+        pointOverlays = [];
     }
 
-    function addPointOverlay(viewportPt) {
-        const marker = document.createElement('div');
-        marker.className = 'osd-point-dot';
-        const id = 'osd-dot-' + Math.random().toString(36).substr(2, 9);
-        marker.id = id;
-        marker.style.position = 'absolute';
-        viewer.addOverlay({ element: marker, location: viewportPt });
-        pointOverlayIds.push(id);
-    }
-
-    function drawPolygonOutlines(polygons) {
-        const prevSvg = document.getElementById('main-svg-polygon');
-        if (prevSvg) viewer.removeOverlay(prevSvg);
-
-        if (!polygons || !polygons.length) return;
-
-        const pList = polygons.map(poly =>
-            poly.map(pt => viewer.viewport.imageToViewerElementCoordinates(pt.x, pt.y))
-        );
-        let allX = [], allY = [];
-        pList.forEach(poly => poly.forEach(pt => { allX.push(pt.x); allY.push(pt.y); }));
-        const minX = Math.min(...allX), minY = Math.min(...allY), maxX = Math.max(...allX), maxY = Math.max(...allY);
-        const width = maxX - minX, height = maxY - minY;
-        if (width === 0 || height === 0) return;
-
-        let svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', width);
-        svg.setAttribute('height', height);
-        svg.setAttribute('class', 'osd-svg-polygon');
-        svg.style.position = 'absolute';
-        svg.id = 'main-svg-polygon';
-
-        polygons.forEach((poly, i) => {
-            let pts = pList[i].map(pt => (pt.x - minX) + ',' + (pt.y - minY)).join(' ');
-            let polygonElem = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            polygonElem.setAttribute('points', pts);
-            polygonElem.setAttribute('stroke', '#1976d2');
-            polygonElem.setAttribute('stroke-width', '3');
-            polygonElem.setAttribute('fill', 'rgba(30,114,255,0.20)');
-            svg.appendChild(polygonElem);
-        });
-
-        viewer.addOverlay({
-            element: svg,
-            location: new OpenSeadragon.Rect(minX, minY, width, height),
-            placement: OpenSeadragon.Placement.TOP_LEFT
-        });
+    function createPointElement() {
+        const div = document.createElement('div');
+        div.style.width = '10px';
+        div.style.height = '10px';
+        div.style.backgroundColor = 'rgba(255,0,0,0.7)';
+        div.style.borderRadius = '50%';
+        div.style.marginLeft = '-5px'; // Center the dot on the click point
+        div.style.marginTop = '-5px';  // Center the dot on the click point
+        return div;
     }
 
     document.getElementById('clearPointsBtn').addEventListener('click', () => {
@@ -237,15 +195,11 @@ viewer.addHandler('open', function() {
     document.getElementById('clearPolygonsBtn').addEventListener('click', () => {
         previewEl.value = '';
         viewer.world.getItemAt(0)?.resetCroppingPolygons();
-        const prevSvg = document.getElementById('main-svg-polygon');
-        if (prevSvg) viewer.removeOverlay(prevSvg);
+        clearPointOverlays();
     });
 
     document.getElementById('exampleBtn').addEventListener('click', () => {
         previewEl.value = JSON.stringify(examples, null, 2);
-        const prevSvg = document.getElementById('main-svg-polygon');
-        if (prevSvg) viewer.removeOverlay(prevSvg);
-        drawPolygonOutlines(examples);
     });
 
     document.getElementById('addPointBtn').addEventListener('click', () => {
@@ -256,7 +210,6 @@ viewer.addHandler('open', function() {
                 previewEl.value = JSON.stringify([...currentPolygons, points], null, 2);
                 polygonPointEl.value = '';
                 clearPointOverlays();
-                drawPolygonOutlines([...currentPolygons, points]);
             } else {
                 alert('A polygon requires at least 3 points');
             }
@@ -270,7 +223,6 @@ viewer.addHandler('open', function() {
             const polygons = JSON.parse(previewEl.value || '[]');
             if (polygons.length > 0) {
                 viewer.world.getItemAt(0)?.setCroppingPolygons(polygons);
-                drawPolygonOutlines(polygons);
             }
         } catch (e) {
             alert('Error applying polygons: ' + e);
@@ -282,8 +234,6 @@ viewer.addHandler('open', function() {
         previewEl.value = '';
         viewer.world.getItemAt(0)?.resetCroppingPolygons();
         clearPointOverlays();
-        const prevSvg = document.getElementById('main-svg-polygon');
-        if (prevSvg) viewer.removeOverlay(prevSvg);
     });
 
     viewer.addHandler('canvas-click', function(event) {
@@ -296,12 +246,13 @@ viewer.addHandler('open', function() {
         let pts = [];
         try { pts = JSON.parse(polygonPointEl.value || '[]'); } catch (e) {}
         polygonPointEl.value = JSON.stringify([...pts, point], null, 2);
-        addPointOverlay(viewportPoint);
-    });
-
-    viewer.addHandler('open', function() {
-        clearPointOverlays();
-        const prevSvg = document.getElementById('main-svg-polygon');
-        if (prevSvg) viewer.removeOverlay(prevSvg);
+        
+        // Visual feedback with centered dot
+        const overlayElement = createPointElement();
+        viewer.addOverlay({
+            element: overlayElement,
+            location: viewportPoint
+        });
+        pointOverlays.push(overlayElement);
     });
 </script>
