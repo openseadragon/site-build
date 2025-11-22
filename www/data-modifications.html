@@ -2,11 +2,14 @@
 
 <p>
     Any plugin that modifies viewer data should use the <code>tile-invalidated</code>
-    event, which ensures data is updated in a consistent manner.
+    event, which ensures data is updated in a consistent manner. Optionally,
+    instead of modifying the data, you can <a href="https://github.com/openseadragon/flex-render">design a custom renderer</a> - often a more
+    powerful, performant, but also more complex solution. In this article, we will
+    explore the easier option—modifying the data per tile.
 </p>
 <p>
     The usage is simple: you request an invalidation once you reason it is needed
-    to update the data
+    to update the data, using
 </p><p>
     <code>viewer.requestInvalidate()</code>
 </p><p>
@@ -179,7 +182,16 @@ viewer.addHandler('tile-invalidated', async e => {
     </script>
 </div>
 
-
+<div class="description">
+    <h3>Invalidation Broadcasting</h3>
+</div>
+<p>
+    By default, invalidation events are broadcasted to all <a href="/docs/OpenSeadragon.Viewer.html">viewers</a>
+    in the parent viewer. You can change this behavior by setting a drawer option <code>broadCastTileInvalidation</code> to <code>false</code>.
+    This will then force you to call invalidation on each viewer separately—for example, to the base <code>viewer</code>
+    and also <code>viewer.navigator</code> instances, which are both <code>Viewer</code> subclasses. Another
+    sub-viewers example includes reference strips.
+</p>
 
 
 <div class="description">
@@ -256,6 +268,11 @@ viewer.addHandler('tile-invalidated', async e => {
     any results. This scenario is not yet well-supported, and you must ensure
     no overlapping events are triggered in this specific case.
 </p>
+<p>
+    A good idea is to collect invalidation calls and truly call
+    <code>requestInvalidate()</code> only once, for example when you know
+    the previous update was finished.
+</p>
 
 
 <div class="description">
@@ -290,8 +307,8 @@ viewer.addHandler('tile-invalidated', async e => {
     it nevertheless. The WebGL renderer uses an <i>internal</i> cache that
     keeps reference to the uploaded texture, but the cache from outside
     looks like a context2d or image cache (but with a weird type name).
-    This way we keep a reference to the data shown on screen and support conversion
-    back to, for example, a canvas context 2D object.
+    This way we keep a reference to the data shown on screen both on CPU and GPU,
+    and support conversion  back to, for example, a canvas context 2D object.
 </p>
 <p>
     While you can add custom data to the tile using cache-related methods (get/set/create),
@@ -302,7 +319,12 @@ viewer.addHandler('tile-invalidated', async e => {
     <h3>Are all tiles updated?</h3>
 </div>
 <p>
-    No. But all data items are. Tile equality is decided using <b>getTileCacheKey()</b>. If this item returns an equal
+    No. But all data items are—eventually. To speed things up, only tiles that need to be
+    updated are truly updated. The rest is kept in 'not-ready' state until we realize we need
+    them. You can look at it as if we were re-downloading the tile again, but this time,
+    the data waits for us on the localhost.
+
+    Alo, tile equality is decided using <b>getTileCacheKey()</b>. If this item returns an equal
     value for two tiles, invalidation is executed only on one of the two, and references
     to the data are later updated on both.
 </p>
@@ -341,6 +363,7 @@ viewer.addHandler('tile-invalidated', async e => {
     this._supportedFormats.push(...newFormats);  // variable returned by getSupportedDataFormats
     this._requiredFormats = newFormats;          // variable returned by getRequiredDataFormats
     await this.viewer.requestInvalidate();       // forces re-execution since type has changed
-    // optionally keep updated:  this._supportedFormats = newFormats;
+    // optionally throw away old type names after invalidation:
+    // this._supportedFormats = newFormats;
     ...
 </pre>

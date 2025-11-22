@@ -49,6 +49,10 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
         console.log(this.options.myCustomFlag);
     }
 
+    /**
+     * These options are at your disposal. You can define
+     * new parameters the users can later override using the viewer options - `drawerOptions`.
+     */
     get defaultOptions() {
         return {
             // Configure defaults
@@ -56,6 +60,7 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
             // Inherited:
             usePrivateCache: false,
             preloadCache: true,
+            // ... see the OpenSeadragon.BaseDrawerOptions type
         };
     }
 
@@ -71,7 +76,7 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
     getSupportedDataFormats() {
         // Return an array of strings, types of data supported by the drawer. See data types
         // tutorial if you don't know what we are talking about.
-        return ["A", "B"];  // Note. The data formats must be defined and valid! 
+        return ["A", "B"];  // Note. The data formats must be defined and valid!
                             // This is just for the sake of the example.
     }
 
@@ -144,6 +149,7 @@ OpenSeadragon.MyAwesomeDrawer = class extends DrawerBase {
      * @abstract
      */
     destroy() {
+        super.destroy();   // like in C++, do not forget to call super destructor
         // This will free data on the canvas:
         this.canvas.width = 0;
         this.canvas.height = 0;
@@ -177,7 +183,7 @@ The actual drawing logics implementation looks something like this:
                     return;
                 }
 
-                // Now use the tile data. This data might be in our example of type 'A' or 'B'.
+                // Now use the tile data. This data is guaranteed to be (from our example) of type 'A' or 'B'.
             }
         }
     }
@@ -195,8 +201,10 @@ for the drawing API (e.g. WebGL, WebGPU APIs).</p>
 </div>
 <p>Some APIs like WebGL need different formats of data than those available in the OSD data types. For example,
 WebGL wants a GLuint reference to the uploaded texture on a GPU, and the <i>model</i> tile positions for the vertex
-shader. Or reference to the <i>underlying CPU data</i> in case the data is tainted and we want to internally fallback
-to a different renderer.</p>
+shader. Or, a reference to the <i>underlying CPU data</i> in case the data is tainted and we want to internally fallback
+to a different renderer. The reference is usually necessary just because we want to allow conversion back to other
+formats to allow third-party plugins to do their magic. We need to keep the type-conversion graph strongly connected.
+</p>
 <p>All this is quite hard to fit inside data processing pipeline, while having the flexibility available a drawer needs.
 This is the time for <b>internal cache</b></p>. It needs to be properly configured for the usage:</p>
 <pre>
@@ -208,6 +216,7 @@ This is the time for <b>internal cache</b></p>. It needs to be properly configur
             usePrivateCache: true,
             // Support for async if true
             preloadCache: true,
+            // these are the two main options, for other see the OpenSeadragon.BaseDrawerOptions type
         };
     }
 </pre>
@@ -238,7 +247,7 @@ returns <code>{ data: "this data will be available when rendering the tile" }</c
 </p>
     <p>Based on the <code>preloadCache</code> option, the conversion happens either immediately upon data invalidation routine
     or after <code>tile-loaded</code> event (when <code>true</code>), or just before rendering (otherwise). That means
-    internalCacheCreate cannot be asynchronous if <code>preloadCache</code> is disabled, since it needs to deliver data
+    <code>internalCacheCreate</code> method cannot be asynchronous if <code>preloadCache</code> is disabled, since it needs to deliver data
     for the rendering immediatelly.
 </p>
 <p>
@@ -249,9 +258,10 @@ returns <code>{ data: "this data will be available when rendering the tile" }</c
 <p>Finally, you should also ensure the data is properly freed:</p>
 <pre>
     destroy() {
+        super.destroy();  // like in C++, do not forget to call super destructor
         ... do necessary cleanup ...
 
-        // important!
+        // important if internal cache used!
         this.destroyInternalCache();
     }
 </pre>
@@ -259,6 +269,6 @@ returns <code>{ data: "this data will be available when rendering the tile" }</c
 <pre>
     constructor(options) {
         // Force cache configuration:
-        super({...options, {usePrivateCache: true, preloadCache: true}});
+        super({...options, ...{usePrivateCache: true, preloadCache: true}});
     }
 </pre>

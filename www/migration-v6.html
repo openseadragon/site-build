@@ -1,7 +1,8 @@
 <h2>Migration From v5 to v6</h2>
 
 <p>
-Version 6 brings a major change of how is data handled to OpenSeadragon. In general, you
+Version 6 brings a major change of how data is handled to OpenSeadragon. In general, the v6 changes
+(as drastic as they might seem) bring back system-wide data compatibility and address issues introduced in v5. You
 should familiarize yourself with the <a href="/#data-modification-pipeline">new system</a> of data handling.
 
 Below is a list of things that the new system deprecates:
@@ -14,7 +15,7 @@ Below is a list of things that the new system deprecates:
     </li>
     <li>
         tiles do not care what is the underlying drawer, properties like
-        <code>element</code>, <code>style</code> are deprecated; you can use <code>tile-invalidated</code>
+        <code>element</code>, <code>style</code>, <code>context2D</code> are deprecated; you can use <code>tile-invalidated</code>
         event to access these inside the cache item when <code>HTMLDrawer</code> is being used
     </li>
     <li>
