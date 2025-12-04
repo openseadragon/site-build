@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     // ----------
     grunt.loadNpmTasks("grunt-contrib-connect");
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
         "ui-rotation": "Rotation",
         "ui-keyboard-navigation": "Keyboard Navigation",
         "ui-customize-tooltips": "Customize Tooltips",
-        "ui-tiledimage-polygon-cropping" : "Crop TiledImage with Polygons",
+        "ui-tiledimage-polygon-cropping": "Crop TiledImage with Polygons",
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images",
         "viewport-coordinates": "Viewport Coordinates",
@@ -97,24 +97,14 @@ module.exports = function(grunt) {
             server: {
                 options: {
                     port: 9000,
-                    base: buildRoot
                 }
             },
-            // ---- NEW: keepalive target for local dev server ----
-            keepalive: {
-                options: {
-                    port: 9000,
-                    base: '.',
-                    keepalive: true,
-                    open: false
-                }
-            }
         },
         watch: {
-            files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
+            files: ["Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
         },
-        jsdoc : {
+        jsdoc: {
             src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
@@ -127,15 +117,15 @@ module.exports = function(grunt) {
     // ----------
     // Make:www task.
     // Builds all of the HTML pages.
-    grunt.registerTask("make:www", function() {
+    grunt.registerTask("make:www", function () {
         var base = grunt.file.read("www/base.html");
         var version = getVersion();
-        
+
         var shortVersion = version.split('.');
         shortVersion.pop();
         shortVersion = shortVersion.join('.');
 
-        var make = function(src, dest, title) {
+        var make = function (src, dest, title) {
             var content = grunt.file.read(src);
             var built = grunt.template.process(base, {
                 data: {
@@ -164,9 +154,9 @@ module.exports = function(grunt) {
     // ----------
     // Copy:build task.
     // Copies needed files to the build folder.
-    grunt.registerTask("copy:build", function() {
-        var copyOne = function(from, to) {
-            grunt.file.recurse(from, function(abspath, rootdir, subdir, filename) {
+    grunt.registerTask("copy:build", function () {
+        var copyOne = function (from, to) {
+            grunt.file.recurse(from, function (abspath, rootdir, subdir, filename) {
                 var dest = buildRoot
                     + to
                     + "/"
@@ -185,8 +175,8 @@ module.exports = function(grunt) {
     // ----------
     // Copy:release task.
     // Copies needed files to the release folder.
-    grunt.registerTask("copy:release", function() {
-        grunt.file.recurse(buildRoot, function(abspath, rootdir, subdir, filename) {
+    grunt.registerTask("copy:release", function () {
+        grunt.file.recurse(buildRoot, function (abspath, rootdir, subdir, filename) {
             if (subdir && /^(example-images|openseadragonizer)/.test(subdir)) {
                 return;
             }
