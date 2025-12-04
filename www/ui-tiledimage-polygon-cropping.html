@@ -4,30 +4,36 @@
         height: 200px;
         font-family: monospace;
     }
+
     .box-with-title {
         padding-top: 1em;
         display: inline-block;
         text-align: center;
     }
+
     .buttons {
         width: 215px;
         margin-bottom: 10px;
     }
+
     *:focus {
         outline: none;
     }
+
     .info-panel {
         padding: 15px;
         border-radius: 5px;
         margin-bottom: 20px;
         background: transparent;
     }
+
     pre {
         background: #f5f5f5;
         padding: 10px;
         border-radius: 3px;
         overflow-x: auto;
     }
+
     .btn {
         margin: 5px 0;
         padding: 8px 12px;
@@ -38,6 +44,7 @@
         border-radius: 4px;
         font-size: 14px;
     }
+
     .button-group {
         margin: 12px 0 3px 0;
         display: flex;
@@ -45,12 +52,14 @@
         justify-content: center;
         flex-wrap: wrap;
     }
+
     .openseadragon {
         width: 100%;
         height: 500px;
         border: 1px solid #ddd;
         margin-bottom: 15px;
     }
+
     /* Overlay marker styling */
     .osd-point-dot {
         width: 12px;
@@ -62,6 +71,7 @@
         pointer-events: none;
         position: absolute;
     }
+
     .osd-svg-polygon {
         pointer-events: none;
         position: absolute;
@@ -78,9 +88,13 @@
         <li>Creating non-rectangular image masks</li>
         <li>Interactive annotation tools</li>
     </ul>
-    <p><strong>Coordinate Handling:</strong> Polygon points should be provided in <strong>image coordinates</strong> (original pixel dimensions). During rendering, OpenSeadragon converts these to viewport coordinates automatically.</p>
-    <p>The feature takes an array of polygons to crop the TiledImage during draw tiles. The render function will use non-zero winding rule to create the polygons. You can use OpenSeadragon.Point or plain xy object.</p>
-    <p>The draw tiles will convert the provided polygons into the correct position in the viewport. Thus, the polygon points are treated as image coordinates at 0 degree.</p>
+    <p><strong>Coordinate Handling:</strong> Polygon points should be provided in <strong>image coordinates</strong>
+        (original pixel dimensions). During rendering, OpenSeadragon converts these to viewport coordinates
+        automatically.</p>
+    <p>The feature takes an array of polygons to crop the TiledImage during draw tiles. The render function will use
+        non-zero winding rule to create the polygons. You can use OpenSeadragon.Point or plain xy object.</p>
+    <p>The draw tiles will convert the provided polygons into the correct position in the viewport. Thus, the polygon
+        points are treated as image coordinates at 0 degree.</p>
 </div>
 
 <h3>Implementation Guide</h3>
@@ -110,7 +124,7 @@ viewer.addHandler('open', function() {
         <button id='resetBtn' class="btn">Reset All</button>
         <button id='exampleBtn' class="btn">Load Example Polygons</button>
     </div>
-    
+
     <div class='box-with-title'>
         <h4>Polygon Points</h4>
         <div class="button-group">
@@ -119,7 +133,7 @@ viewer.addHandler('open', function() {
         </div>
         <textarea id="polygonPointEl" placeholder="Click on image to add points..."></textarea>
     </div>
-    
+
     <div class='box-with-title'>
         <h4>Current Polygons</h4>
         <div class="button-group">
@@ -135,7 +149,7 @@ viewer.addHandler('open', function() {
     var viewer = OpenSeadragon({
         id: "contentDiv",
         prefixUrl: "/openseadragon/images/",
-        tileSources: "/example-images/highsmith/highsmith.dzi",
+        tileSources: "https://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
         showZoomControl: true,
         showHomeControl: true,
         showFullPageControl: true,
@@ -236,7 +250,7 @@ viewer.addHandler('open', function() {
         clearPointOverlays();
     });
 
-    viewer.addHandler('canvas-click', function(event) {
+    viewer.addHandler('canvas-click', function (event) {
         const viewportPoint = viewer.viewport.pointFromPixel(event.position);
         const imagePoint = viewer.viewport.viewportToImageCoordinates(viewportPoint);
         const point = {
@@ -244,9 +258,9 @@ viewer.addHandler('open', function() {
             y: Math.round(imagePoint.y * 100) / 100
         };
         let pts = [];
-        try { pts = JSON.parse(polygonPointEl.value || '[]'); } catch (e) {}
+        try { pts = JSON.parse(polygonPointEl.value || '[]'); } catch (e) { }
         polygonPointEl.value = JSON.stringify([...pts, point], null, 2);
-        
+
         // Visual feedback with centered dot
         const overlayElement = createPointElement();
         viewer.addOverlay({
