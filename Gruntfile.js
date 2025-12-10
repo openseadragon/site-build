@@ -97,8 +97,9 @@ module.exports = function (grunt) {
             server: {
                 options: {
                     port: 9000,
+                    base: buildRoot
                 }
-            },
+            }
         },
         watch: {
             files: ["Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
