@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "grunt dev",
-    "build": "grunt jsdoc"
+    "jsdoc": "grunt jsdoc"
   },
   "description": "Website source and build for OpenSeadragon. The version listed here is just to keep NPM happy, but it's not the current OpenSeadragon version (so we don't have to try to keep them in sync).",
   "devDependencies": {

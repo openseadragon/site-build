@@ -324,7 +324,7 @@ viewer.addHandler('tile-invalidated', async e => {
     them. You can look at it as if we were re-downloading the tile again, but this time,
     the data waits for us on the localhost.
 
-    Alo, tile equality is decided using <b>getTileCacheKey()</b>. If this item returns an equal
+    Also, tile equality is decided using <b>getTileCacheKey()</b>. If this item returns an equal
     value for two tiles, invalidation is executed only on one of the two, and references
     to the data are later updated on both.
 </p>
