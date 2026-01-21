@@ -45,7 +45,12 @@ module.exports = function (grunt) {
         "viewport-coordinates": "Viewport Coordinates",
         "in-the-wild": "OpenSeadragon in the Wild",
         "multi-image": "Multi-Image",
-        "advanced-data-model": "Advanced data model with TileSource"
+        "advanced-data-model": "Advanced data model with TileSource",
+        "migration-v5": "Migration notes from v1-v4 to v5",
+        "migration-v6": "Migration notes from v5 to v6",
+        "data-types": "Data Types in OpenSeadragon",
+        "data-modifications": "Data Modification Pipeline",
+        "drawer-design": "Designing Drawers (Advanced)",
     };
 
     // ----------
