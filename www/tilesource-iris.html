@@ -1,0 +1,61 @@
+<h2>
+    Example: Iris TileSource Support
+</h2>
+<p>
+    The <strong>IrisTileSource</strong> is an OpenSeadragon tilesource implementation for viewing images served by an Iris-compatible tile server. It is designed to efficiently display large, high-resolution images, with digital pathology as the primary use case.
+</p>
+<p>
+    The Iris API provides endpoints for retrieving image metadata and individual image tiles. OpenSeadragon's IrisTileSource fetches the metadata to determine the image's dimensions, available zoom levels, and tile layout, then requests tiles as needed while you pan and zoom.
+</p>
+
+<div class="description">
+    <h3>IrisTileSource Configuration</h3>
+    <p>
+        To use the IrisTileSource, specify the <code>type</code> as <code>iris</code> and provide the <code>serverUrl</code> (the base URL of your Iris server) and <code>slideId</code> (the image identifier).
+    </p>
+</div>
+<div class="demoarea">
+  <div class="demoheading">
+      Example Inline Configuration for Iris TileSource
+  </div>
+  <div id="example-custom-tilesource" 
+       class="openseadragon" >
+  </div>
+  <p>
+      Below is a minimal inline configuration which pulls tiles from an Iris-compatible tile server using the IrisTileSource. The <code>type</code>, <code>serverUrl</code>, and <code>slideId</code> are required to specify the image source.
+  </p>
+  <pre>OpenSeadragon({
+    id:                 "example-custom-tilesource",
+    prefixUrl:          "/openseadragon/images/",
+    navigatorSizeRatio: 0.25,
+    wrapHorizontal:     true,
+    tileSources:   {
+        type:              "iris",
+        serverUrl:         "https://examples.restful.irisdigitalpathology.org",
+        slideId:           "cervix_2x_jpeg",
+        crossOriginPolicy: "Anonymous"
+    }
+});
+  </pre>
+  <script>
+    OpenSeadragon({
+        id: "example-custom-tilesource",
+        prefixUrl: "/openseadragon/images/",
+        navigatorSizeRatio: 0.25,
+        wrapHorizontal: true,
+        tileSources: {
+            type: "iris",
+            serverUrl: "https://examples.restful.irisdigitalpathology.org",
+            slideId: "cervix_2x_jpeg",
+            crossOriginPolicy: "Anonymous"
+        }
+    });
+  </script>
+</div>
+
+<div class="description">
+    <h3>Iris API Information</h3>
+    <p>
+        For more information about the Iris API and its endpoints, please see the <a href="https://github.com/ryanlandvater/Iris-RESTful-Server?tab=readme-ov-file#api-explained" target="_blank">Iris API documentation</a>.
+    </p>
+</div>
