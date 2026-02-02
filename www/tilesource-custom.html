@@ -180,7 +180,7 @@ OpenSeadragon({
     it is first parsed, and then the result is used as a tile source argument.
 </p>
 <pre>
-OpenSeadragon.MyCustomTileSource = class extends OpenSeadragon.TileSource {
+OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadragon.TileSource {
     supports(data, url) {
         return data.myCustomType && data.myCustomType === "myCustomTileSource";
     }
@@ -256,7 +256,7 @@ OpenSeadragon({
 </p>
 
 <pre>
-OpenSeadragon.MyCustomTileSource = class extends OpenSeadragon.TileSource {
+OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadragon.TileSource {
     constructor(options) {
         // before passing to super, remove items you don't want to set to `this` and manage ready flag
         //   but only if not set see getImageInfo()
