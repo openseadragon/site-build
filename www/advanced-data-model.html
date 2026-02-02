@@ -16,8 +16,8 @@
 </p>
 
 <p>
-    It is also good to know, what data types in OpenSeadragon are. Supported ones include
-    <code>image</code>, <code>context2d</code> and <code>webImageUrl</code>.
+    It is also good to know what data types in OpenSeadragon are. Supported ones include
+    for example <code>image</code>, <code>context2d</code> and <code>imageUrl</code> or even <code>imageBitmap</code>.
 
     You can learn more about <a href="/examples/data-types/"><i>data types</i> here</a>.
 </p>
@@ -560,7 +560,7 @@ OpenSeadragon({
     Note that we do not have to re-define <code>getTileCacheKey()</code>: we rely on
     the default key generation using URL. If we had returned an empty string in
     <code>getTileUrl</code> (also
-    a correct solution), we would have to override <code>getTileCacheKey()</code>, 
+    a correct solution), we would have to override <code>getTileCacheKey()</code>,
     but since we are forced to define the url getter, we may as well
     re-use it for the cache key creation.
 </p>
