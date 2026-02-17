@@ -24,7 +24,7 @@
 </p>
 <p>
     If you provide a type <code>string</code> to the system with your image URI, you have basically
-    broken the whole logics. OpenSeadragon does not know that your string is actually URI, and does not
+    broken the whole logic. OpenSeadragon does not know that your string is actually URI, and does not
     know what to do with your data to convert it, for example, to an Image.
 </p>
 <p>
@@ -62,7 +62,7 @@ you can use to add custom types to the system.
 </div>
 <p>
     Adding support for a custom data type in the system is not complicated. You can use both
-    synchronous and asynchronous logics. In order for your data to be fully compatible with the system,
+    synchronous and asynchronous logic. In order for your data to be fully compatible with the system,
     a type should define three converters: a converter to some other existing type,
     copy-converter (will be explained later), and optionally also a converter from an existing type to our own
     type (going back, not necessarily from the same type).
@@ -115,7 +115,6 @@ OpenSeadragon.converter.learnDestroy("context2d", ctx => {
     ctx.canvas.height = 0;
 });
 </pre>
-</p>
 
 <div class="description">
     <h3>Optimizing Data Transfer</h3>
@@ -150,7 +149,7 @@ OpenSeadragon.converter.learnDestroy("context2d", ctx => {
 <div class="description">
     <h3>Providing 'Copy Constructors'</h3>
     <p>
-        For data to be use-able in the system, a <b>copy</b> logics need to be defined, too.
+        For data to be use-able in the system, a <b>copy</b> logic need to be defined, too.
     </p>
 </div>
 <p>
@@ -319,7 +318,7 @@ OpenSeadragon({
 
     However, if you need to disable asynchronous behavior, you have to make sure there is no asynchronous function
     used anywhere. That means any <code>raiseEventAwaiting</code> handles must not be async functions, and
-    all data type conversion logics must be synchronous too. OpenSeadragon on its own does not add asynchronous logics;
+    all data type conversion logic must be synchronous too. OpenSeadragon on its own does not add asynchronous logic;
     the only exception is conversion to <code>image</code> type. This one specific scenario is watched for and if
     the system tries to convert data to <code>image</code>, it will notify you in the console.
 </p>

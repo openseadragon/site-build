@@ -359,7 +359,7 @@ viewer.addHandler('tile-invalidated', async e => {
 </p>
 <pre>
     ...
-    const newFormats = this.generateNewTypeNamesAndImplementConverterAndDestructorLogics();
+    const newFormats = this.generateNewTypeNamesAndImplementConverterAndDestructorLogic();
     this._supportedFormats.push(...newFormats);  // variable returned by getSupportedDataFormats
     this._requiredFormats = newFormats;          // variable returned by getRequiredDataFormats
     await this.viewer.requestInvalidate();       // forces re-execution since type has changed

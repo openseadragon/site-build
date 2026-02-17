@@ -28,7 +28,7 @@
 <p>
     In the first section, we show two ways of redefining the tile fetching process. At the bottom,
     you will find an in-depth explanation of how to introduce custom <code>TileSource</code> classes
-    in a standard way to, for example, write custom format plugins. Inlining an <code>TileSource</code> object specification
+    in a standard way to, for example, write custom format plugins. Inlining a <code>TileSource</code> object specification
     is flexible for single use-cases, but for more interoperability (especially when writing plugins), implementing an interface-level
     class is recommended.
 </p>
@@ -71,9 +71,10 @@
     by default. <b>By default, OpenSeadragon expects an image-like url
     returned by <code>getTileUrl</code></b> method. You can download whatever data you need,
     but then you need to either convert the data within <code>downloadTileStart</code>
-    method to one of built-in data types or provide a custom converter. <a href="https://github.com/openseadragon/flex-render/blob/master/src/mvt-tile-source.js">
-    For advanced example, see the <b>flex-renderer</b> plugin, which goes even further by introducing
-    a custom type <code>vector-mesh</code> and adds the type support by implementing a drawer able to render this data type.</a>
+    method to one of built-in data types or provide a custom converter.
+    For advanced example, see the <a href="https://github.com/openseadragon/flex-render/blob/master/src/mvt-tile-source.js"><b>flex-renderer</b> plugin</a>,
+    which goes even further by introducing a custom type <code>vector-mesh</code> and adds the type support by implementing a drawer able to render
+    vector graphics such as Map Vector Tiles directly.
 </p>
 <p>
     Moreover, <code>getTileUrl</code> method does not need to return an URL at all!
@@ -602,24 +603,29 @@ OpenSeadragon({
 <div class="description">
     <h3>Understanding TileSource in Depth</h3>
     <p>
-        OpenSeadragon's support for custom tile sources is very generic and can suit most use-cases.
+        OpenSeadragon's support for custom tile sources is very generic and can suit many use-cases.
         Learn how to take advantage of the <code>TileSource</code> class to create your own tile sources.
-        <b>Warning</b>. Note that unlike OpenSlide and other popular WSI systems, OpenSeadragon treats <code>level 0</code>
-        as the smallest resolution available. The reason is that when rendering, we often go from the lowest resolution down in pyramid,
-        starting always from 0. Unlike viewing software, data-processing systems decide what level to work with relatively against
-        the highest native resolution in the data since they often decide how many times a resolution can be decreased for the
-        algorithm to still work, but also consume less data and thus be more efficient. Such systems thus benefit
-        from having the native resolution level as index 0.
     </p>
 </div>
-
 <p>
-    TileSource to be provided explicitly as an argument, or implicitly using string, object, or other definition.
-    Explicit supplying can do whatever you want as long as the instance is conformant with TileSource API, which
-    is discussed above: implement <code>getTileUrl</code> method and provide necessary properties.
-    Implicit tile source configured as any argument like a custom object must be named <code>[MyNamePrefix]TileSource</code>,
-    attached to the <code>OpenSeadragon</code> namespace, and implement <code>supports</code> method.
-    This method decides whether the tile source is used by the viewer when searching for suitable source logics.
+    <b>Warning</b>. Note that unlike OpenSlide and other popular WSI systems, OpenSeadragon treats <code>level 0</code>
+    as the smallest resolution available. The reason is that when rendering, we often go from the lowest resolution down in pyramid,
+    starting always from 0. Unlike viewing software, data-processing systems decide what level to work with relatively against
+    the highest native resolution in the data since they often decide how many times a resolution can be decreased for the
+    algorithm to still work, but also consume less data and thus be more efficient. Such systems thus benefit
+    from having the native resolution level as index 0.
+</p>
+<p>
+    A <code>TileSource</code> can be provided explicitly as an argument, or implicitly using string, object, or other definition.
+    Explicit supplying (directly via the main options argument) can do whatever you want as long as the instance is conformant with TileSource API, which
+    is discussed above: implement at least <code>get TileUrl</code> method and provide necessary properties.
+</p>
+<p>
+    Implicit tile source must be named <code>[MyNamePrefix]TileSource</code>,
+    attached to the <code>OpenSeadragon</code> namespace to be considered as registered;
+    and implement <code>supports</code> method.
+    This method decides whether the tile source is used by the viewer when iterating through
+    all of the registered sources.
 </p>
 <p id="custom-tile-source-initialization">
     Note that OSD tries to <b>parse XML- and JSON-like strings</b>—if such a string is provided,
@@ -729,7 +735,7 @@ OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadrago
         // or provide the values to the new TileSource instance.
 
         return fetch(url).then(response => response.json()).then(data => {
-            // this is of course not needed at all, but if we want to mimic the original logics and use configure...
+            // this is of course not needed at all, but if we want to mimic the original logic and use configure...
             const data = this.configure(data, url, postData);
             // this is also not needed at all, but if we really NEED to data to go through the constructor
             data.ready = true;

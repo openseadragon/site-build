@@ -3,8 +3,8 @@
 <p>
    Version 5 brings WebGL Renderer to the game. It is a default renderer from now on, and there might be possible
     considerations:
-
-    <ul style="list-style-type: disc">
+</p>
+<ul style="list-style-type: disc">
     <li>
         It might cause issues with (older) devices due to WebGL support.
     </li>
@@ -19,15 +19,15 @@
         In general, any data modification might be problematic, so plugins like OpenSeadragon Filtering will
         not likely work.
     </li>
-    </ul>
-
+</ul>
+<p>
     If you experience issues, you might consider sticking with the Context2D canvas drawer. We will
     be also grateful for any feedbacks on issues with devices.
-
+</p>
 <pre>
 const viewer = OpenSeadragon({
     ....
     drawer: 'canvas'
 });
 </pre>
-</p>
+

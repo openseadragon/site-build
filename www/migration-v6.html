@@ -6,7 +6,7 @@ Version 6 brings a major change of how data is handled to OpenSeadragon. In gene
 should familiarize yourself with the <a href="/#data-modification-pipeline">new system</a> of data handling.
 
 Below is a list of things that the new system deprecates:
-
+</p>
 <ul style="list-style-type: disc">
     <li>
         tiles can only contain cache objects, <code>Tile</code> data properties like <code>image</code>,
@@ -19,7 +19,7 @@ Below is a list of things that the new system deprecates:
         event to access these inside the cache item when <code>HTMLDrawer</code> is being used
     </li>
     <li>
-        <code>tile-drawing</code> event is deprecated, since data modification logics can
+        <code>tile-drawing</code> event is deprecated, since data modification logic can
         perform asynchronous operations, and this event was performed synchronously just before drawing
         a particular element
     </li>
@@ -29,7 +29,7 @@ Below is a list of things that the new system deprecates:
         you need to newly provide what <i>type</i> of the data you submit to the system
     </li>
 </ul>
-</p>
+
 <p>
 Example usage of new way of data modification:
 </p>

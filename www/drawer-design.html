@@ -160,7 +160,7 @@ OpenSeadragon.MyAwesomeDrawer = class MyAwesomeDrawer extends DrawerBase {
 }
 </pre>
 
-The actual drawing logics implementation looks something like this:
+The actual drawing logic implementation looks something like this:
 
 
 <pre>
@@ -206,7 +206,7 @@ to a different renderer. The reference is usually necessary just because we want
 formats to allow third-party plugins to do their magic. We need to keep the type-conversion graph strongly connected.
 </p>
 <p>All this is quite hard to fit inside data processing pipeline, while having the flexibility available a drawer needs.
-This is the time for <b>internal cache</b></p>. It needs to be properly configured for the usage:</p>
+This is the time for <b>internal cache</b>. It needs to be properly configured for the usage:</p>
 <pre>
     // These options are the default drawer options, used when user does not
     // override them in drawerOptions:
