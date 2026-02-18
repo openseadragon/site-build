@@ -20,6 +20,7 @@ module.exports = function (grunt) {
 
     var examples = {
         "tilesource-custom": "Custom Tile Source",
+        "tilesource-custom-advanced": "Building custom TileSource in Depth",
         "tilesource-dzi": "DZI Tile Source",
         "tilesource-osm": "OpenStreetMap Tile Source",
         "tilesource-tms": "Tiled Map Service Tile Source",
@@ -45,7 +46,11 @@ module.exports = function (grunt) {
         "viewport-coordinates": "Viewport Coordinates",
         "in-the-wild": "OpenSeadragon in the Wild",
         "multi-image": "Multi-Image",
-        "advanced-data-model": "Advanced data model with TileSource"
+        "migration-v5": "Migration notes from v1-v4 to v5",
+        "migration-v6": "Migration notes from v5 to v6",
+        "data-types": "Data Types in OpenSeadragon",
+        "data-modifications": "Data Modification Pipeline",
+        "drawer-design": "Designing Drawers (Advanced)",
     };
 
     // ----------
@@ -119,37 +124,43 @@ module.exports = function (grunt) {
     // Make:www task.
     // Builds all of the HTML pages.
     grunt.registerTask("make:www", function () {
-        var base = grunt.file.read("www/base.html");
-        var version = getVersion();
+        try {
+            var base = grunt.file.read("www/base.html");
+            var version = getVersion();
 
-        var shortVersion = version.split('.');
-        shortVersion.pop();
-        shortVersion = shortVersion.join('.');
+            var shortVersion = version.split('.');
+            shortVersion.pop();
+            shortVersion = shortVersion.join('.');
 
-        var make = function (src, dest, title) {
-            var content = grunt.file.read(src);
-            var built = grunt.template.process(base, {
-                data: {
-                    title: title,
-                    version: version,
-                    shortVersion: shortVersion,
-                    content: content
-                }
-            });
+            var make = function (src, dest, title) {
+                var content = grunt.file.read(src);
+                var built = grunt.template.process(base, {
+                    data: {
+                        title: title,
+                        version: version,
+                        shortVersion: shortVersion,
+                        content: content
+                    }
+                });
 
-            grunt.file.write(dest, built);
-        };
+                grunt.file.write(dest, built);
+            };
 
-        for (var key in examples) {
-            make("www/" + key + ".html",
-                buildRoot + "examples/" + key + "/index.html",
-                examples[key] + " | ");
+            for (var key in examples) {
+                make("www/" + key + ".html",
+                    buildRoot + "examples/" + key + "/index.html",
+                    examples[key] + " | ");
+            }
+
+            make("www/index.html", buildRoot + "index.html", "");
+            make("www/license.html", buildRoot + "license/index.html", "License | ");
+            // meta-refresh redirect; doesn't use base template
+            grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
+        } catch (e) {
+            // get the stacktrace
+            console.error(e);
+            throw e;
         }
-
-        make("www/index.html", buildRoot + "index.html", "");
-        make("www/license.html", buildRoot + "license/index.html", "License | ");
-        // meta-refresh redirect; doesn't use base template
-        grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
     });
 
     // ----------

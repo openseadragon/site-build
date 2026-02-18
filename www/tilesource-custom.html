@@ -19,7 +19,7 @@
 <div class="description">
     <h3>Inline Configuration for Custom Tile Sources</h3>
     <p>
-        Minimally, an inline configuration for a custom tile source only needs 
+        Minimally, an inline configuration for a custom tile source only needs
         to implement the <code>getTileUrl</code> interface and provide a
         height and width for the maximum resolution of the image.
     </p>
@@ -28,11 +28,11 @@
     <div class="demoheading">
         Example Inline Configuration for Custom Tile Sources
     </div>
-    <div id="example-custom-tilesource" 
+    <div id="example-custom-tilesource"
          class="openseadragon" >
     </div>
     <p>
-        Below is a minimal inline configuration which pulls tiles from a NASA 
+        Below is a minimal inline configuration which pulls tiles from a NASA
         Blue Marble tile set transformed into tiles hosted on Amazon S3
         (compliments of <a
         href="http://mike.teczno.com/notes/blue-marble-tiles.html">
@@ -89,8 +89,8 @@ OpenSeadragon({
     <div class="demoheading">
         Another Inline Configuration for Custom Tile Sources
     </div>
-    <div id="example2-custom-tilesource" 
-         class="openseadragon" 
+    <div id="example2-custom-tilesource"
+         class="openseadragon"
          style='background-color:#aaa'>
     </div>
     <p>
@@ -152,3 +152,25 @@ OpenSeadragon({
     });
     </script>
 </div>
+
+<div class="description">
+    <h3>Where to next?</h3>
+    <p>
+        OpenSeadragon offers a variety of ways to add custom tile sources. You can define your own
+        data types, override the default tile data access logic and more!
+    </p>
+</div>
+<p>
+    If you need OpenSeadragon to fetch your data in a custom way, if you need to support asynchronous
+    resolution of your tile-related data or even downloading the data in a custom way,
+    <a href="/examples/tilesource-custom-advanced/">see the next article</a>. You will find out,
+    that <code>getTileUrl</code> does not actually need to return a URL value at all -
+    by overriding relevant methods, everything is in your hands.
+</p>
+<p>
+    OpenSeadragon goes even further: you can define custom data types, have plugins that require other
+    data types, and drawers that require yet another type to actually render. Everything is kept interoperable by
+    <a href="/examples/data-modifications/">OpenSeadragon's conversion pipeline</a>
+    and <a href="/examples/data-types/">the data type system</a>. In OpenSeadragon, you can implement custom data
+    acquisition, conversion, tile-level preprocessing and even the final rendering.
+</p>
