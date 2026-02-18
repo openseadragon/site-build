@@ -55,6 +55,11 @@
         <td><a href="/examples/tilesource-dzi/">DZI</a></td>
     </tr> -->
     <tr>
+        <td><a href="https://iipimage.sourceforge.io">IIPImage</a></td>
+        <td>Open source server (C++)</td>
+        <td><a href="/examples/tilesource-dzi/">DZI</a> (see <a href="https://iipimage.sourceforge.io/documentation/protocol#deepzoom">IIPImage DZI documentation</a>)</td>
+    </tr>
+    <tr>
         <td><a href="https://github.com/VoidVolker/MagickSlicer">MagickSlicer</a></td>
         <td>shell script (Linux/Mac)</td>
         <td><a href="/examples/tilesource-dzi/">DZI</a></td>
@@ -104,7 +109,7 @@
     </tr>
     <tr>
         <td><a href="https://cantaloupe-project.github.io/">Cantaloupe</a></td>
-        <td>Server</td>
+        <td>Open source server (Java)</td>
         <td><a href="/examples/tilesource-iiif/">IIIF</a></td>
     </tr>
     <tr>
@@ -118,7 +123,7 @@
     </tr>
     <tr>
         <td><a href="https://iipimage.sourceforge.io/">IIPImage</a></td>
-        <td>Server</td>
+        <td>Open source server (C++)</td>
         <td><a href="/examples/tilesource-iiif/">IIIF</a></td>
     </tr>
     <tr>
@@ -148,6 +153,12 @@
         <td><a href="https://github.com/ryanlandvater/Iris-RESTful-Server">Iris</a></td>
         <td>C++</td>
         <td><a href="/examples/tilesource-iris/">Iris</a></td>
+        <td colspan="3"><h4>IIP</h4></td>
+    </tr>
+    <tr>
+        <td><a href="https://iipimage.sourceforge.io">IIPImage</a></td>
+        <td>Open source server (C++)</td>
+        <td><a href="/examples/tilesource-iip/">IIP</a></td>
     </tr>
     <tr>
         <td colspan="3"><h4>TMS</h4></td>
@@ -158,12 +169,27 @@
         <td><a href="/examples/tilesource-tms/">TMS</a></td>
     </tr>
     <tr>
+        <td><a href="https://gdal.org/en/latest/programs/gdal_raster_tile.html#gdal-raster-tile">gdal raster tile</a></td>
+        <td>CLI</td>
+        <td><a href="/examples/tilesource-tms/">TMS</a></td>
+    </tr>
+    <tr>
         <td><a href="https://www.maptiler.org/">MapTiler</a></td>
         <td>desktop app for Windows, Mac, Linux</td>
         <td><a href="/examples/tilesource-tms/">TMS</a></td>
     </tr>
     <tr>
         <td colspan="3"><h4>Zoomify</h4></td>
+    </tr>
+    <tr>
+        <td><a href="https://github.com/GoogleCloudPlatform/dataflow-zoomify-image/">Dataflow-zoomify-image</a></td>
+        <td>Free Google Cloud Dataflow template allowing large amounts of images to be processed in parallel</td>
+        <td><a href="/examples/tilesource-zoomify/">Zoomify</a></td>
+    </tr>
+    <tr>
+        <td><a href="https://iipimage.sourceforge.io">IIPImage</a></td>
+        <td>Open source server (C++)</td>
+        <td><a href="/examples/tilesource-zoomify/">Zoomify</a> (see <a href="https://iipimage.sourceforge.io/documentation/protocol#zoomify">IIPImage Zoomify documentation</a>)</td>
     </tr>
     <tr>
         <td><a href="http://www.zoomify.com/free.htm">Zoomify App</a></td>
@@ -190,6 +216,7 @@
         <td>Free Google Cloud Dataflow template allowing large amounts of images to be processed in parallel</td>
         <td><a href="/examples/tilesource-zoomify/">Zoomify</a></td>
     </tr>
+        
     <tr>
         <td colspan="3"><h4>Tools for Working with Tiled Images</h4></td>
     </tr>
@@ -197,6 +224,32 @@
         <td><a href="https://github.com/cioran0/dzOpen">dzOpen</a></td>
         <td>Free desktop app for locally viewing DZI files for Windows. Linux soon.</td>
         <td><a href="/examples/tilesource-dzi/">DZI</a></td>
+    </tr>
+    
+    <tr>
+        <td colspan="3"><h4>Single-file Tile formats</h4> See complete <a href="https://github.com/openseadragon/openseadragon/issues/944">discussion thread</a>. Useful for faster/easier file operations and maintenance on S3/file servers FS.</td>
+    </tr>
+    <tr>
+        <td>
+            OpenSeadragon
+            <a href="https://github.com/sundogbio/szi-tile-source">SZITileSource</a> and <a href="https://sundogbio.github.io/szi-tile-source/">demo</a>
+        </td>
+        <td>SZI is losslessly zipped DZI container. SZI can be produced with <a href="https://www.libvips.org/API/current/making-image-pyramids.html">libvips</a></td>
+        <td><a href="https://github.com/smartinmedia/SZI-Format/blob/master/SZI%20format%20description%20-%202018-11-24.pdf">SZI</a></td>
+    </tr>
+    <tr>
+        <td>
+            OpenSeaDragon <a href="https://github.com/pearcetm/GeoTIFFTileSource">GeoTIFFTileSource</a> and <a href="https://pearcetm.github.io/GeoTIFFTileSource/demo/demo.html">demo</a>
+        </td>
+        <td>Cloud Optimized Geotiff is a geospatial standard specified by OGC for massive rasters, which also works for non-geo images</td>
+        <td><a href="https://www.cogeo.org/">COG</a></td>
+    </tr>
+    <tr>
+        <td>
+            No open-source reader/writer implementation available yet
+        </td>
+        <td>Zoomable Image File format, or Zoomify Image File format</td>
+        <td><a href="https://zif.photo/">ZIF</a></td>
     </tr>
 </table>
 <br/>

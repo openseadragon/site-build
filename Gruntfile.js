@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
     // ----------
     grunt.loadNpmTasks("grunt-contrib-connect");
@@ -20,11 +20,13 @@ module.exports = function(grunt) {
 
     var examples = {
         "tilesource-custom": "Custom Tile Source",
+        "tilesource-custom-advanced": "Building custom TileSource in Depth",
         "tilesource-dzi": "DZI Tile Source",
         "tilesource-osm": "OpenStreetMap Tile Source",
         "tilesource-tms": "Tiled Map Service Tile Source",
         "tilesource-iiif": "IIIF Tile Source",
         "tilesource-iris": "Iris Tile Source",
+        "tilesource-iip": "IIP Tile Source",
         "tilesource-legacy": "Legacy Tile Source",
         "tilesource-zoomify": "Zoomify Tile Source",
         "tilesource-zoomit": "Zoom.it Tile Source",
@@ -40,13 +42,17 @@ module.exports = function(grunt) {
         "ui-rotation": "Rotation",
         "ui-keyboard-navigation": "Keyboard Navigation",
         "ui-customize-tooltips": "Customize Tooltips",
-        "ui-tiledimage-polygon-cropping" : "Crop TiledImage with Polygons",
+        "ui-tiledimage-polygon-cropping": "Crop TiledImage with Polygons",
         "developer-debug-mode": "Developer Tools - Debug Mode",
         "creating-zooming-images": "Creating Zooming Images",
         "viewport-coordinates": "Viewport Coordinates",
         "in-the-wild": "OpenSeadragon in the Wild",
         "multi-image": "Multi-Image",
-        "advanced-data-model": "Advanced data model with TileSource"
+        "migration-v5": "Migration notes from v1-v4 to v5",
+        "migration-v6": "Migration notes from v5 to v6",
+        "data-types": "Data Types in OpenSeadragon",
+        "data-modifications": "Data Modification Pipeline",
+        "drawer-design": "Designing Drawers (Advanced)",
     };
 
     // ----------
@@ -103,10 +109,10 @@ module.exports = function(grunt) {
             }
         },
         watch: {
-            files: [ "Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
+            files: ["Gruntfile.js", "www/*", "css/*", "built-openseadragon/**"],
             tasks: ["build"]
         },
-        jsdoc : {
+        jsdoc: {
             src: [builtSourceUnMinified, 'doc-home.md'],
             options: {
                 destination: buildRoot + 'docs',
@@ -119,46 +125,52 @@ module.exports = function(grunt) {
     // ----------
     // Make:www task.
     // Builds all of the HTML pages.
-    grunt.registerTask("make:www", function() {
-        var base = grunt.file.read("www/base.html");
-        var version = getVersion();
-        
-        var shortVersion = version.split('.');
-        shortVersion.pop();
-        shortVersion = shortVersion.join('.');
+    grunt.registerTask("make:www", function () {
+        try {
+            var base = grunt.file.read("www/base.html");
+            var version = getVersion();
 
-        var make = function(src, dest, title) {
-            var content = grunt.file.read(src);
-            var built = grunt.template.process(base, {
-                data: {
-                    title: title,
-                    version: version,
-                    shortVersion: shortVersion,
-                    content: content
-                }
-            });
+            var shortVersion = version.split('.');
+            shortVersion.pop();
+            shortVersion = shortVersion.join('.');
 
-            grunt.file.write(dest, built);
-        };
+            var make = function (src, dest, title) {
+                var content = grunt.file.read(src);
+                var built = grunt.template.process(base, {
+                    data: {
+                        title: title,
+                        version: version,
+                        shortVersion: shortVersion,
+                        content: content
+                    }
+                });
 
-        for (var key in examples) {
-            make("www/" + key + ".html",
-                buildRoot + "examples/" + key + "/index.html",
-                examples[key] + " | ");
+                grunt.file.write(dest, built);
+            };
+
+            for (var key in examples) {
+                make("www/" + key + ".html",
+                    buildRoot + "examples/" + key + "/index.html",
+                    examples[key] + " | ");
+            }
+
+            make("www/index.html", buildRoot + "index.html", "");
+            make("www/license.html", buildRoot + "license/index.html", "License | ");
+            // meta-refresh redirect; doesn't use base template
+            grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
+        } catch (e) {
+            // get the stacktrace
+            console.error(e);
+            throw e;
         }
-
-        make("www/index.html", buildRoot + "index.html", "");
-        make("www/license.html", buildRoot + "license/index.html", "License | ");
-        // meta-refresh redirect; doesn't use base template
-        grunt.file.copy("www/releases.html", buildRoot + "releases/index.html");
     });
 
     // ----------
     // Copy:build task.
     // Copies needed files to the build folder.
-    grunt.registerTask("copy:build", function() {
-        var copyOne = function(from, to) {
-            grunt.file.recurse(from, function(abspath, rootdir, subdir, filename) {
+    grunt.registerTask("copy:build", function () {
+        var copyOne = function (from, to) {
+            grunt.file.recurse(from, function (abspath, rootdir, subdir, filename) {
                 var dest = buildRoot
                     + to
                     + "/"
@@ -177,8 +189,8 @@ module.exports = function(grunt) {
     // ----------
     // Copy:release task.
     // Copies needed files to the release folder.
-    grunt.registerTask("copy:release", function() {
-        grunt.file.recurse(buildRoot, function(abspath, rootdir, subdir, filename) {
+    grunt.registerTask("copy:release", function () {
+        grunt.file.recurse(buildRoot, function (abspath, rootdir, subdir, filename) {
             if (subdir && /^(example-images|openseadragonizer)/.test(subdir)) {
                 return;
             }

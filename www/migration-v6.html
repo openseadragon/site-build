@@ -1,0 +1,47 @@
+<h2>Migration From v5 to v6</h2>
+
+<p>
+Version 6 brings a major change of how data is handled to OpenSeadragon. In general, the v6 changes
+(as drastic as they might seem) bring back system-wide data compatibility and address issues introduced in v5. You
+should familiarize yourself with the <a href="/#data-modification-pipeline">new system</a> of data handling.
+
+Below is a list of things that the new system deprecates:
+</p>
+<ul style="list-style-type: disc">
+    <li>
+        tiles can only contain cache objects, <code>Tile</code> data properties like <code>image</code>,
+        <code>getImage</code>, <code>getCanvasContext</code>, <code>context2D</code>, <code>cacheImageRecord</code>,
+        are deprecated and might not even work as expected
+    </li>
+    <li>
+        tiles do not care what is the underlying drawer, properties like
+        <code>element</code>, <code>style</code>, <code>context2D</code> are deprecated; you can use <code>tile-invalidated</code>
+        event to access these inside the cache item when <code>HTMLDrawer</code> is being used
+    </li>
+    <li>
+        <code>tile-drawing</code> event is deprecated, since data modification logic can
+        perform asynchronous operations, and this event was performed synchronously just before drawing
+        a particular element
+    </li>
+    <li>
+        <code>TileSource</code>-driven data management is deprecated (like <code>createTileCache</code>), since not the tile source, but the
+        core system decides how, when and what to do with the data; if you've overridden <code>downloadTileStart</code>
+        you need to newly provide what <i>type</i> of the data you submit to the system
+    </li>
+</ul>
+
+<p>
+Example usage of new way of data modification:
+</p>
+<pre>
+viewer.addHandler('tile-invalidated', async e => {
+    const data = await e.getData('context2d');
+    if (e.outdated()) return;
+    e.setData(myValue, 'context2d');
+});
+
+viewer.requestInvalidate().then(() => console.log("Viewport updated!"));
+</pre>
+<p>
+    Cool, right?
+</p>
