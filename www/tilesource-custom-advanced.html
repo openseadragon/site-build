@@ -1,8 +1,7 @@
-<h2>Advanced Data Models with Custom TileSource</h2>
+<h2>Advanced Custom TileSource</h2>
 
 <p>
-   Since 2022, OpenSeadragon also supports custom tile data format, loading
-   and caching procedures. This example goes through the process.
+   Since 2022, OpenSeadragon also supports custom tile data retrieval.
 
    First, please, make sure you are familiar with <a
    href="/examples/tilesource-custom/">custom tile source</a>s. The main
@@ -16,13 +15,36 @@
    can be overridden.</b>
 </p>
 
+<p>
+    It is also good to know what data types in OpenSeadragon are. Supported ones include
+    for example <code>image</code>, <code>context2d</code> or even <code>imageBitmap</code>.
+
+    You can learn more about <a href="/examples/data-types/"><i>data types</i> here</a>.
+</p>
+
+<div class="description">
+    <h3>About this Chapter</h3>
+</div>
+<p>
+    In the first section, we show two ways of redefining the tile fetching process. At the bottom,
+    you will find an in-depth explanation of how to introduce custom <code>TileSource</code> classes
+    in a standard way to, for example, write custom format plugins. Inlining a <code>TileSource</code> object specification
+    is flexible for single use-cases, but for more interoperability (especially when writing plugins), implementing an interface-level
+    class is recommended.
+</p>
+
+<p>
+    In general, <b>you can always override any method of the <code>TileSource</code> class hierarchy on the inline
+    specification level</b>, and this is the intended way to extend the functionality of OpenSeadragon. Defining the
+    class explicitly has the advantage of more lightweight source specification later on — <a href="#custom-tile-source-initialization">see this example below</a>.
+</p>
+
 <div class="description">
     <h3>Advanced Data Models with OpenSeadragon</h3>
     <p>
-        By default, tile data in OpenSeadragon is represented by an <i>Image</i>
-        object. This, along with the process of tile loading and caching, can
-        be further customized by overriding appropriate TileSource member
-        functions.
+        OpenSeadragon supports any data you might need to use. Just download
+        whatever format you desire, and tell OpenSeadragon how to use this
+        format!
     </p>
 </div>
 <p>
@@ -44,14 +66,20 @@
     that must be called from <code>downloadTileStart</code> in all cases
     except when aborting the job) notifies the ImageLoader about the job
     completion and status, and the data (if any) gets pulled into the system.
+    Upon data submission, you must provide a data type you submit, and
+    optionally provide type converters in case your format is not supported
+    by default. <b>By default, OpenSeadragon expects an image-like url
+    returned by <code>getTileUrl</code></b> method. You can download whatever data you need,
+    but then you need to either convert the data within <code>downloadTileStart</code>
+    method to one of built-in data types or provide a custom converter.
+    For advanced example, see the <a href="https://github.com/openseadragon/flex-render/blob/master/src/mvt-tile-source.js"><b>flex-renderer</b> plugin</a>,
+    which goes even further by introducing a custom type <code>vector-mesh</code> and adds the type support by implementing a drawer able to render
+    vector graphics such as Map Vector Tiles directly.
 </p>
 <p>
-    Last but not least, other functions may be necessary
-    to override, especially if you change the default tile data type
-    (<code>Image</code>). <b>Changing the data type means you have to override
-    all methods that perform tile caching</b> (<code>*TileCache*()</code>
-    like signature). Overriding cache key generation may or might not be
-    necessary.
+    Moreover, <code>getTileUrl</code> method does not need to return an URL at all!
+    Since you override <code>downloadTileStart</code>, <a href="#fractal">the URL that will (if at all) be used
+    to download the tile data is in your hands</a>. Providing any data-unique value will do the trick.
 </p>
 <p>
     <code>getTileHashKey</code> should be overridden in cases your URL
@@ -142,10 +170,12 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
+                // as a fallback compatibility, you can provide error message
+                // instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
-                imageJob.finish(context.image, context.promise);
+                imageJob.finish(context.image, context.promise, "context2d");
             };
 
             function createErrorImageURL(e) {
@@ -237,10 +267,12 @@ OpenSeadragon.extend(OpenSeadragon.DziTileSource.prototype, {
             // in all scenarios, unless abort() is called, make
             // sure imageJob.finish() gets executed!
             context.image.onerror = context.image.onabort = function() {
+                // as a fallback compatibility, you can provide error message instead of type upon failure
                 imageJob.finish(null, context.promise, "Failed to parse tile data as an Image");
             };
             context.image.onload = function() {
-                imageJob.finish(context.image, context.promise);
+                // we provide image data type, since we submit an image object
+                imageJob.finish(context.image, context.promise, "image");
             };
 
             function createErrorImageURL(e) {
@@ -354,8 +386,9 @@ OpenSeadragon({
             //note that we still have to implement getTileUrl
             //since we do, we use this to construct meaningful tile cache key
             //fractal has different data for different tiles - just distinguish
-            //between all tiles
-            return `${level}/${x}-${y}`;
+            //between all tiles and make sure we do not collide with other
+            //tile sources that might also have level/x-y tiles
+            return `mandelbrot-fractal::${level}/${x}-${y}`;
         },
         getTilePostData: function(level, x, y) {
             //yup, handy post data
@@ -385,8 +418,10 @@ OpenSeadragon({
             return 1.0;
         },
         downloadTileStart: function(context) {
-            let size = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, true);
-            let bounds = this.getTileBounds(context.postData.level, context.postData.dx, context.postData.dy, false);
+            let size = this.getTileBounds(context.postData.level, context.postData.dx,
+                context.postData.dy, true);
+            let bounds = this.getTileBounds(context.postData.level, context.postData.dx,
+                context.postData.dy, false);
             let canvas = document.createElement("canvas");
             let ctx = canvas.getContext('2d');
 
@@ -396,7 +431,7 @@ OpenSeadragon({
             if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
-                context.finish(ctx);
+                context.finish(ctx, null, "context2d");
                 return;
             } else {
                 canvas.width = size.width;
@@ -408,7 +443,7 @@ OpenSeadragon({
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
-             bounds.height = bounds.height * 2.5;
+            bounds.height = bounds.height * 2.5;
 
             var imagedata = ctx.createImageData(size.width, size.height);
             for (let x = 0; x < size.width; x++) {
@@ -425,7 +460,7 @@ OpenSeadragon({
             }
             ctx.putImageData(imagedata, 0, 0);
             // note: we output context2D!
-            context.finish(ctx);
+            context.finish(ctx, null, "context2d");
         },
         downloadTileAbort: function(context) {
             //we could set a flag which would stop the execution,
@@ -435,34 +470,6 @@ OpenSeadragon({
 
             //pass
         },
-
-        createTileCache: function(cache, data) {
-            //cache is the cache object meant to attach items to
-            //data is context2D, just keep the reference
-            cache._data = data;
-        },
-
-        destroyTileCache: function(cache) {
-            //unset to allow GC collection
-            cache._data = null;
-        },
-
-        getTileCacheData: function(cache) {
-            //just return the raw data as it was given, part of API
-            return cache._data;
-        },
-
-        getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the
-            // system, namely tile.getImage() will not work and also
-            // html-based drawing approach will not work
-            throw "Lazy to implement";
-        },
-
-        getTileCacheDataAsContext2D: function(cache) {
-            // our data is already context2D - what a luck!
-            return cache._data;
-        }
     }
 });
     </pre>
@@ -485,8 +492,9 @@ OpenSeadragon({
             //note that we still have to implement getTileUrl
             //since we do, we use this to construct meaningful tile cache key
             //fractal has different data for different tiles - just distinguish
-            //between all tiles
-            return `${level}/${x}-${y}`;
+            //between all tiles and make sure we do not collide with other
+            //tile sources that might also have level/x-y tiles
+            return `mandelbrot-fractal::${level}/${x}-${y}`;
         },
         getTilePostData: function(level, x, y) {
             //yup, handy post data
@@ -527,7 +535,7 @@ OpenSeadragon({
             if (size.width < 1 || size.height < 1) {
                 canvas.width = 1;
                 canvas.height = 1;
-                context.finish(ctx);
+                context.finish(ctx, null, "context2d");
                 return;
             } else {
                 canvas.width = size.width;
@@ -539,7 +547,7 @@ OpenSeadragon({
             bounds.x = bounds.x*2.5 - 1.5;
             bounds.width = bounds.width * 2.5;
             bounds.y = (bounds.y * 2.5) - 1.2;
-             bounds.height = bounds.height * 2.5;
+            bounds.height = bounds.height * 2.5;
 
             var imagedata = ctx.createImageData(size.width, size.height);
             for (let x = 0; x < size.width; x++) {
@@ -556,87 +564,208 @@ OpenSeadragon({
             }
             ctx.putImageData(imagedata, 0, 0);
             // note: we output context2D!
-            context.finish(ctx);
+            context.finish(ctx, null, "context2d");
         },
         downloadTileAbort: function(context) {
-            //we could set a flag which would stop the execution,
+            // we could set a flag which would stop the execution,
             // and it would be right to do so, but it's not necessary
             // (could help in debug scenarios though, in case of cycling
             // it could kill it)
 
             //pass
         },
-
-        createTileCache: function(cache, data) {
-            //cache is the cache object meant to attach items to
-            //data is context2D, just keep the reference
-            cache._data = data;
-        },
-
-        destroyTileCache: function(cache) {
-            //unset to allow GC collection
-            cache._data = null;
-        },
-
-        getTileCacheData: function(cache) {
-            //just return the raw data as it was given, part of API
-            return cache._data;
-        },
-
-        getTileCacheDataAsImage: function() {
-            // not implementing all the features brings limitations to the
-            // system, namely tile.getImage() will not work and also
-            // html-based drawing approach will not work
-            throw "Lazy to implement";
-        },
-
-        getTileCacheDataAsContext2D: function(cache) {
-            // our data is already context2D - what a luck!
-            return cache._data;
-        }
     }
 });
     </script>
 </div>
 
 <p>
-    Unlike in the first example, we work with <code>RenderingContext2D</code>
+    Unlike in the first example, we are working with <code>RenderingContext2D</code>
     object instead of <code>Image</code>. Also, instead of downloading we just
     generate it realtime.
 </p>
 
-<p>
-    In OpenSeadragon, cache is used unless <code>context2D</code> property of
-    <code>Tile</code> instance exists. By default, cached data can be used AS-IS.
-    But when touching the downloading logics and finishing with different data
-    than <code>Image</code> object, you have to implement also <code>*TileCache*</code>
-    methods.
-</p>
 
 <p>
     Note that we do not have to re-define <code>getTileCacheKey()</code>: we rely on
     the default key generation using URL. If we had returned an empty string in
     <code>getTileUrl</code> (also
-    a correct solution), we would have to override <code>getTileCacheKey()
-    </code>, but since we are forced to define the url getter, we may as well
+    a correct solution), we would have to override <code>getTileCacheKey()</code>,
+    but since we are forced to define the url getter, we may as well
     re-use it for the cache key creation.
 </p>
 <p>
-    In order to use the tile cache, we define how the cache is created: we
-    are given the cache context object and the data object we gave to successful
-    <code>job.finish(...)</code> call. For OpenSeadragon to be able to work
-    with such a generic approach, two methods must be implemented, that
-    convert the data to <code>RenderingContext2D</code> and <code>Image</code>
-    objects. It does not mean these objects will be created, only if needed.
-    Plugins might require to access the data as <code>Image</code> objects,
-    and also the default drawing strategies work either with canvas
-    context (canvas strategy) or image object (html div strategy). But,
-    unlike the default behaviour, we can avoid the creation of
-    <code>Image</code> object, since we work by default with canvas
-    and OpenSeadragon is mostly used with canvas drawing strategy anyway.
+    Since we are working with a data type that is supported out of box,
+    we can just stop here and any drawer or plugin can use our data to
+    modify it, and render it.
+</p>
+
+<div class="description">
+    <h3>Understanding TileSource in Depth</h3>
+    <p>
+        OpenSeadragon's support for custom tile sources is very generic and can suit many use-cases.
+        Learn how to take advantage of the <code>TileSource</code> class to create your own tile sources.
+    </p>
+</div>
+<p>
+    <b>Warning</b>. Note that unlike OpenSlide and other popular WSI systems, OpenSeadragon treats <code>level 0</code>
+    as the smallest resolution available. The reason is that when rendering, we often go from the lowest resolution down in pyramid,
+    starting always from 0. Unlike viewing software, data-processing systems decide what level to work with relatively against
+    the highest native resolution in the data since they often decide how many times a resolution can be decreased for the
+    algorithm to still work, but also consume less data and thus be more efficient. Such systems thus benefit
+    from having the native resolution level as index 0.
 </p>
 <p>
-    <b>Performance caveat:</b> <code>getTileCacheData[...]</code>
-    functions are among other things used to access the data when rendering,
-    it is a good idea to execute only optimized code and store results to return them immediately.
+    A <code>TileSource</code> can be provided explicitly as an argument, or implicitly using string, object, or other definition.
+    Explicit supplying (directly via the main options argument) can do whatever you want as long as the instance is conformant with TileSource API, which
+    is discussed above: implement at least <code>get TileUrl</code> method and provide necessary properties.
 </p>
+<p>
+    Implicit tile source must be named <code>[MyNamePrefix]TileSource</code>,
+    attached to the <code>OpenSeadragon</code> namespace to be considered as registered;
+    and implement <code>supports</code> method.
+    This method decides whether the tile source is used by the viewer when iterating through
+    all of the registered sources.
+</p>
+<p id="custom-tile-source-initialization">
+    Note that OSD tries to <b>parse XML- and JSON-like strings</b>—if such a string is provided,
+    it is first parsed, and then the result is used as a tile source argument.
+</p>
+<pre>
+OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadragon.TileSource {
+    supports(data, url) {
+        return data.myCustomType && data.myCustomType === "myCustomTileSource";
+    }
+}
+</pre>
+<p>
+    ... and later on ...
+</p>
+<pre>
+OpenSeadragon({
+    ...
+    tileSources: { myCustomType: "myCustomTileSource", myCustomProperty: myCustomValue }
+    ...
+});
+</pre>
+
+<p>
+    Now, our custom implementation will get loaded. But that's not all. We need to first get metadata
+    about the image we will be rendering. To do so, OpenSeadragon implicitly treats a string data argument,
+    that was not successfully parsed, as a URL. Moreover, if an object is provided instead, but part
+    of the object is <code>url</code> property, then it is treated as a URL as well.
+</p>
+<p>
+    Another good thing is to remember that all properties sent in the options to the TileSource constructor
+    are attached to the TileSource instance. Note that this might override values you want to keep, like parts of the
+    TileSource API.
+</p>
+<p>
+    In both cases described above, OpenSeadragon will try to fetch the data from the URL, and if it succeeds,
+    it will use the data as to initialize the tile source. Method <code>getImageInfo</code> will be used
+    to fetch the metadata, and method <code>configure</code> then parse this metadata.
+    This is true unless you set explicitly <code>ready</code> flag to true. If it is undefined, we
+    assume that the tile source might not be ready, or the state is unknown, so we try <code>getImageInfo</code>
+    if the conditions described above apply. The minimal required metatada issued to the TileSource constructor when we expect the readiness
+    of the instace are:
+</p>
+<pre>
+    @property {Number} [options.width]
+      Width of the source image at max resolution in pixels.
+    @property {Number} [options.height]
+      Height of the source image at max resolution in pixels.
+    @property {Number} [options.tileSize]
+      The size of the tiles to assumed to make up each pyramid layer in pixels.
+      Tile size determines the point at which the image pyramid must be
+      divided into a matrix of smaller images.
+      Use options.tileWidth and options.tileHeight to support non-square tiles.
+    @property {Number} [options.tileWidth]
+      The width of the tiles to assumed to make up each pyramid layer in pixels.
+    @property {Number} [options.tileHeight]
+      The height of the tiles to assumed to make up each pyramid layer in pixels.
+    @property {Number} [options.tileOverlap]
+      The number of pixels each tile is expected to overlap touching tiles.
+    @property {Number} [options.minLevel]
+      The minimum level to attempt to load.
+    @property {Number} [options.maxLevel]
+      The maximum level to attempt to load.
+</pre>
+<p>
+    This way we can simply provide a minimalistic <code>{ myCustomType: "myCustomTileSource", url: someValue }</code>
+    argument and implement <code>configure(options, dataUrl, postData)</code> to parse the data.
+    The result of this method is sent to the constructor as an <code>options</code> object. You might be surprised you can see
+    <code>postData</code> in the argument list. Urls furthermore support <code>#</code> character, which can be used
+    together with OpenSeadragon flag <code>splitHashDataForPost</code> to detach suffix of the URL and send <code>
+    key=value&key2=value2</code> submitted as POST data, e.g. for secrets that need to be passed to the server.
+    All this is done by <code>getImageInfo</code> so if you override it, you can do something else, but
+    do not expect these things to work automatically.
+</p>
+<p>
+    You can go much further and take advantage of the full API. Below is an example with comments where we can
+    do what and why. Last thing we did not touch is the <code>ready</code> flag of the <code>options</code> object.
+    If set to true (the default value), tileSource is considered as loaded and ready to be used. If you need
+    to do some initialization before the tile source can be used, set this flag to false.
+</p>
+
+<pre>
+OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadragon.TileSource {
+    constructor(options) {
+        // before passing to super, remove items you don't want to set to `this` and manage ready flag
+        //   but only if not set see getImageInfo()
+        if (options.ready === undefined) {
+            options.ready = false;
+        }
+        super(options);
+
+        // here, we can now do further initialization, which is guaranteed to finish before
+        // the pipeline executes as `ready = false`, for example, we can fetch auth tokens here.
+    }
+
+    supports(data, url) {
+        return data.myCustomType && data.myCustomType === "myCustomTileSource";
+    }
+
+    configure(options, dataUrl, postData) {
+        // todo parse output of getImageInfo
+        return options;
+    }
+
+    getImageInfo(url) {
+        // when you override image info function, you should make sure that you set necessary values to 'this',
+        // or provide the values to the new TileSource instance.
+
+        return fetch(url).then(response => response.json()).then(data => {
+            // this is of course not needed at all, but if we want to mimic the original logic and use configure...
+            const data = this.configure(data, url, postData);
+            // this is also not needed at all, but if we really NEED to data to go through the constructor
+            data.ready = true;
+            // ready=true is important to use this data immediately and avoid getImageInfo recursion
+            const tileSource = new OpenSeadragon.MyCustomTileSource(data);
+            this.raiseEvent('ready', {tileSource: tileSource});
+        }).catch(error => {
+            this.raiseEvent('open-failed', {
+                message: "Error loading image at " + url,
+                source: url
+            });
+        });
+    }
+
+    // Below are more advanced configurations you can make. You can compute explicitly your pyramid
+    // level scales and tile sizes, and return them in these getters based on the level index.
+
+    getLevelScale: function( level ) {
+        // here you can define custom scale per level - any scale, not only powers of 2!
+        return super.getLevelScale( level );
+    }
+
+    getTileWidth: function( level ) {
+        // here you can define custom tile dimension per level!
+        return super.getTileWidth( level );
+    }
+
+    getTileHeight: function( level ) {
+        // here you can define custom tile dimension per level!
+        return super.getTileHeight( level );
+    }
+}
+</pre>
