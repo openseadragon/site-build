@@ -1,6 +1,6 @@
-//! openseadragon 6.0.0
-//! Built on 2026-01-15
-//! Git commit: v3.0.0-1171-382c4bb0-dirty
+//! openseadragon 6.0.1
+//! Built on 2026-02-23
+//! Git commit: v6.0.1-0-a186f355
 //! http://openseadragon.github.io
 //! License: http://openseadragon.github.io/license/
 
@@ -90,7 +90,7 @@
 
 /**
  * @namespace OpenSeadragon
- * @version openseadragon 6.0.0
+ * @version openseadragon 6.0.1
  * @classdesc The root namespace for OpenSeadragon.  All utility methods
  * and classes are defined on or below this namespace.
  *
@@ -196,11 +196,23 @@
   *     Zoom level to use when image is first opened or the home button is clicked.
   *     If 0, adjusts to fit viewer.
   *
-  * @property {String|DrawerImplementation|Array} [drawer = ['webgl', 'canvas', 'html']]
-  *     Which drawer to use. Valid strings are 'webgl', 'canvas', and 'html'. Valid drawer
-  *     implementations are constructors of classes that extend OpenSeadragon.DrawerBase.
+  * @property {String|DrawerImplementation|Array} [drawer = ['auto', 'webgl', 'canvas', 'html']]
+  *     Which drawer to use. Valid strings are 'auto', 'webgl', 'canvas', and 'html'.
+  *     The string 'auto' is converted to one or more drawer type strings depending
+  *     on the platform. On iOS-like devices it becomes 'canvas' due to performance
+  *     limitations with the webgl drawer. On all other platforms it becomes ['webgl', 'canvas']
+  *     meaning that webgl is tried first, and canvas is available as a fallback if webgl is not supported.
+  *
+  *     The 'webgl' drawer automatically uses WebGL2 when available, falling back to WebGL1.
+  *
+  *     External drawer plugins can register additional drawer types as strings.
+  *     Valid drawer implementations are constructors of classes that extend OpenSeadragon.DrawerBase.
   *     An array of strings and/or constructors can be used to indicate the priority
   *     of different implementations, which will be tried in order based on browser support.
+  *     The 'webgl' drawer can automatically fall back to canvas as needed, for example to draw
+  *     images that do not have CORS headers set which makes them tainted and unavailable to webgl.
+  *     This behavior depends on 'canvas' being included in the list of drawer candidates. If
+  *     webgl is needed and canvas fallback is not desired, use 'webgl' without including 'canvas' in the list.
   *
   * @property {Object} drawerOptions
   *     Options to pass to the selected drawer implementation. For details
@@ -220,8 +232,9 @@
   *     For complete list of modes, please @see {@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation/ globalCompositeOperation}
   *
   * @property {Boolean} [imageSmoothingEnabled=true]
-  *     Image smoothing for rendering (only if the canvas or webgl drawer is used). Note: Ignored
-  *     by some (especially older) browsers which do not support this canvas property.
+  *     Image smoothing for rendering. Supported by the canvas and webgl drawers,
+  *     and may also be supported by external drawer plugins. Note: Ignored by some
+  *     (especially older) browsers which do not support this canvas property.
   *     This property can be changed in {@link Viewer.DrawerBase.setImageSmoothingEnabled}.
   *
   * @property {String|CanvasGradient|CanvasPattern|Function} [placeholderFillStyle=null]
@@ -487,10 +500,6 @@
   * @property {Number|String} [navigatorWidth=null]
   *     Specifies the size of the navigator minimap (see navigatorPosition).
   *     If specified, navigatorSizeRatio and navigatorMaintainSizeRatio are ignored.
-  *
-  * @property {Boolean} [navigatorAutoResize=true]
-  *     Set to false to prevent polling for navigator size changes. Useful for providing custom resize behavior.
-  *     Setting to false can also improve performance when the navigator is configured to a fixed size.
   *
   * @property {Boolean} [navigatorAutoFade=true]
   *     If the user stops interacting with the viewport, fade the navigator minimap.
@@ -877,10 +886,10 @@ function OpenSeadragon( options ){
      * @since 1.0.0
      */
     $.version = {
-        versionStr: '6.0.0',
+        versionStr: '6.0.1',
         major: parseInt('6', 10),
         minor: parseInt('0', 10),
-        revision: parseInt('0', 10)
+        revision: parseInt('1', 10)
     };
 
 
@@ -1394,7 +1403,6 @@ function OpenSeadragon( options ){
             navigatorLeft:              null,
             navigatorHeight:            null,
             navigatorWidth:             null,
-            navigatorAutoResize:        true,
             navigatorAutoFade:          true,
             navigatorRotate:            true,
             navigatorBackground:        '#000',
@@ -1414,7 +1422,7 @@ function OpenSeadragon( options ){
             compositeOperation:                null, // to be passed into each TiledImage
 
             // DRAWER SETTINGS
-            drawer:                            ['webgl', 'canvas', 'html'], // prefer using webgl, then canvas (i.e. context2d), then fallback to html
+            drawer:                            ['auto', 'webgl', 'canvas', 'html'], // prefer using auto, then webgl (with WebGL2 if available), then canvas (i.e. context2d), then fallback to html
             // DRAWER CONFIGURATIONS
             drawerOptions: {
                 // [drawer-id]: {options} map
@@ -3780,7 +3788,7 @@ $.EventSource.prototype = {
             // We return a promise that gets resolved after all the events finish.
             // Returning loop result is not correct, loop promises chain dynamically
             // and outer code could process finishing logics in the middle of event loop.
-            return new $.Promise(resolve => {
+            return new $.Promise((resolve, reject) => {
                 const length = events.length;
                 function loop(index) {
                     if ( index >= length || !events[ index ] ) {
@@ -3789,7 +3797,12 @@ $.EventSource.prototype = {
                     }
                     args.eventSource = source;
                     args.userData = events[ index ].userData;
-                    let result = events[ index ].handler( args );
+                    let result;
+                    try {
+                        result = events[ index ].handler( args );
+                    } catch (e) {
+                        return reject(e);
+                    }
                     result = (!result || $.type(result) !== "promise") ? $.Promise.resolve() : result;
                     return result.then(() => {
                         if (!args.stopPropagation || (typeof args.stopPropagation === "function" && args.stopPropagation() === false)) {
@@ -3798,7 +3811,7 @@ $.EventSource.prototype = {
                         return loop(length);
                     });
                 }
-                loop(0);
+                loop(0).catch(reject);
             });
         };
     },
@@ -8333,7 +8346,14 @@ $.Viewer = function( options ) {
         overlaysContainer:  null,
 
         //private state properties
-        previousBody:   [],
+
+        // When we go full-screen we insert ourselves into the body and make
+        // everything else hidden. This is basically the same as
+        // `requestFullScreen` but works in all browsers: iPhone is known to not
+        // allow full-screen with the requestFullScreen API.  This holds the
+        // children of the body and their display values, so we can undo our
+        // changes when we go out of full-screen
+        previousDisplayValuesOfBodyChildren:   [],
 
         //This was originally initialized in the constructor and so could never
         //have anything in it.  now it can because we allow it to be specified
@@ -8354,6 +8374,16 @@ $.Viewer = function( options ) {
          * @memberof OpenSeadragon.Viewer#
          */
         drawer:             null,
+        /**
+         * Resolved list of drawer type strings (after expanding 'auto', de-duplicating, and
+         * normalizing: constructors are replaced by their getType() result). Used to decide
+         * allowed fallbacks: WebGL drawer only falls back to canvas when the string 'canvas' is
+         * in this list (see per-tile and context-loss fallback). Normalized so includes('canvas')
+         * is reliable even when custom drawer constructors were passed in options.
+         * @member {string[]} drawerCandidates
+         * @memberof OpenSeadragon.Viewer#
+         */
+        drawerCandidates:   null,
         /**
          * Keeps track of all of the tiled images in the scene.
          * @member {OpenSeadragon.World} world
@@ -8704,6 +8734,20 @@ $.Viewer = function( options ) {
         $.console.warn('No valid drawers were selected. Using the default value.');
     }
 
+    // 'auto' is expanded in the candidate list in a platform-dependent way: on iOS-like devices
+    // to ['canvas'] only, on other platforms to ['webgl', 'canvas'] so that if WebGL fails at
+    // creation, canvas is tried next. Same detection as getAutoDrawerCandidates() / determineDrawer('auto').
+    drawerCandidates = drawerCandidates.flatMap(
+        function(c) {
+            return c === 'auto' ? getAutoDrawerCandidates() : [c];
+        }
+    );
+    drawerCandidates = drawerCandidates.filter(
+        function(c, i, arr) {
+            return arr.indexOf(c) === i;
+        }
+    );
+    this.drawerCandidates = drawerCandidates.map(getDrawerTypeString).filter(Boolean);
 
     this.drawer = null;
     for (const drawerCandidate of drawerCandidates){
@@ -8742,6 +8786,10 @@ $.Viewer = function( options ) {
 
     this._addUpdatePixelDensityRatioEvent();
 
+    if ('navigatorAutoResize' in this) {
+        $.console.warn('navigatorAutoResize is deprecated, this value will be ignored.');
+    }
+
     //Instantiate a navigator if configured
     if ( this.showNavigator){
         this.navigator = new $.Navigator({
@@ -8754,7 +8802,6 @@ $.Viewer = function( options ) {
             left:              this.navigatorLeft,
             width:             this.navigatorWidth,
             height:            this.navigatorHeight,
-            autoResize:        this.navigatorAutoResize,
             autoFade:          this.navigatorAutoFade,
             prefixUrl:         this.prefixUrl,
             viewer:            this,
@@ -9296,9 +9343,17 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
             $.console.warn('Unsupported drawer %s! Drawer must be an existing string type, or a class that extends OpenSeadragon.DrawerBase.', drawerCandidate);
         }
 
-        // if the drawer is supported, create it and return true
-        if (Drawer && Drawer.isSupported()) {
-
+        // Guard isSupported() in try/catch so a buggy or throwing plugin drawer cannot crash the whole viewer
+        let supported = false;
+        if (Drawer) {
+            try {
+                supported = Drawer.isSupported();
+            } catch (e) {
+                $.console.warn('Error in %s isSupported(); treating this drawer as unsupported:', drawerCandidate, e && e.message ? e.message : e);
+            }
+        }
+        if (supported) {
+            // if the drawer is supported, create it and return it.
             // first destroy the previous drawer
             if(oldDrawer && mainDrawer){
                 oldDrawer.destroy();
@@ -9588,20 +9643,29 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
             this.bodyDisplay = bodyStyle.display;
             bodyStyle.display = "block";
 
-            //when entering full screen on the ipad it wasn't sufficient to leave
-            //the body intact as only only the top half of the screen would
-            //respond to touch events on the canvas, while the bottom half treated
-            //them as touch events on the document body.  Thus we remove and store
-            //the bodies elements and replace them when we leave full screen.
-            this.previousBody = [];
+            //when entering full screen on the ipad it wasn't sufficient to
+            //leave the body intact as only only the top half of the screen
+            //would respond to touch events on the canvas, while the bottom half
+            //treated them as touch events on the document body.  Thus we make
+            //them invisible (display: none) and apply the older values when we
+            //go out of full screen.
+            this.previousDisplayValuesOfBodyChildren = [];
             THIS[ this.hash ].prevElementParent = this.element.parentNode;
             THIS[ this.hash ].prevNextSibling = this.element.nextSibling;
             THIS[ this.hash ].prevElementWidth = this.element.style.width;
             THIS[ this.hash ].prevElementHeight = this.element.style.height;
-            nodes = body.childNodes.length;
+            nodes = body.children.length;
             for ( let i = 0; i < nodes; i++ ) {
-                this.previousBody.push( body.childNodes[ 0 ] );
-                body.removeChild( body.childNodes[ 0 ] );
+                const element = body.children[i];
+                if (element === this.element) {
+                    // Do not hide ourselves...
+                    continue;
+                }
+                this.previousDisplayValuesOfBodyChildren.push({
+                    element,
+                    display: element.style.display
+                });
+                element.style.display = 'none';
             }
 
             //If we've got a toolbar, we need to enable the user to use css to
@@ -9655,9 +9719,10 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
             bodyStyle.display = this.bodyDisplay;
 
             body.removeChild( this.element );
-            nodes = this.previousBody.length;
+            nodes = this.previousDisplayValuesOfBodyChildren.length;
             for ( let i = 0; i < nodes; i++ ) {
-                body.appendChild( this.previousBody.shift() );
+                const { element, display } = this.previousDisplayValuesOfBodyChildren[i];
+                element.style.display = display;
             }
 
             $.removeClass( this.element, 'fullpage' );
@@ -10078,7 +10143,9 @@ $.extend( $.Viewer.prototype, $.EventSource.prototype, $.ControlDock.prototype, 
                 }
 
                 if (queueItem.originalSuccess) {
-                    queueItem.originalSuccess(event);
+                    queueItem.originalSuccess({
+                        item: tiledImage
+                    });
                 }
 
                 // It might happen processReadyItems() is called after viewer.destroy()
@@ -12569,9 +12636,47 @@ function onFlip() {
 }
 
 /**
+ * Return the drawer type string for a candidate (string or DrawerBase constructor).
+ * Used to normalize drawerCandidates to strings so includes('canvas') is reliable.
+ * @private
+ * @param {string|Function} candidate - Drawer type string or constructor
+ * @returns {string|undefined} Type string, or undefined if not resolvable
+ */
+function getDrawerTypeString(candidate) {
+    if (typeof candidate === 'string') {
+        return candidate;
+    }
+    const proto = candidate && candidate.prototype;
+    if (proto && proto instanceof OpenSeadragon.DrawerBase && $.isFunction(proto.getType)) {
+        return proto.getType.call(candidate);
+    }
+    return undefined;
+}
+
+/**
+ * Return the list of drawer type strings that 'auto' expands to (platform-dependent).
+ * Uses the same detection as determineDrawer('auto'): on iOS-like devices, ['canvas'] only;
+ * on all other platforms, ['webgl', 'canvas'] so webgl is tried first and canvas next if WebGL fails.
+ * @private
+ * @returns {string[]}
+ */
+function getAutoDrawerCandidates() {
+    // Our WebGL drawer is not as performant on iOS at the moment, so we use canvas there.
+    // Note that modern iPads report themselves as Mac, so we also check for coarse pointer.
+    const isPrimaryTouch = window.matchMedia('(pointer: coarse)').matches;
+    const isIOSDevice = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent) && isPrimaryTouch;
+    return isIOSDevice ? ['canvas'] : ['webgl', 'canvas'];
+}
+
+/**
  * Find drawer
  */
 $.determineDrawer = function( id ){
+    if (id === 'auto') {
+        // Same platform detection as getAutoDrawerCandidates(); first entry is the preferred drawer type.
+        id = getAutoDrawerCandidates()[0];
+    }
+
     for (const property in OpenSeadragon) {
         const drawer = OpenSeadragon[ property ];
         const proto = drawer.prototype;
@@ -12881,8 +12986,7 @@ $.Navigator = function( options ){
 $.extend( $.Navigator.prototype, $.EventSource.prototype, $.Viewer.prototype, /** @lends OpenSeadragon.Navigator.prototype */{
 
     /**
-     * Used to notify the navigator when its size has changed.
-     * Especially useful when {@link OpenSeadragon.Options}.navigatorAutoResize is set to false and the navigator is resizable.
+     * Used to notify the navigator when its size has changed. Especially useful when the navigator is resizable.
      * @function
      */
     updateSize: function () {
@@ -13849,10 +13953,12 @@ $.TileSource = function( options ) {
         this.minLevel    = 0;
         this.maxLevel    = 0;
         this.ready       = false;
+        this._uniqueIdentifier = this.url;
         //configuration via url implies the extending class
         //implements and 'configure'
         setTimeout(() => this.getImageInfo(this.url)); //needs async in case someone exits immediately
     } else {
+        this._uniqueIdentifier = Math.floor(Math.random() * 1e10).toString(36);
         // by default it used to fire immediately, so make the ready default
         if (this.ready || this.ready === undefined) {
             this.raiseEvent('ready', { tileSource: this });
@@ -14399,7 +14505,7 @@ $.TileSource.prototype = {
         }
 
         if (typeof url !== "string") {
-            return withHeaders(level + "/" + x + "_" + y);
+            return withHeaders(this._uniqueIdentifier + ":" + level + "/" + x + "_" + y);
         }
         return withHeaders(url);
     },
@@ -14443,18 +14549,12 @@ $.TileSource.prototype = {
     downloadTileStart: function (context) {
         // Load the tile with an AJAX request if the loadWithAjax option is
         // set. Otherwise load the image by setting the source property of the image object.
-        if (context.loadWithAjax) {
-            const policy = context.crossOriginPolicy;
-            if (policy === 'anonymous') {
-                context.ajaxHeaders['mode'] = 'cors';
-                context.ajaxHeaders['credentials'] = 'omit';
-            } else if (policy === 'use-credentials') {
-                context.ajaxHeaders['mode'] = 'cors';
-                context.ajaxHeaders['credentials'] = 'include';
-            } else if (policy) {
-                $.console.warn('Unknown crossOriginPolicy: ' + policy);
-            }
 
+        // TODO: the cors/creds is not optimal here:
+        //  - XMLHttpRequest can only setup credentials flag, so `ajaxWithCredentials` is a boolean
+        //  - <img> item can turn on/off cors, and include credentials if cors on, therefore `crossOriginPolicy` can have three values (one is null)
+        //  --> we should merge these flags to a single value to avoid confusion with usage, and use modern fetch that can setup also cors to have consistent behavior
+        if (context.loadWithAjax) {
             context.userData.request = $.makeAjaxRequest({
                 url: context.src,
                 withCredentials: context.ajaxWithCredentials,
@@ -14493,7 +14593,25 @@ $.TileSource.prototype = {
                 }
             });
         } else {
-            context.finish(context.src, null, "imageUrl");
+            // While we could just do this one-liner, we found out that downloading the data _before_ a cache is initialized
+            // works better in general cases. Network access is the most error-prone part, and this scenario better supports
+            // all default use-cases, including the fact that retry logic works only at this stage, not on the cache level.
+            //  context.finish(context.src, null, "__private__imageUrl");
+
+            const image = new Image();
+            context.userData.imageRequest = image;
+            image.onload = function () {
+                image.onload = image.onerror = image.onabort = null;
+                context.finish(image, null, "image");
+            };
+            image.onabort = image.onerror = function() {
+                image.onload = image.onerror = image.onabort = null;
+                context.fail("[downloadTileStart] Image load aborted or errored out.", null);
+            };
+            if (typeof context.crossOriginPolicy === "string") {
+                image.crossOrigin = context.crossOriginPolicy;
+            }
+            image.src = context.src;
         }
     },
 
@@ -14508,6 +14626,11 @@ $.TileSource.prototype = {
     downloadTileAbort: function (context) {
         if (context.userData.request) {
             context.userData.request.abort();
+        }
+        if (context.userData.imageRequest) {
+            const image = context.userData.imageRequest;
+            image.onload = image.onerror = image.onabort = null;
+            image.src = "";
         }
     },
 
@@ -14768,6 +14891,7 @@ $.DziTileSource = function( width, height, tileSize, tileOverlap, tilesUrl, file
     this.tilesUrl     = options.tilesUrl;
     this.fileFormat   = options.fileFormat;
     this.displayRects = options.displayRects;
+    this.queryParams  = options.queryParams || "";
 
     if ( this.displayRects ) {
         for ( let i = this.displayRects.length - 1; i >= 0; i-- ) {
@@ -16311,9 +16435,11 @@ $.extend( $.IIIFTileSource.prototype, $.TileSource.prototype, /** @lends OpenSea
  *
  * Note 2. Image dimension. According to the OSM Wiki
  * (http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Zoom_levels)
- * the highest Mapnik zoom level has 256.144x256.144 tiles, with a 256x256
- * pixel size. I.e. the Deep Zoom image dimension is 65.572.864x65.572.864
+ * the highest Mapnik zoom level has 262.144x262.144 tiles, with a 256x256
+ * pixel size. I.e. the Deep Zoom image dimension is 67.108.864x67.108.864
  * pixels.
+ * OSM now supports higher max zoom (e.g. 19), but this default is
+ * based on zoom level 18: 2^18 tiles * 256px.
  *
  * @memberof OpenSeadragon
  * @extends OpenSeadragon.TileSource
@@ -16342,8 +16468,8 @@ $.OsmTileSource = function( width, height, tileSize, tileOverlap, tilesUrl ) {
     //but allow them to be specified so fliks can host there own instance
     //or apply against other services supportting the same standard
     if( !options.width || !options.height ){
-        options.width = 65572864;
-        options.height = 65572864;
+        options.width = 67108864;
+        options.height = 67108864;
     }
     if( !options.tileSize ){
         options.tileSize = 256;
@@ -17081,7 +17207,7 @@ function configureFromObject( tileSource, configuration ){
  * @param {Boolean} [options.useCanvas=true] Set to false to prevent any use
  * of the canvas API.
  */
-$.ImageTileSource = class ImageTileSource extends $.TileSource {
+$.ImageTileSource = class extends $.TileSource {
 
     constructor(props) {
         super($.extend({
@@ -17126,9 +17252,6 @@ $.ImageTileSource = class ImageTileSource extends $.TileSource {
 
         if (this.crossOriginPolicy) {
             image.crossOrigin = this.crossOriginPolicy;
-        }
-        if (this.ajaxWithCredentials) {
-            image.useCredentials = this.ajaxWithCredentials;
         }
 
         $.addEvent(image, 'load', function () {
@@ -17336,20 +17459,31 @@ $.TileSourceCollection = function(tileSize, tileSources, rows, layout) {
  */
 
 (function($) {
+
+const OpenSeadragon = $; // alias for JSDoc
+
 /**
- * @class PriorityQueue
+ * @class OpenSeadragon.PriorityQueue
  * @classdesc Fast priority queue. Implemented as a Heap.
- * @memberof OpenSeadragon
  */
-$.PriorityQueue = class PriorityQueue {
+OpenSeadragon.PriorityQueue = class PriorityQueue {
 
     /**
      * @param {?OpenSeadragon.PriorityQueue} optHeap Optional Heap or
-     * Object to initialize heap with.
+     *     Object to initialize heap with.
      */
     constructor(optHeap = undefined) {
         /**
          * The nodes of the heap.
+         *
+         * This is a densely packed array containing all nodes of the heap, using
+         * the standard flat representation of a tree as an array (i.e. element [0]
+         * at the top, with [1] and [2] as the second row, [3] through [6] as the
+         * third, etc). Thus, the children of element `i` are `2i+1` and `2i+2`, and
+         * the parent of element `i` is `⌊(i-1)/2⌋`.
+         *
+         * The only invariant is that children's keys must be greater than parents'.
+         *
          * @private
          */
         this.nodes_ = [];
@@ -17412,7 +17546,8 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Retrieves and removes the root value of this heap.
-     * @return {Node} The root node item removed from the root of the heap.
+     * @return {Node} The root node item removed from the root of the heap. Returns
+     *     undefined if the heap is empty.
      */
     remove() {
         const nodes = this.nodes_;
@@ -17437,7 +17572,8 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Retrieves but does not remove the root value of this heap.
-     * @return {V} The value at the root of the heap.
+     * @return {V} The value at the root of the heap. Returns
+     *     undefined if the heap is empty.
      */
     peek() {
         const nodes = this.nodes_;
@@ -17449,7 +17585,8 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Retrieves but does not remove the key of the root node of this heap.
-     * @return {string} The key at the root of the heap.
+     * @return {string} The key at the root of the heap. Returns undefined if the
+     *     heap is empty.
      */
     peekKey() {
         return this.nodes_[0] && this.nodes_[0].key;
@@ -17458,7 +17595,7 @@ $.PriorityQueue = class PriorityQueue {
     /**
      * Move the node up in hierarchy
      * @param {Node} node the node
-     * @param {K} key new key
+     * @param {K} key new ley, must be smaller than current key
      */
     decreaseKey(node, key) {
         if (node.index === undefined) {
@@ -17471,8 +17608,8 @@ $.PriorityQueue = class PriorityQueue {
     }
 
     /**
-     * Moves the node at the given index down.
-     * @param {number} index
+     * Moves the node at the given index down to its proper place in the heap.
+     * @param {number} index The index of the node to move down.
      * @private
      */
     moveDown_(index) {
@@ -17510,8 +17647,8 @@ $.PriorityQueue = class PriorityQueue {
     }
 
     /**
-     * Moves the node at the given index up.
-     * @param {number} index
+     * Moves the node at the given index up to its proper place in the heap.
+     * @param {number} index The index of the node to move up.
      * @private
      */
     moveUp_(index) {
@@ -17538,6 +17675,9 @@ $.PriorityQueue = class PriorityQueue {
     }
 
     /**
+     * Gets the index of the left child of the node at the given index.
+     * @param {number} index The index of the node to get the left child for.
+     * @return {number} The index of the left child.
      * @private
      */
     getLeftChildIndex_(index) {
@@ -17545,6 +17685,9 @@ $.PriorityQueue = class PriorityQueue {
     }
 
     /**
+     * Gets the index of the right child of the node at the given index.
+     * @param {number} index The index of the node to get the right child for.
+     * @return {number} The index of the right child.
      * @private
      */
     getRightChildIndex_(index) {
@@ -17552,6 +17695,9 @@ $.PriorityQueue = class PriorityQueue {
     }
 
     /**
+     * Gets the index of the parent of the node at the given index.
+     * @param {number} index The index of the node to get the parent for.
+     * @return {number} The index of the parent.
      * @private
      */
     getParentIndex_(index) {
@@ -17560,7 +17706,7 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Gets the values of the heap.
-     * @return {!Array<*>}
+     * @return {!Array<*>} The values in the heap.
      */
     getValues() {
         return this.nodes_.map(n => n.value);
@@ -17568,7 +17714,7 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Gets the keys of the heap.
-     * @return {!Array<string>}
+     * @return {!Array<string>} The keys in the heap.
      */
     getKeys() {
         return this.nodes_.map(n => n.key);
@@ -17576,8 +17722,8 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Whether the heap contains the given value.
-     * @param {V} val
-     * @return {boolean}
+     * @param {V} val The value to check for.
+     * @return {boolean} Whether the heap contains the value.
      */
     containsValue(val) {
         return this.nodes_.some((node) => node.value == val);  // eslint-disable-line
@@ -17585,8 +17731,8 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Whether the heap contains the given key.
-     * @param {string} key
-     * @return {boolean}
+     * @param {string} key The key to check for.
+     * @return {boolean} Whether the heap contains the key.
      */
     containsKey(key) {
         return this.nodes_.some((node) => node.value == key);  // eslint-disable-line
@@ -17594,7 +17740,7 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Clones a heap and returns a new heap
-     * @return {!OpenSeadragon.PriorityQueue}
+     * @return {!OpenSeadragon.PriorityQueue} A new Heap with the same key-value pairs.
      */
     clone() {
         return new $.PriorityQueue(this);
@@ -17602,7 +17748,7 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * The number of key-value pairs in the map
-     * @return {number}
+     * @return {number} The number of pairs.
      */
     getCount() {
         return this.nodes_.length;
@@ -17610,7 +17756,7 @@ $.PriorityQueue = class PriorityQueue {
 
     /**
      * Returns true if this heap contains no elements.
-     * @return {boolean}
+     * @return {boolean} Whether this heap contains no elements.
      */
     isEmpty() {
         return this.nodes_.length === 0;
@@ -17625,11 +17771,9 @@ $.PriorityQueue = class PriorityQueue {
 };
 
 /**
- * @class Node
- * @classdesc Node element for OpenSeadragon.PriorityQueue
- * @memberof OpenSeadragon.PriorityQueue
+ * @private
  */
-$.PriorityQueue.Node = class Node {
+OpenSeadragon.PriorityQueue.Node = class Node {
     constructor(key, value) {
         /**
          * The key.
@@ -17696,6 +17840,8 @@ $.PriorityQueue.Node = class Node {
 
 (function($){
 
+const OpenSeadragon = $; // alias for JSDoc
+
 /**
  * modified from https://gist.github.com/Prottoy2938/66849e04b0bac459606059f5f9f3aa1a
  * @private
@@ -17749,7 +17895,7 @@ class WeightedGraph {
     dijkstra(start, finish) {
         const path = []; //to return at end
         if (start === finish) {
-            return {path: path, cost: 0};
+            return { path: path, cost: 0 };
         }
         const nodes = new OpenSeadragon.PriorityQueue();
         let smallestNode;
@@ -17975,23 +18121,24 @@ function postWorker(op, payload, { timeoutMs = 15000 } = {}) {
  * OpenSeadragon core are:
  * - "image" - HTMLImageElement, an <image> object
  * - "context2d" - HtmlRenderingContext2D, a 2D canvas context
- * - "imageUrl" - string, a URL to a resource carrying image data
  * - "rasterBlob" - Blob, a binary file-like object carrying image data
+ * - "imageBitmap" - an ImageBitmap object
  *
  * The system uses these to deliver desired data from TileSource (which implements fetching logics)
  * through plugins to the renderer with preserving data type compatibility. Typical example is:
- *  TiledImage downloads without ajax a data present at url 'myUrl'. It submits
- *  to the system object of data type 'imageUrl'. The system runs this object through
+ *  TiledImage downloads and creates Image object with type 'image'. It submits
+ *  to the system object of data type 'image'. The system runs this object through
  *  possible plugins integrated into the invalidation routine (by default none),
  *  and finishes by conversion for the WebGL renderer, which would most likely be "image"
- *  object, because the conversion is the cheapest starting from "imageUrl" type.
+ *  object, because the conversion in this case is not even necessary, as the drawer publishes
+ *  the image type as one of its supported ones.
  *  If some plugin required context2d type, the pipeline would deliver this type and used
  *  it also for WebGL, as texture loading function accepts canvas object as well as image.
  *
- * @class DataTypeConverter
+ * @class OpenSeadragon.DataTypeConverter
  * @memberOf OpenSeadragon
  */
-$.DataTypeConverter = class DataTypeConverter {
+OpenSeadragon.DataTypeConverter = class DataTypeConverter {
 
     constructor() {
         this.graph = new WeightedGraph();
@@ -18001,7 +18148,7 @@ $.DataTypeConverter = class DataTypeConverter {
         // Teaching OpenSeadragon built-in conversions:
         const imageCreator = (tile, url) => new $.Promise((resolve, reject) => {
             if (!$.supportsAsync) {
-                throw "Not supported in sync mode!";
+                return reject("Not supported in sync mode!");
             }
             const img = new Image();
             img.onerror = img.onabort = e => reject(`Failed to load image: ${url}`);
@@ -18010,13 +18157,14 @@ $.DataTypeConverter = class DataTypeConverter {
                 img.crossOrigin = tile.tiledImage.crossOriginPolicy;
             }
             img.src = url;
+            return undefined;
         });
         const canvasContextCreator = (tile, imageData) => {
             const canvas = document.createElement('canvas');
             canvas.width = imageData.width;
             canvas.height = imageData.height;
             const context = canvas.getContext('2d', { willReadFrequently: true });
-            context.drawImage( imageData, 0, 0 );
+            context.drawImage(imageData, 0, 0);
             return context;
         };
 
@@ -18024,7 +18172,7 @@ $.DataTypeConverter = class DataTypeConverter {
             // eslint-disable-next-line compat/compat
             const url = (window.URL || window.webkitURL).createObjectURL(blob);
             if (!$.supportsAsync) {
-                reject("Not supported in sync mode!");
+                return reject("Not supported in sync mode!");
             }
             const img = new Image();
             img.onerror = img.onabort = e => {
@@ -18039,30 +18187,29 @@ $.DataTypeConverter = class DataTypeConverter {
             };
             img.decoding = 'async';
             img.src = url;
+            return undefined;
         }), 1, 2);
 
         this.learn("context2d", "rasterBlob", (tile, ctx) => new $.Promise((resolve, reject) => {
             if (!$.supportsAsync) {
-                reject("Not supported in sync mode!");
+                return reject("Not supported in sync mode!");
             }
             ctx.canvas.toBlob(resolve);
+            return undefined;
         }), 1, 2);
 
         // rasterBlob -> imageBitmap (preferred fast path)
         this.learn("rasterBlob", "imageBitmap", (tile, blob) => new $.Promise((resolve, reject) => {
-            try {
-                if (!$.supportsAsync) {
-                    reject("Not supported in sync mode!");
-                }
-                if (_imageConversionWorker) {
-                    postWorker('decodeFromBlob', {blob}).then(resolve);
-                } else {
-                    // Fallback main thread
-                    createImageBitmap(blob, { colorSpaceConversion: 'none' }).then(resolve);
-                }
-            } catch (e) {
-                reject(e);
+            if (!$.supportsAsync) {
+                return reject("Not supported in sync mode!");
             }
+            if (_imageConversionWorker) {
+                postWorker('decodeFromBlob', { blob }).then(resolve).catch(reject);
+            } else {
+                // Fallback main thread
+                createImageBitmap(blob, { colorSpaceConversion: 'none' }).then(resolve).catch(reject);
+            }
+            return undefined;
         }), 1, 1);
 
         this.learn("imageBitmap", "context2d", (tile, bmp) => {
@@ -18074,68 +18221,16 @@ $.DataTypeConverter = class DataTypeConverter {
             return ctx;
         }, 1, 2);
 
-        this.learn("imageBitmap", "imageUrl", (tile, bmp) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = bmp.width;
-            canvas.height = bmp.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(bmp, 0, 0);
-            return canvas.toDataURL("image/png");
-        }, 1, 2);
-
         this.learn("image", "imageBitmap", (tile, img) => {
             return createImageBitmap(img, { colorSpaceConversion: 'none' });
         }, 1, 2);
-
-        this.learn("imageUrl", "imageBitmap", (tile, url) => new $.Promise((resolve, reject) => {
-            try {
-                if (!$.supportsAsync) {
-                    reject("Not supported in sync mode!");
-                }
-                let setup;
-                if (tile.tiledImage && tile.tiledImage.crossOriginPolicy) {
-                    const policy = tile.tiledImage.crossOriginPolicy;
-                    if (policy === 'anonymous') {
-                        setup = {
-                            mode: 'cors',
-                            credentials: 'omit',
-                        };
-                    } else if (policy === 'use-credentials') {
-                        setup = {
-                            mode: 'cors',
-                            credentials: 'include',
-                        };
-                    } else {
-                        reject(new Error(`Unsupported crossOriginPolicy ${policy}`));
-                    }
-                }
-                if (_imageConversionWorker) {
-                    postWorker('fetchDecode', { url, setup }).then(resolve);
-                } else {
-                    // Fallback to the main thread
-                    // eslint-disable-next-line compat/compat
-                    fetch(url, setup).then(res => {
-                        if (!res.ok) {
-                            throw new Error(`HTTP ${res.status} loading ${url}`);
-                        }
-                        return res.blob();
-                    }).then(blob => createImageBitmap(blob, { colorSpaceConversion: 'none' })
-                    ).then(resolve);
-                }
-            } catch (e) { reject(e); }
-        }), 1, 1);
-
-        this.learn("context2d", "imageUrl", (tile, ctx) => ctx.canvas.toDataURL(), 1, 2);
-        this.learn("image", "imageUrl", (tile, image) => image.url, 0, 1);
         this.learn("image", "context2d", canvasContextCreator, 1, 2);
-        this.learn("imageUrl", "image", imageCreator, 1, 2);
 
         //Copies
         this.learn("image", "image", (tile, image) => imageCreator(tile, image.src), 1, 1);
-        this.learn("imageUrl", "imageUrl", (tile, url) => url, 0, 1); //strings are immutable, no need to copy
         this.learn("context2d", "context2d", (tile, ctx) => canvasContextCreator(tile, ctx.canvas));
         this.learn("rasterBlob", "rasterBlob", (tile, blob) => blob, 0, 1); //blobs are immutable, no need to copy
-        this.learn("imageBitmap", "imageBitmap", (tile, bmp) => new $.Promise( (resolve, reject) => {
+        this.learn("imageBitmap", "imageBitmap", (tile, bmp) => new $.Promise((resolve, reject) => {
             try {
                 if (!$.supportsAsync) {
                     return reject("Not supported in sync mode!");
@@ -18190,7 +18285,7 @@ $.DataTypeConverter = class DataTypeConverter {
      *  - otherwise, toString.call(x) is applied to get the parameter description
      * @return {string} unique variable descriptor
      */
-    guessType( x ) {
+    guessType(x) {
         if (Array.isArray(x)) {
             const types = [];
             for (const item of x) {
@@ -18278,7 +18373,7 @@ $.DataTypeConverter = class DataTypeConverter {
      * @param {any} data data item to convert
      * @param {string} from data item type
      * @param {string} to desired type(s)
-     * @return {OpenSeadragon.Promise<?>} promise resolution with type 'to' or undefined if the conversion failed
+     * @return {OpenSeadragon.Promise<?>} promise resolution with type 'to', or rejection if conversion failed.
      */
     convert(tile, data, from, ...to) {
         const conversionPath = this.getConversionPath(from, to);
@@ -18294,10 +18389,20 @@ $.DataTypeConverter = class DataTypeConverter {
                 return $.Promise.resolve(x);
             }
             const edge = conversionPath[i];
-            const y = edge.transform(tile, x);
+            let y;
+            try {
+                y = edge.transform(tile, x);
+            } catch (err) {
+                if (destroy) {
+                    _this.destroy(x, edge.origin.value);
+                }
+                return $.Promise.reject(`[OpenSeadragon.converter.convert] sync failure (while converting using ${edge.origin.value} -> ${edge.target.value})`);
+            }
             if (y === undefined) {
-                $.console.error(`[OpenSeadragon.converter.convert] data mid result undefined value (while converting using %s)`, edge);
-                return $.Promise.resolve();
+                if (destroy) {
+                    _this.destroy(x, edge.origin.value);
+                }
+                return $.Promise.reject(`[OpenSeadragon.converter.convert] data mid result undefined value (while converting using ${edge.origin.value} -> ${edge.target.value})`);
             }
             //node.value holds the type string
             if (destroy) {
@@ -18432,6 +18537,43 @@ $.DataTypeConverter = class DataTypeConverter {
  */
 $.converter = new $.DataTypeConverter();
 
+// Image URL -> image private conversion, used in tests (was public originally, but made private to
+// discourage bad practices by forcing conversion API to deal with URLs that download data
+$.converter.learn("__private__imageUrl", "imageBitmap", (tile, url) => new $.Promise((resolve, reject) => {
+    if (!$.supportsAsync) {
+        return reject("Not supported in sync mode!");
+    }
+    let setup;
+    if (tile.tiledImage && tile.tiledImage.crossOriginPolicy) {
+        const policy = tile.tiledImage.crossOriginPolicy;
+        if (policy === 'anonymous') {
+            setup = {
+                mode: 'cors',
+                credentials: 'omit',
+            };
+        } else if (policy === 'use-credentials') {
+            setup = {
+                mode: 'cors',
+                credentials: 'include',
+            };
+        } else if (policy) {
+            $.console.error(`Unsupported crossOriginPolicy ${policy}. Ignoring the property.`);
+        }
+    }
+    if (_imageConversionWorker) {
+        return postWorker('fetchDecode', { url, setup }).then(resolve).catch(reject);
+    }
+    // Fallback to the main thread
+    // eslint-disable-next-line compat/compat
+    return fetch(url, setup).then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP ${res.status} loading ${url}`);
+        }
+        return res.blob();
+    }).then(blob => createImageBitmap(blob, { colorSpaceConversion: 'none' })
+    ).then(resolve).catch(reject);
+}), 1, 1);
+$.converter.learn("__private__imageUrl", "__private__imageUrl", (tile, url) => url, 0, 1); //strings are immutable, no need to copy
 }(OpenSeadragon));
 
 /*
@@ -24451,6 +24593,553 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
     const OpenSeadragon = $; // alias for JSDoc
 
+    /**
+     * @class WebglContextManager
+     * @classdesc Handles the webgl context, isolating it from the rest of the DrawerBase API.
+     * Manages WebGL context lifecycle, shaders, textures, framebuffers, and other WebGL resources.
+     * @param {Object} options - Options for the context manager
+     * @param {HTMLCanvasElement} options.renderingCanvas - The canvas element to use for WebGL context
+     * @param {Boolean} [options.unpackWithPremultipliedAlpha=false] - Whether to enable gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL
+     * @param {Boolean} [options.imageSmoothingEnabled=true] - Whether image smoothing is enabled
+     */
+    class WebglContextManager {
+        constructor(options) {
+            this._renderingCanvas = options.renderingCanvas;
+            this._unpackWithPremultipliedAlpha = !!options.unpackWithPremultipliedAlpha;
+            this._imageSmoothingEnabled = options.imageSmoothingEnabled !== undefined ? options.imageSmoothingEnabled : true;
+            this._initShaderProgram = options.initShaderProgram;
+
+            this._gl = null;
+            this._isWebGL2 = false;
+            this._extTextureFilterAnisotropic = null;
+            this._maxAnisotropy = 0;
+
+            this._firstPass = null;
+            this._secondPass = null;
+            this._glFrameBuffer = null;
+            this._renderToTexture = null;
+            this._glNumTextures = 0;
+            this._unitQuad = null;
+
+            this._destroyed = false;
+
+            // Create WebGL context
+            this._gl = this._renderingCanvas.getContext('webgl2');
+            if (this._gl) {
+                this._isWebGL2 = true;
+                this._setupWebGLExtensions();
+            } else {
+                this._gl = this._renderingCanvas.getContext('webgl');
+                this._isWebGL2 = false;
+                if (this._gl) {
+                    this._setupWebGLExtensions();
+                }
+            }
+
+            if (this._gl) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._unpackWithPremultipliedAlpha);
+            }
+        }
+
+        /**
+         * Get the WebGL context
+         * @returns {WebGLRenderingContext|WebGL2RenderingContext|null} The WebGL context
+         */
+        getContext() {
+            return this._gl;
+        }
+
+        /**
+         * Check if using WebGL2
+         * @returns {Boolean} true if WebGL2, false if WebGL1
+         */
+        isWebGL2() {
+            return this._isWebGL2;
+        }
+
+        /**
+         * Get the maximum number of texture units
+         * @returns {Number} MAX_TEXTURE_IMAGE_UNITS value
+         */
+        getMaxTextures() {
+            if (!this._gl) {
+                return 0;
+            }
+            return this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+        }
+
+        /**
+         * Get the rendering canvas element
+         * @returns {HTMLCanvasElement} The canvas element
+         */
+        getRenderingCanvas() {
+            return this._renderingCanvas;
+        }
+
+        /**
+         * Get the first pass shader program and resources
+         * @returns {Object|null} The first pass object with shader program, buffers, and uniforms
+         */
+        getFirstPass() {
+            return this._firstPass;
+        }
+
+        /**
+         * Get the second pass shader program and resources
+         * @returns {Object|null} The second pass object with shader program, buffers, and uniforms
+         */
+        getSecondPass() {
+            return this._secondPass;
+        }
+
+        /**
+         * Get the render-to-texture framebuffer
+         * @returns {WebGLFramebuffer|null} The framebuffer
+         */
+        getFrameBuffer() {
+            return this._glFrameBuffer;
+        }
+
+        /**
+         * Get the render-to-texture texture
+         * @returns {WebGLTexture|null} The texture
+         */
+        getRenderToTexture() {
+            return this._renderToTexture;
+        }
+
+        /**
+         * Get the unit quad vertex buffer
+         * @returns {Float32Array} The unit quad buffer
+         */
+        getUnitQuad() {
+            return this._unitQuad;
+        }
+
+        /**
+         * Set up WebGL extensions (works for both WebGL1 and WebGL2)
+         * @private
+         */
+        _setupWebGLExtensions() {
+            const gl = this._gl;
+
+            // Anisotropic filtering extension (available in both WebGL1 and WebGL2)
+            this._extTextureFilterAnisotropic =
+                gl.getExtension('EXT_texture_filter_anisotropic') ||
+                gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') ||
+                gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
+
+            if (this._extTextureFilterAnisotropic) {
+                this._maxAnisotropy = gl.getParameter(
+                    this._extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT
+                );
+            }
+        }
+
+        /**
+         * Get the texture filter constant (LINEAR or NEAREST)
+         * @returns {Number} gl.LINEAR or gl.NEAREST
+         */
+        getTextureFilter() {
+            const gl = this._gl;
+            return this._imageSmoothingEnabled ? gl.LINEAR : gl.NEAREST;
+        }
+
+        /**
+         * Apply anisotropic filtering to the currently bound texture if available
+         * @private
+         */
+        _applyAnisotropy() {
+            if (!this._imageSmoothingEnabled || !this._extTextureFilterAnisotropic || this._maxAnisotropy <= 0) {
+                return;
+            }
+            const gl = this._gl;
+            gl.texParameterf(
+                gl.TEXTURE_2D,
+                this._extTextureFilterAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT,
+                Math.min(4, this._maxAnisotropy)
+            );
+        }
+
+        /**
+         * Set up the renderer: create shaders, textures, and framebuffers
+         * @param {Number} width - Canvas width
+         * @param {Number} height - Canvas height
+         */
+        setupRenderer(width, height) {
+            const gl = this._gl;
+            if (!gl) {
+                $.console.error('WebGL context not available for setupRenderer');
+                return;
+            }
+
+            // Create unit quad once
+            this._unitQuad = this.makeQuadVertexBuffer(0, 1, 0, 1);
+
+            this._makeFirstPassShaderProgram();
+            this._makeSecondPassShaderProgram();
+
+            // set up the texture to render to in the first pass, and which will be used for rendering the second pass
+            this._renderToTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.getTextureFilter());
+            this._applyAnisotropy();
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            // set up the framebuffer for render-to-texture
+            this._glFrameBuffer = gl.createFramebuffer();
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._glFrameBuffer);
+            gl.framebufferTexture2D(
+                gl.FRAMEBUFFER,
+                gl.COLOR_ATTACHMENT0,
+                gl.TEXTURE_2D,
+                this._renderToTexture,
+                0
+            );
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        }
+
+        /**
+         * Resize the render-to-texture when canvas size changes
+         * @param {Number} width - New canvas width
+         * @param {Number} height - New canvas height
+         */
+        resizeRenderer(width, height) {
+            const gl = this._gl;
+            if (!gl) {
+                return;
+            }
+            gl.viewport(0, 0, width, height);
+
+            //release the old texture
+            gl.deleteTexture(this._renderToTexture);
+            //create a new texture and set it up
+            this._renderToTexture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.getTextureFilter());
+            this._applyAnisotropy();
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            //bind the frame buffer to the new texture
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this._glFrameBuffer);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._renderToTexture, 0);
+        }
+
+        /**
+         * Create and upload a texture for a tile
+         * @param {HTMLImageElement|HTMLCanvasElement|ImageData} data - Image data to upload
+         * @param {Object} options - Texture options
+         * @param {Boolean} [options.unpackWithPremultipliedAlpha] - Override default unpack setting
+         * @returns {WebGLTexture|null} The created texture, or null on error
+         */
+        createTexture(data, options = {}) {
+            const gl = this._gl;
+            if (!gl) {
+                return null;
+            }
+
+            const texture = gl.createTexture();
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, texture);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.getTextureFilter());
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.getTextureFilter());
+            this._applyAnisotropy();
+
+            try {
+                const unpackPremultipliedAlpha = options.unpackWithPremultipliedAlpha !== undefined ?
+                    options.unpackWithPremultipliedAlpha :
+                    this._unpackWithPremultipliedAlpha;
+                gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, unpackPremultipliedAlpha);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data);
+                return texture;
+            } catch (e) {
+                gl.deleteTexture(texture);
+                return null;
+            }
+        }
+
+        /**
+         * Delete a texture
+         * @param {WebGLTexture} texture - The texture to delete
+         */
+        deleteTexture(texture) {
+            if (this._gl && texture) {
+                this._gl.deleteTexture(texture);
+            }
+        }
+
+        /**
+         * Set image smoothing enabled state
+         * @param {Boolean} enabled - Whether image smoothing is enabled
+         */
+        setImageSmoothingEnabled(enabled) {
+            this._imageSmoothingEnabled = !!enabled;
+        }
+
+        /**
+         * Set unpack with premultiplied alpha state
+         * @param {Boolean} enabled - Whether to use premultiplied alpha
+         */
+        setUnpackWithPremultipliedAlpha(enabled) {
+            this._unpackWithPremultipliedAlpha = !!enabled;
+            if (this._gl) {
+                this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._unpackWithPremultipliedAlpha);
+            }
+        }
+
+        /**
+         * Make a quad vertex buffer
+         * @param {Number} left - Left coordinate
+         * @param {Number} right - Right coordinate
+         * @param {Number} top - Top coordinate
+         * @param {Number} bottom - Bottom coordinate
+         * @returns {Float32Array} Vertex buffer
+         */
+        makeQuadVertexBuffer(left, right, top, bottom) {
+            return new Float32Array([
+                left, bottom,
+                right, bottom,
+                left, top,
+                left, top,
+                right, bottom,
+                right, top]);
+        }
+
+        /**
+         * Create the first pass shader program
+         * @private
+         */
+        _makeFirstPassShaderProgram() {
+            const numTextures = this._glNumTextures = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
+            const makeMatrixUniforms = () => {
+                return [...Array(numTextures).keys()].map(index => `uniform mat3 u_matrix_${index};`).join('\n');
+            };
+            const makeConditionals = () => {
+                return [...Array(numTextures).keys()].map(index => `${index > 0 ? 'else ' : ''}if(int(a_index) == ${index}) { transform_matrix = u_matrix_${index}; }`).join('\n');
+            };
+
+            const vertexShaderProgram = `
+            attribute vec2 a_output_position;
+            attribute vec2 a_texture_position;
+            attribute float a_index;
+
+            ${makeMatrixUniforms()} // create a uniform mat3 for each potential tile to draw
+
+            varying vec2 v_texture_position;
+            varying float v_image_index;
+
+            void main() {
+
+                mat3 transform_matrix; // value will be set by the if/elses in makeConditional()
+
+                ${makeConditionals()}
+
+                gl_Position = vec4(transform_matrix * vec3(a_output_position, 1), 1);
+
+                v_texture_position = a_texture_position;
+                v_image_index = a_index;
+            }
+            `;
+
+            const fragmentShaderProgram = `
+            precision mediump float;
+
+            // our textures
+            uniform sampler2D u_images[${numTextures}];
+            // our opacities
+            uniform float u_opacities[${numTextures}];
+
+            // the varyings passed in from the vertex shader.
+            varying vec2 v_texture_position;
+            varying float v_image_index;
+
+            void main() {
+                // can't index directly with a variable, need to use a loop iterator hack
+                for(int i = 0; i < ${numTextures}; ++i){
+                    if(i == int(v_image_index)){
+                        gl_FragColor = texture2D(u_images[i], v_texture_position) * u_opacities[i];
+                    }
+                }
+            }
+            `;
+
+            const gl = this._gl;
+
+            const program = this._initShaderProgram(gl, vertexShaderProgram, fragmentShaderProgram);
+            gl.useProgram(program);
+
+            // get locations of attributes and uniforms, and create buffers for each attribute
+            this._firstPass = {
+                shaderProgram: program,
+                aOutputPosition: gl.getAttribLocation(program, 'a_output_position'),
+                aTexturePosition: gl.getAttribLocation(program, 'a_texture_position'),
+                aIndex: gl.getAttribLocation(program, 'a_index'),
+                uTransformMatrices: [...Array(this._glNumTextures).keys()].map(i=>gl.getUniformLocation(program, `u_matrix_${i}`)),
+                uImages: gl.getUniformLocation(program, 'u_images'),
+                uOpacities: gl.getUniformLocation(program, 'u_opacities'),
+                bufferOutputPosition: gl.createBuffer(),
+                bufferTexturePosition: gl.createBuffer(),
+                bufferIndex: gl.createBuffer(),
+            };
+
+            gl.uniform1iv(this._firstPass.uImages, [...Array(numTextures).keys()]);
+
+            // provide coordinates for the rectangle in output space, i.e. a unit quad for each one.
+            const outputQuads = new Float32Array(numTextures * 12);
+            for(let i = 0; i < numTextures; ++i){
+                outputQuads.set(Float32Array.from(this._unitQuad), i * 12);
+            }
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferOutputPosition);
+            gl.bufferData(gl.ARRAY_BUFFER, outputQuads, gl.STATIC_DRAW); // bind data statically here, since it's unchanging
+            gl.enableVertexAttribArray(this._firstPass.aOutputPosition);
+
+            // provide texture coordinates for the rectangle in image (texture) space. Data will be set later.
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferTexturePosition);
+            gl.enableVertexAttribArray(this._firstPass.aTexturePosition);
+
+            // for each vertex, provide an index into the array of textures/matrices to use for the correct tile
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferIndex);
+            const indices = [...Array(this._glNumTextures).keys()].map(i => Array(6).fill(i)).flat(); // repeat each index 6 times, for the 6 vertices per tile (2 triangles)
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(indices), gl.STATIC_DRAW); // bind data statically here, since it's unchanging
+            gl.enableVertexAttribArray(this._firstPass.aIndex);
+        }
+
+        /**
+         * Create the second pass shader program
+         * @private
+         */
+        _makeSecondPassShaderProgram() {
+            const vertexShaderProgram = `
+            attribute vec2 a_output_position;
+            attribute vec2 a_texture_position;
+
+            varying vec2 v_texture_position;
+
+            void main() {
+                // Transform to clip space (0:1 --> -1:1)
+                gl_Position = vec4(vec3(a_output_position * 2.0 - 1.0, 1), 1);
+
+                v_texture_position = a_texture_position;
+            }
+            `;
+
+            const fragmentShaderProgram = `
+            precision mediump float;
+
+            // our texture
+            uniform sampler2D u_image;
+
+            // the texCoords passed in from the vertex shader.
+            varying vec2 v_texture_position;
+
+            // the opacity multiplier for the image
+            uniform float u_opacity_multiplier;
+
+            void main() {
+                gl_FragColor = texture2D(u_image, v_texture_position);
+                gl_FragColor *= u_opacity_multiplier;
+            }
+            `;
+
+            const gl = this._gl;
+
+            const program = this._initShaderProgram(gl, vertexShaderProgram, fragmentShaderProgram);
+            gl.useProgram(program);
+
+            // get locations of attributes and uniforms, and create buffers for each attribute
+            this._secondPass = {
+                shaderProgram: program,
+                aOutputPosition: gl.getAttribLocation(program, 'a_output_position'),
+                aTexturePosition: gl.getAttribLocation(program, 'a_texture_position'),
+                uImage: gl.getUniformLocation(program, 'u_image'),
+                uOpacityMultiplier: gl.getUniformLocation(program, 'u_opacity_multiplier'),
+                bufferOutputPosition: gl.createBuffer(),
+                bufferTexturePosition: gl.createBuffer(),
+            };
+
+            // provide coordinates for the rectangle in output space, i.e. a unit quad for each one.
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferOutputPosition);
+            gl.bufferData(gl.ARRAY_BUFFER, this._unitQuad, gl.STATIC_DRAW); // bind data statically here since it's unchanging
+            gl.enableVertexAttribArray(this._secondPass.aOutputPosition);
+
+            // provide texture coordinates for the rectangle in image (texture) space.
+            gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferTexturePosition);
+            gl.bufferData(gl.ARRAY_BUFFER, this._unitQuad, gl.DYNAMIC_DRAW); // bind data statically here since it's unchanging
+            gl.enableVertexAttribArray(this._secondPass.aTexturePosition);
+        }
+
+        /**
+         * Destroy the WebGL context and all resources
+         */
+        destroy() {
+            if (this._destroyed) {
+                return;
+            }
+            this._destroyed = true;
+
+            const gl = this._gl;
+            if (gl) {
+                try {
+                    // adapted from https://stackoverflow.com/a/23606581/1214731
+                    const numTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
+                    if (numTextureUnits && numTextureUnits > 0) {
+                        for (let unit = 0; unit < numTextureUnits; ++unit) {
+                            gl.activeTexture(gl.TEXTURE0 + unit);
+                            gl.bindTexture(gl.TEXTURE_2D, null);
+                            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+                        }
+                    }
+                    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+                    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+                    // Delete all our created resources
+                    if (this._secondPass && this._secondPass.bufferOutputPosition) {
+                        gl.deleteBuffer(this._secondPass.bufferOutputPosition);
+                    }
+                    if (this._glFrameBuffer) {
+                        gl.deleteFramebuffer(this._glFrameBuffer);
+                    }
+                } catch (e) {
+                    // Context may already be lost, continue with cleanup
+                    $.console.warn('Error during WebGL cleanup in WebglContextManager.destroy():', e);
+                }
+
+                const ext = gl.getExtension('WEBGL_lose_context');
+                if (ext) {
+                    ext.loseContext();
+                }
+            }
+
+            // Clean up references
+            this._gl = null;
+            this._firstPass = null;
+            this._secondPass = null;
+            this._glFrameBuffer = null;
+            this._renderToTexture = null;
+            this._unitQuad = null;
+        }
+
+        /**
+         * Check if this context manager has been destroyed
+         * @returns {Boolean} true if destroyed, false otherwise
+         */
+        isDestroyed() {
+            return this._destroyed;
+        }
+    }
+
    /**
     * @class OpenSeadragon.WebGLDrawer
     * @classdesc Default implementation of WebGLDrawer for an {@link OpenSeadragon.Viewer}. The WebGLDrawer
@@ -24491,17 +25180,28 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
             // private members
             this._destroyed = false;
-            this._gl = null;
-            this._firstPass = null;
-            this._secondPass = null;
-            this._glFrameBuffer = null;
-            this._renderToTexture = null;
+            /**
+             * WebGL context manager instance
+             * @member {WebglContextManager} _glContext
+             * @memberof OpenSeadragon.WebGLDrawer#
+             * @private
+             */
+            this._glContext = null;
+            /**
+             * Flag to enable/disable automatic WebGL context re-initialization on context loss.
+             * When enabled, the drawer will attempt to recover from context exhaustion errors.
+             * @member {Boolean} _enableContextRecovery
+             * @memberof OpenSeadragon.WebGLDrawer#
+             * @private
+             */
+            this._enableContextRecovery = true;
             this._outputCanvas = null;
             this._outputContext = null;
             this._clippingCanvas = null;
             this._clippingContext = null;
             this._renderingCanvas = null;
             this._backupCanvasDrawer = null;
+            this._canvasFallbackAllowed = this.viewer.drawerCandidates && this.viewer.drawerCandidates.includes('canvas');
 
             this._imageSmoothingEnabled = true; // will be updated by setImageSmoothingEnabled
             this._unpackWithPremultipliedAlpha = !!this.options.unpackWithPremultipliedAlpha;
@@ -24542,40 +25242,31 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                 return;
             }
             super.destroy();
-            // clear all resources used by the renderer, geometries, textures etc
-            const gl = this._gl;
-
-            // adapted from https://stackoverflow.com/a/23606581/1214731
-            const numTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
-            for (let unit = 0; unit < numTextureUnits; ++unit) {
-                gl.activeTexture(gl.TEXTURE0 + unit);
-                gl.bindTexture(gl.TEXTURE_2D, null);
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+            // Remove the resize handler to prevent memory leaks
+            if (this._resizeHandler) {
+                this.viewer.removeHandler("resize", this._resizeHandler);
+                this._resizeHandler = null;
             }
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-            gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-            // Delete all our created resources
-            gl.deleteBuffer(this._secondPass.bufferOutputPosition);
-            gl.deleteFramebuffer(this._glFrameBuffer);
+            // Destroy WebGL context manager
+            if (this._glContext) {
+                this._glContext.destroy();
+                this._glContext = null;
+            }
 
             // make canvases 1 x 1 px and delete references
-            this._renderingCanvas.width = this._renderingCanvas.height = 1;
-            this._clippingCanvas.width = this._clippingCanvas.height = 1;
-            this._outputCanvas.width = this._outputCanvas.height = 1;
+            if (this._renderingCanvas) {
+                this._renderingCanvas.width = this._renderingCanvas.height = 1;
+            }
+            if (this._clippingCanvas) {
+                this._clippingCanvas.width = this._clippingCanvas.height = 1;
+            }
+            if (this._outputCanvas) {
+                this._outputCanvas.width = this._outputCanvas.height = 1;
+            }
             this._renderingCanvas = null;
             this._clippingCanvas = this._clippingContext = null;
             this._outputCanvas = this._outputContext = null;
-
-            const ext = gl.getExtension('WEBGL_lose_context');
-            if(ext){
-                ext.loseContext();
-            }
-
-            // set our webgl context reference to null to enable garbage collection
-            this._gl = null;
 
             if(this._backupCanvasDrawer){
                 this._backupCanvasDrawer.destroy();
@@ -24604,17 +25295,111 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
         // Public API required by all Drawer implementations
         /**
-        * @returns {Boolean} true if canvas and webgl are supported
-        */
+         * Functional test: true if WebGL is supported and the real first-pass shader pipeline
+         * can render (same shaders/context path used at runtime). Uses a temp context and
+         * WebglContextManager, draws known non-black pixels to an FBO, then readPixels.
+         * @returns {Boolean} true if WebGL is supported and the pipeline renders successfully
+         */
         static isSupported(){
-            const canvasElement = document.createElement( 'canvas' );
-            const webglContext = $.isFunction( canvasElement.getContext ) &&
-                        canvasElement.getContext( 'webgl' );
-            const ext = webglContext && webglContext.getExtension('WEBGL_lose_context');
-            if(ext){
-                ext.loseContext();
+            let contextManager = null;
+            let testTexture = null;
+            let gl = null;
+            try {
+                const size = 4;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                if (!$.isFunction(canvas.getContext)) {
+                    return false;
+                }
+                gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+                if (!gl) {
+                    return false;
+                }
+                contextManager = new WebglContextManager({
+                    renderingCanvas: canvas,
+                    unpackWithPremultipliedAlpha: false,
+                    imageSmoothingEnabled: true,
+                    initShaderProgram: WebGLDrawer.initShaderProgram
+                });
+                if (!contextManager.getContext()) {
+                    return false;
+                }
+                contextManager.setupRenderer(size, size);
+
+                const firstPass = contextManager.getFirstPass();
+                const glFrameBuffer = contextManager.getFrameBuffer();
+                if (!firstPass || !glFrameBuffer) {
+                    return false;
+                }
+
+                const maxTextures = contextManager.getMaxTextures();
+                if (!maxTextures || maxTextures <= 0) {
+                    return false;
+                }
+
+                const imageData = new ImageData(size, size);
+                imageData.data[0] = 255;
+                imageData.data[1] = 0;
+                imageData.data[2] = 0;
+                imageData.data[3] = 255;
+                testTexture = contextManager.createTexture(imageData);
+                if (!testTexture) {
+                    return false;
+                }
+
+                const unitQuad = contextManager.makeQuadVertexBuffer(0, 1, 0, 1);
+                gl.viewport(0, 0, size, size);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, glFrameBuffer);
+                gl.clearColor(0, 0, 0, 0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(firstPass.shaderProgram);
+
+                gl.activeTexture(gl.TEXTURE0);
+                gl.bindTexture(gl.TEXTURE_2D, testTexture);
+                gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferTexturePosition);
+                gl.bufferData(gl.ARRAY_BUFFER, unitQuad, gl.DYNAMIC_DRAW);
+                const ndcMatrix = new Float32Array([2, 0, 0, 0, 2, 0, -1, -1, 1]);
+                gl.uniformMatrix3fv(firstPass.uTransformMatrices[0], false, ndcMatrix);
+                gl.uniform1fv(firstPass.uOpacities, new Float32Array([1]));
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferOutputPosition);
+                gl.vertexAttribPointer(firstPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
+                gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferTexturePosition);
+                gl.vertexAttribPointer(firstPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
+                gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferIndex);
+                gl.vertexAttribPointer(firstPass.aIndex, 1, gl.FLOAT, false, 0, 0);
+
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                const pixels = new Uint8Array(size * size * 4);
+                gl.readPixels(0, 0, size, size, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+                const hasNonZero = pixels.some(v => v !== 0);
+                if (!hasNonZero) {
+                    $.console.warn('[WebGLDrawer.isSupported] Functional test failed: no non-zero pixels read back.');
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                $.console.warn('[WebGLDrawer.isSupported] Functional test failed:', e && e.message ? e.message : e);
+                return false;
+            } finally {
+                try {
+                    if (testTexture && contextManager) {
+                        contextManager.deleteTexture(testTexture);
+                    }
+                    if (contextManager) {
+                        contextManager.destroy();
+                    } else if (gl) {
+                        const ext = gl.getExtension('WEBGL_lose_context');
+                        if (ext) {
+                            ext.loseContext();
+                        }
+                    }
+                } catch (cleanupErr) {
+                    // ignore cleanup errors so we preserve the test result
+                }
             }
-            return !!( webglContext );
         }
 
         /**
@@ -24623,6 +25408,32 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
          */
         getType(){
             return 'webgl';
+        }
+
+        /**
+         * Check if the drawer is using WebGL2
+         * @returns {Boolean} true if WebGL2 is being used, false if WebGL1
+         */
+        isWebGL2(){
+            return this._glContext ? this._glContext.isWebGL2() : false;
+        }
+
+        /**
+         * Enable or disable automatic WebGL context re-initialization on context loss.
+         * When enabled, the drawer will attempt to recover from context exhaustion errors
+         * by re-initializing the WebGL context.
+         * @param {Boolean} enabled - true to enable recovery, false to disable
+         */
+        setContextRecoveryEnabled(enabled) {
+            this._enableContextRecovery = !!enabled;
+        }
+
+        /**
+         * Check if context recovery is enabled
+         * @returns {Boolean} true if recovery is enabled, false otherwise
+         */
+        isContextRecoveryEnabled() {
+            return this._enableContextRecovery;
         }
 
         /**
@@ -24665,12 +25476,22 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             return this._backupCanvasDrawer;
         }
 
+        //
         /**
-        *
-        * @param {Array} tiledImages Array of TiledImage objects to draw
-        */
-        draw(tiledImages){
-            const gl = this._gl;
+         * Internal draw method, wrapped in a try/catch within draw()
+         * @param {Array} tiledImages Array of TiledImage objects to draw
+         * @param {Boolean} [isRetry=false] Internal flag to prevent infinite retry loops
+         * @private
+         */
+        _draw(tiledImages, isRetry = false){
+            const gl = this._glContext ? this._glContext.getContext() : null;
+            if (!gl) {
+                return;
+            }
+            const firstPass = this._glContext.getFirstPass();
+            const secondPass = this._glContext.getSecondPass();
+            const glFrameBuffer = this._glContext.getFrameBuffer();
+            const renderToTexture = this._glContext.getRenderToTexture();
             const bounds = this.viewport.getBoundsNoRotateWithMargins(true);
             const view = {
                 bounds: bounds,
@@ -24697,199 +25518,256 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             //iterate over tiled images and draw each one using a two-pass rendering pipeline if needed
             tiledImages.forEach( (tiledImage, tiledImageIndex) => {
 
-                if(tiledImage.getIssue('webgl')){
-                    // first, draw any data left in the rendering buffer onto the output canvas
-                    if(renderingBufferHasImageData){
-                        this._outputContext.drawImage(this._renderingCanvas, 0, 0);
-                        // clear the buffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
-                        renderingBufferHasImageData = false;
-                    }
+            if(tiledImage.getIssue('webgl')){
+                // first, draw any data left in the rendering buffer onto the output canvas
+                if(renderingBufferHasImageData){
+                    this._outputContext.drawImage(this._renderingCanvas, 0, 0);
+                    // clear the buffer
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
+                    renderingBufferHasImageData = false;
+                }
 
-                    // next, use the backup canvas drawer to draw this tainted image
+                // next, use the backup canvas drawer to draw the tiled image (if allowed)
+                if(this._canvasFallbackAllowed){
                     const canvasDrawer = this._getBackupCanvasDrawer();
                     canvasDrawer.draw([tiledImage]);
                     this._outputContext.drawImage(canvasDrawer.canvas, 0, 0);
+                }
 
+            } else {
+                const tilesToDraw = tiledImage.getTilesToDraw();
+
+                if ( tiledImage.placeholderFillStyle && tiledImage._hasOpaqueTile === false ) {
+                    this._drawPlaceholder(tiledImage);
+                }
+
+                if(tilesToDraw.length === 0 || tiledImage.getOpacity() === 0){
+                    return;
+                }
+                const firstTile = tilesToDraw[0];
+
+                const useContext2dPipeline = ( tiledImage.compositeOperation ||
+                    this.viewer.compositeOperation ||
+                    tiledImage._clip ||
+                    tiledImage._croppingPolygons ||
+                    tiledImage.debugMode
+                );
+
+                const useTwoPassRendering = useContext2dPipeline || (tiledImage.opacity < 1) || firstTile.tile.hasTransparency;
+
+                // using the context2d pipeline requires a clean rendering (back) buffer to start
+                if(useContext2dPipeline){
+                    // if the rendering buffer has image data currently, write it to the output canvas now and clear it
+
+                    if(renderingBufferHasImageData){
+                        this._outputContext.drawImage(this._renderingCanvas, 0, 0);
+                    }
+
+                    // clear the buffer
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
+                }
+
+                // First rendering pass: compose tiles that make up this tiledImage
+                gl.useProgram(firstPass.shaderProgram);
+
+                // bind to the framebuffer for render-to-texture if using two-pass rendering, otherwise back buffer (null)
+                if(useTwoPassRendering){
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, glFrameBuffer);
+                    // clear the buffer to draw a new image
+                    gl.clear(gl.COLOR_BUFFER_BIT);
                 } else {
-                    const tilesToDraw = tiledImage.getTilesToDraw();
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    // no need to clear, just draw on top of the existing pixels
+                }
 
-                    if ( tiledImage.placeholderFillStyle && tiledImage._hasOpaqueTile === false ) {
-                        this._drawPlaceholder(tiledImage);
+                let overallMatrix = viewMatrix;
+
+                const imageRotation = tiledImage.getRotation(true);
+                // if needed, handle the tiledImage being rotated
+                if( imageRotation % 360 !== 0){
+                    const imageRotationMatrix = $.Mat3.makeRotation(-imageRotation * Math.PI / 180);
+                    const imageCenter = tiledImage.getBoundsNoRotate(true).getCenter();
+                    const t1 = $.Mat3.makeTranslation(imageCenter.x, imageCenter.y);
+                    const t2 = $.Mat3.makeTranslation(-imageCenter.x, -imageCenter.y);
+
+                    // update the view matrix to account for this image's rotation
+                    const localMatrix = t1.multiply(imageRotationMatrix).multiply(t2);
+                    overallMatrix = viewMatrix.multiply(localMatrix);
+                }
+
+                // Check MAX_TEXTURE_IMAGE_UNITS - throw error if invalid (will be caught by outer try-catch)
+                const maxTextures = this._glContext.getMaxTextures();
+                if(maxTextures <= 0 || maxTextures === null || maxTextures === undefined){
+                    // This can apparently happen on some systems if too many WebGL contexts have been created
+                    // in which case maxTextures can be null, leading to out of bounds errors with the array.
+                    // For example, when viewers were created and not destroyed in the test suite, this error
+                    // occurred in the TravisCI tests, though it did not happen when testing locally either in
+                    // a browser or on the command line via grunt test.
+
+                    throw new Error(`WebGL error: bad value for gl parameter MAX_TEXTURE_IMAGE_UNITS (${maxTextures}). This could happen
+                    if too many contexts have been created and not released, or there is another problem with the graphics card.`);
+                }
+
+                const texturePositionArray = new Float32Array(maxTextures * 12); // 6 vertices (2 triangles) x 2 coordinates per vertex
+                const textureDataArray = new Array(maxTextures);
+                const matrixArray = new Array(maxTextures);
+                const opacityArray = new Array(maxTextures);
+
+                // iterate over tiles and add data for each one to the buffers
+                for(let tileIndex = 0; tileIndex < tilesToDraw.length; tileIndex++){
+                    const tile = tilesToDraw[tileIndex].tile;
+                    const indexInDrawArray = tileIndex % maxTextures;
+                    const numTilesToDraw =  indexInDrawArray + 1;
+                    const textureInfo = this.getDataToDraw(tile);
+
+                    if (textureInfo && textureInfo.texture) {
+                        this._getTileData(tile, tiledImage, textureInfo, overallMatrix, indexInDrawArray, texturePositionArray, textureDataArray, matrixArray, opacityArray);
                     }
+                    // else {
+                    //   If the texture info is not available, we cannot draw this tile. This is either because
+                    //   the tile data is still being processed, or the data was not correct - in that case,
+                    //   internalCacheCreate(..) already logged an error.
+                    // }
 
-                    if(tilesToDraw.length === 0 || tiledImage.getOpacity() === 0){
-                        return;
-                    }
-                    const firstTile = tilesToDraw[0];
+                    if( (numTilesToDraw === maxTextures) || (tileIndex === tilesToDraw.length - 1)){
+                        // We've filled up the buffers: time to draw this set of tiles
 
-                    const useContext2dPipeline = ( tiledImage.compositeOperation ||
-                        this.viewer.compositeOperation ||
-                        tiledImage._clip ||
-                        tiledImage._croppingPolygons ||
-                        tiledImage.debugMode
-                    );
-
-                    const useTwoPassRendering = useContext2dPipeline || (tiledImage.opacity < 1) || firstTile.tile.hasTransparency;
-
-                    // using the context2d pipeline requires a clean rendering (back) buffer to start
-                    if(useContext2dPipeline){
-                        // if the rendering buffer has image data currently, write it to the output canvas now and clear it
-
-                        if(renderingBufferHasImageData){
-                            this._outputContext.drawImage(this._renderingCanvas, 0, 0);
+                        // bind each tile's texture to the appropriate gl.TEXTURE#
+                        for(let i = 0; i < numTilesToDraw; i++){
+                            gl.activeTexture(gl.TEXTURE0 + i);
+                            gl.bindTexture(gl.TEXTURE_2D, textureDataArray[i]);
                         }
 
-                        // clear the buffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
-                    }
+                        // set the buffer data for the texture coordinates to use for each tile
+                        gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferTexturePosition);
+                        gl.bufferData(gl.ARRAY_BUFFER, texturePositionArray, gl.DYNAMIC_DRAW);
 
-                    // First rendering pass: compose tiles that make up this tiledImage
-                    gl.useProgram(this._firstPass.shaderProgram);
+                        // set the transform matrix uniform for each tile
+                        matrixArray.forEach( (matrix, index) => {
+                            gl.uniformMatrix3fv(firstPass.uTransformMatrices[index], false, matrix);
+                        });
+                        // set the opacity uniform for each tile
+                        gl.uniform1fv(firstPass.uOpacities, new Float32Array(opacityArray));
 
-                    // bind to the framebuffer for render-to-texture if using two-pass rendering, otherwise back buffer (null)
-                    if(useTwoPassRendering){
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, this._glFrameBuffer);
-                        // clear the buffer to draw a new image
-                        gl.clear(gl.COLOR_BUFFER_BIT);
-                    } else {
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        // no need to clear, just draw on top of the existing pixels
-                    }
+                        // bind vertex buffers and (re)set attributes before calling gl.drawArrays()
+                        gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferOutputPosition);
+                        gl.vertexAttribPointer(firstPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
 
-                    let overallMatrix = viewMatrix;
+                        gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferTexturePosition);
+                        gl.vertexAttribPointer(firstPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
 
-                    const imageRotation = tiledImage.getRotation(true);
-                    // if needed, handle the tiledImage being rotated
-                    if( imageRotation % 360 !== 0){
-                        const imageRotationMatrix = $.Mat3.makeRotation(-imageRotation * Math.PI / 180);
-                        const imageCenter = tiledImage.getBoundsNoRotate(true).getCenter();
-                        const t1 = $.Mat3.makeTranslation(imageCenter.x, imageCenter.y);
-                        const t2 = $.Mat3.makeTranslation(-imageCenter.x, -imageCenter.y);
+                        gl.bindBuffer(gl.ARRAY_BUFFER, firstPass.bufferIndex);
+                        gl.vertexAttribPointer(firstPass.aIndex, 1, gl.FLOAT, false, 0, 0);
 
-                        // update the view matrix to account for this image's rotation
-                        const localMatrix = t1.multiply(imageRotationMatrix).multiply(t2);
-                        overallMatrix = viewMatrix.multiply(localMatrix);
-                    }
-
-                    const maxTextures = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
-                    if(maxTextures <= 0){
-                        // This can apparently happen on some systems if too many WebGL contexts have been created
-                        // in which case maxTextures can be null, leading to out of bounds errors with the array.
-                        // For example, when viewers were created and not destroyed in the test suite, this error
-                        // occurred in the TravisCI tests, though it did not happen when testing locally either in
-                        // a browser or on the command line via grunt test.
-
-                        throw(new Error(`WegGL error: bad value for gl parameter MAX_TEXTURE_IMAGE_UNITS (${maxTextures}). This could happen
-                        if too many contexts have been created and not released, or there is another problem with the graphics card.`));
-                    }
-
-                    const texturePositionArray = new Float32Array(maxTextures * 12); // 6 vertices (2 triangles) x 2 coordinates per vertex
-                    const textureDataArray = new Array(maxTextures);
-                    const matrixArray = new Array(maxTextures);
-                    const opacityArray = new Array(maxTextures);
-
-                    // iterate over tiles and add data for each one to the buffers
-                    for(let tileIndex = 0; tileIndex < tilesToDraw.length; tileIndex++){
-                        const tile = tilesToDraw[tileIndex].tile;
-                        const indexInDrawArray = tileIndex % maxTextures;
-                        const numTilesToDraw =  indexInDrawArray + 1;
-                        const textureInfo = this.getDataToDraw(tile);
-
-                        if (textureInfo && textureInfo.texture) {
-                            this._getTileData(tile, tiledImage, textureInfo, overallMatrix, indexInDrawArray, texturePositionArray, textureDataArray, matrixArray, opacityArray);
-                        }
-                        // else {
-                        //   If the texture info is not available, we cannot draw this tile. This is either because
-                        //   the tile data is still being processed, or the data was not correct - in that case,
-                        //   internalCacheCreate(..) already logged an error.
-                        // }
-
-                        if( (numTilesToDraw === maxTextures) || (tileIndex === tilesToDraw.length - 1)){
-                            // We've filled up the buffers: time to draw this set of tiles
-
-                            // bind each tile's texture to the appropriate gl.TEXTURE#
-                            for(let i = 0; i <= numTilesToDraw; i++){
-                                gl.activeTexture(gl.TEXTURE0 + i);
-                                gl.bindTexture(gl.TEXTURE_2D, textureDataArray[i]);
-                            }
-
-                            // set the buffer data for the texture coordinates to use for each tile
-                            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferTexturePosition);
-                            gl.bufferData(gl.ARRAY_BUFFER, texturePositionArray, gl.DYNAMIC_DRAW);
-
-                            // set the transform matrix uniform for each tile
-                            matrixArray.forEach( (matrix, index) => {
-                                gl.uniformMatrix3fv(this._firstPass.uTransformMatrices[index], false, matrix);
-                            });
-                            // set the opacity uniform for each tile
-                            gl.uniform1fv(this._firstPass.uOpacities, new Float32Array(opacityArray));
-
-                            // bind vertex buffers and (re)set attributes before calling gl.drawArrays()
-                            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferOutputPosition);
-                            gl.vertexAttribPointer(this._firstPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
-
-                            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferTexturePosition);
-                            gl.vertexAttribPointer(this._firstPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
-
-                            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferIndex);
-                            gl.vertexAttribPointer(this._firstPass.aIndex, 1, gl.FLOAT, false, 0, 0);
-
-                            // Draw! 6 vertices per tile (2 triangles per rectangle)
-                            gl.drawArrays(gl.TRIANGLES, 0, 6 * numTilesToDraw );
-                        }
-                    }
-
-                    if(useTwoPassRendering){
-                        // Second rendering pass: Render the tiled image from the framebuffer into the back buffer
-                        gl.useProgram(this._secondPass.shaderProgram);
-
-                        // set the rendering target to the back buffer (null)
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-                        // bind the rendered texture from the first pass to use during this second pass
-                        gl.activeTexture(gl.TEXTURE0);
-                        gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
-
-                        // set opacity to the value for the current tiledImage
-                        this._gl.uniform1f(this._secondPass.uOpacityMultiplier, tiledImage.opacity);
-
-                        // bind buffers and set attributes before calling gl.drawArrays
-                        gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferTexturePosition);
-                        gl.vertexAttribPointer(this._secondPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
-                        gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferOutputPosition);
-                        gl.vertexAttribPointer(this._secondPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
-
-                        // Draw the quad (two triangles)
-                        gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-                    }
-
-                    renderingBufferHasImageData = true;
-
-                    if(useContext2dPipeline){
-                        // draw from the rendering canvas onto the output canvas, clipping/cropping if needed.
-                        this._applyContext2dPipeline(tiledImage, tilesToDraw, tiledImageIndex);
-                        renderingBufferHasImageData = false;
-                        // clear the buffer
-                        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-                        gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
-                    }
-
-                    // after drawing the first TiledImage, fire the tiled-image-drawn event (for testing)
-                    if(tiledImageIndex === 0){
-                        this._raiseTiledImageDrawnEvent(tiledImage, tilesToDraw.map(info=>info.tile));
+                        // Draw! 6 vertices per tile (2 triangles per rectangle)
+                        gl.drawArrays(gl.TRIANGLES, 0, 6 * numTilesToDraw );
                     }
                 }
+
+                if(useTwoPassRendering){
+                    // Second rendering pass: Render the tiled image from the framebuffer into the back buffer
+                    gl.useProgram(secondPass.shaderProgram);
+
+                    // set the rendering target to the back buffer (null)
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+                    // bind the rendered texture from the first pass to use during this second pass
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, renderToTexture);
+
+                    // set opacity to the value for the current tiledImage
+                    gl.uniform1f(secondPass.uOpacityMultiplier, tiledImage.opacity);
+
+                    // bind buffers and set attributes before calling gl.drawArrays
+                    gl.bindBuffer(gl.ARRAY_BUFFER, secondPass.bufferTexturePosition);
+                    gl.vertexAttribPointer(secondPass.aTexturePosition, 2, gl.FLOAT, false, 0, 0);
+                    gl.bindBuffer(gl.ARRAY_BUFFER, secondPass.bufferOutputPosition);
+                    gl.vertexAttribPointer(secondPass.aOutputPosition, 2, gl.FLOAT, false, 0, 0);
+
+                    // Draw the quad (two triangles)
+                    gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+                }
+
+                renderingBufferHasImageData = true;
+
+                if(useContext2dPipeline){
+                    // draw from the rendering canvas onto the output canvas, clipping/cropping if needed.
+                    this._applyContext2dPipeline(tiledImage, tilesToDraw, tiledImageIndex);
+                    renderingBufferHasImageData = false;
+                    // clear the buffer
+                    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+                    gl.clear(gl.COLOR_BUFFER_BIT); // clear the back buffer
+                }
+
+                // after drawing the first TiledImage, fire the tiled-image-drawn event (for testing)
+                if(tiledImageIndex === 0){
+                    this._raiseTiledImageDrawnEvent(tiledImage, tilesToDraw.map(info=>info.tile));
+                }
+            }
 
             });
 
             if(renderingBufferHasImageData){
                 this._outputContext.drawImage(this._renderingCanvas, 0, 0);
             }
-
+        }
+        /**
+        *
+        * @param {Array} tiledImages Array of TiledImage objects to draw
+        * @param {Boolean} [isRetry=false] Internal flag to prevent infinite retry loops
+        */
+        draw(tiledImages, isRetry = false){
+            try {
+                this._draw(tiledImages, isRetry);
+            } catch (error) {
+                // Handle WebGL context errors that occur at any point during the draw operation
+                if (this._isWebGLContextError(error)) {
+                    // Try recovery if enabled and not a retry
+                    if (this._enableContextRecovery && !isRetry) {
+                        $.console.warn('WebGL context error detected during draw operation, attempting to recreate context...', error);
+                        const recreatedDrawer = this._recreateContext();
+                        if (recreatedDrawer) {
+                            $.console.info('WebGL context recreated successfully, retrying draw operation');
+                            // Raise event for successful recovery
+                            if (this.viewer) {
+                                /**
+                                 * Raised when the WebGL drawer successfully recovers from a context loss.
+                                 *
+                                 * @event webgl-context-recovered
+                                 * @memberof OpenSeadragon.Viewer
+                                 * @type {object}
+                                 * @property {OpenSeadragon.Viewer} eventSource - A reference to the Viewer which raised the event.
+                                 * @property {OpenSeadragon.WebGLDrawer} drawer - The drawer instance (same instance, context recreated).
+                                 * @property {Error} error - The original error that triggered the recovery.
+                                 * @property {?Object} userData - Arbitrary subscriber-defined object.
+                                 */
+                                this.viewer.raiseEvent('webgl-context-recovered', {
+                                    drawer: this,
+                                    error: error
+                                });
+                            }
+                            // Retry draw on same instance
+                            this.draw(tiledImages, true);
+                        } else {
+                            // Recovery attempted but failed - fall back to canvas drawer (if allowed)
+                            this._fallbackToCanvasDrawer(error, tiledImages);
+                        }
+                    } else {
+                        // Recovery disabled or retry - fall back only when recovery was enabled (retry case)
+                        if (this._enableContextRecovery) {
+                            this._fallbackToCanvasDrawer(error, tiledImages); // will only happen if canvas fallback is allowed
+                        } else {
+                            throw error;
+                        }
+                    }
+                } else {
+                    // Not a WebGL context error - re-throw
+                    throw error;
+                }
+            }
         }
 
         // Public API required by all Drawer implementations
@@ -24900,6 +25778,9 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
         setImageSmoothingEnabled(enabled){
             if( this._imageSmoothingEnabled !== enabled ){
                 this._imageSmoothingEnabled = enabled;
+                if (this._glContext) {
+                    this._glContext.setImageSmoothingEnabled(enabled);
+                }
                 this.setInternalCacheNeedsRefresh();
                 this.viewer.forceRedraw();
             }
@@ -24912,8 +25793,8 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
         setUnpackWithPremultipliedAlpha(enabled){
             if (this._unpackWithPremultipliedAlpha !== enabled){
                 this._unpackWithPremultipliedAlpha = enabled;
-                if (this._gl){
-                    this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, enabled);
+                if (this._glContext) {
+                    this._glContext.setUnpackWithPremultipliedAlpha(enabled);
                 }
                 this.setInternalCacheNeedsRefresh();
                 this.viewer.forceRedraw();
@@ -25020,227 +25901,23 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             matrixArray[index] = model.values;
         }
 
-        // private
-        _textureFilter(){
-            return this._imageSmoothingEnabled ? this._gl.LINEAR : this._gl.NEAREST;
-        }
 
         // private
         _setupRenderer(){
-            const gl = this._gl;
-            if(!gl){
+            if(!this._glContext || !this._glContext.getContext()){
                 $.console.error('_setupCanvases must be called before _setupRenderer');
+                return;
             }
-            this._unitQuad = this._makeQuadVertexBuffer(0, 1, 0, 1); // used a few places; create once and store the result
-
-            this._makeFirstPassShaderProgram();
-            this._makeSecondPassShaderProgram();
-
-            // set up the texture to render to in the first pass, and which will be used for rendering the second pass
-            this._renderToTexture = gl.createTexture();
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this._renderingCanvas.width, this._renderingCanvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-            // set up the framebuffer for render-to-texture
-            this._glFrameBuffer = gl.createFramebuffer();
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this._glFrameBuffer);
-            gl.framebufferTexture2D(
-                gl.FRAMEBUFFER,
-                gl.COLOR_ATTACHMENT0,       // attach texture as COLOR_ATTACHMENT0
-                gl.TEXTURE_2D,              // attach a 2D texture
-                this._renderToTexture,  // the texture to attach
-                0
-            );
-
-            gl.enable(gl.BLEND);
-            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-
+            this._glContext.setupRenderer(this._renderingCanvas.width, this._renderingCanvas.height);
         }
 
-        //private
-        _makeFirstPassShaderProgram(){
-            const numTextures = this._glNumTextures = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS);
-            const makeMatrixUniforms = () => {
-                return [...Array(numTextures).keys()].map(index => `uniform mat3 u_matrix_${index};`).join('\n');
-            };
-            const makeConditionals = () => {
-                return [...Array(numTextures).keys()].map(index => `${index > 0 ? 'else ' : ''}if(int(a_index) == ${index}) { transform_matrix = u_matrix_${index}; }`).join('\n');
-            };
-
-            const vertexShaderProgram = `
-            attribute vec2 a_output_position;
-            attribute vec2 a_texture_position;
-            attribute float a_index;
-
-            ${makeMatrixUniforms()} // create a uniform mat3 for each potential tile to draw
-
-            varying vec2 v_texture_position;
-            varying float v_image_index;
-
-            void main() {
-
-                mat3 transform_matrix; // value will be set by the if/elses in makeConditional()
-
-                ${makeConditionals()}
-
-                gl_Position = vec4(transform_matrix * vec3(a_output_position, 1), 1);
-
-                v_texture_position = a_texture_position;
-                v_image_index = a_index;
-            }
-            `;
-
-            const fragmentShaderProgram = `
-            precision mediump float;
-
-            // our textures
-            uniform sampler2D u_images[${numTextures}];
-            // our opacities
-            uniform float u_opacities[${numTextures}];
-
-            // the varyings passed in from the vertex shader.
-            varying vec2 v_texture_position;
-            varying float v_image_index;
-
-            void main() {
-                // can't index directly with a variable, need to use a loop iterator hack
-                for(int i = 0; i < ${numTextures}; ++i){
-                    if(i == int(v_image_index)){
-                        gl_FragColor = texture2D(u_images[i], v_texture_position) * u_opacities[i];
-                    }
-                }
-            }
-            `;
-
-            const gl = this._gl;
-
-            const program = this.constructor.initShaderProgram(gl, vertexShaderProgram, fragmentShaderProgram);
-            gl.useProgram(program);
-
-            // get locations of attributes and uniforms, and create buffers for each attribute
-            this._firstPass = {
-                shaderProgram: program,
-                aOutputPosition: gl.getAttribLocation(program, 'a_output_position'),
-                aTexturePosition: gl.getAttribLocation(program, 'a_texture_position'),
-                aIndex: gl.getAttribLocation(program, 'a_index'),
-                uTransformMatrices: [...Array(this._glNumTextures).keys()].map(i=>gl.getUniformLocation(program, `u_matrix_${i}`)),
-                uImages: gl.getUniformLocation(program, 'u_images'),
-                uOpacities: gl.getUniformLocation(program, 'u_opacities'),
-                bufferOutputPosition: gl.createBuffer(),
-                bufferTexturePosition: gl.createBuffer(),
-                bufferIndex: gl.createBuffer(),
-            };
-
-            gl.uniform1iv(this._firstPass.uImages, [...Array(numTextures).keys()]);
-
-            // provide coordinates for the rectangle in output space, i.e. a unit quad for each one.
-            const outputQuads = new Float32Array(numTextures * 12);
-            for(let i = 0; i < numTextures; ++i){
-                outputQuads.set(Float32Array.from(this._unitQuad), i * 12);
-            }
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferOutputPosition);
-            gl.bufferData(gl.ARRAY_BUFFER, outputQuads, gl.STATIC_DRAW); // bind data statically here, since it's unchanging
-            gl.enableVertexAttribArray(this._firstPass.aOutputPosition);
-
-            // provide texture coordinates for the rectangle in image (texture) space. Data will be set later.
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferTexturePosition);
-            gl.enableVertexAttribArray(this._firstPass.aTexturePosition);
-
-            // for each vertex, provide an index into the array of textures/matrices to use for the correct tile
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._firstPass.bufferIndex);
-            const indices = [...Array(this._glNumTextures).keys()].map(i => Array(6).fill(i)).flat(); // repeat each index 6 times, for the 6 vertices per tile (2 triangles)
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(indices), gl.STATIC_DRAW); // bind data statically here, since it's unchanging
-            gl.enableVertexAttribArray(this._firstPass.aIndex);
-
-        }
-
-        // private
-        _makeSecondPassShaderProgram(){
-            const vertexShaderProgram = `
-            attribute vec2 a_output_position;
-            attribute vec2 a_texture_position;
-
-            varying vec2 v_texture_position;
-
-            void main() {
-                // Transform to clip space (0:1 --> -1:1)
-                gl_Position = vec4(vec3(a_output_position * 2.0 - 1.0, 1), 1);
-
-                v_texture_position = a_texture_position;
-            }
-            `;
-
-            const fragmentShaderProgram = `
-            precision mediump float;
-
-            // our texture
-            uniform sampler2D u_image;
-
-            // the texCoords passed in from the vertex shader.
-            varying vec2 v_texture_position;
-
-            // the opacity multiplier for the image
-            uniform float u_opacity_multiplier;
-
-            void main() {
-                gl_FragColor = texture2D(u_image, v_texture_position);
-                gl_FragColor *= u_opacity_multiplier;
-            }
-            `;
-
-            const gl = this._gl;
-
-            const program = this.constructor.initShaderProgram(gl, vertexShaderProgram, fragmentShaderProgram);
-            gl.useProgram(program);
-
-            // get locations of attributes and uniforms, and create buffers for each attribute
-            this._secondPass = {
-                shaderProgram: program,
-                aOutputPosition: gl.getAttribLocation(program, 'a_output_position'),
-                aTexturePosition: gl.getAttribLocation(program, 'a_texture_position'),
-                uImage: gl.getUniformLocation(program, 'u_image'),
-                uOpacityMultiplier: gl.getUniformLocation(program, 'u_opacity_multiplier'),
-                bufferOutputPosition: gl.createBuffer(),
-                bufferTexturePosition: gl.createBuffer(),
-            };
-
-
-            // provide coordinates for the rectangle in output space, i.e. a unit quad for each one.
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferOutputPosition);
-            gl.bufferData(gl.ARRAY_BUFFER, this._unitQuad, gl.STATIC_DRAW); // bind data statically here since it's unchanging
-            gl.enableVertexAttribArray(this._secondPass.aOutputPosition);
-
-            // provide texture coordinates for the rectangle in image (texture) space.
-            gl.bindBuffer(gl.ARRAY_BUFFER, this._secondPass.bufferTexturePosition);
-            gl.bufferData(gl.ARRAY_BUFFER, this._unitQuad, gl.DYNAMIC_DRAW); // bind data statically here since it's unchanging
-            gl.enableVertexAttribArray(this._secondPass.aTexturePosition);
-        }
 
         // private
         _resizeRenderer(){
-            const gl = this._gl;
-            const w = this._renderingCanvas.width;
-            const h = this._renderingCanvas.height;
-            gl.viewport(0, 0, w, h);
-
-            //release the old texture
-            gl.deleteTexture(this._renderToTexture);
-            //create a new texture and set it up
-            this._renderToTexture = gl.createTexture();
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this._renderToTexture);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-            //bind the frame buffer to the new texture
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this._glFrameBuffer);
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._renderToTexture, 0);
+            if(!this._glContext){
+                return;
+            }
+            this._glContext.resizeRenderer(this._renderingCanvas.width, this._renderingCanvas.height);
         }
 
         // private
@@ -25257,8 +25934,13 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             this._renderingCanvas.width = this._clippingCanvas.width = this._outputCanvas.width;
             this._renderingCanvas.height = this._clippingCanvas.height = this._outputCanvas.height;
 
-            this._gl = this._renderingCanvas.getContext('webgl');
-            this._gl.pixelStorei(this._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._unpackWithPremultipliedAlpha);
+            // Create WebGL context manager
+            this._glContext = new WebglContextManager({
+                renderingCanvas: this._renderingCanvas,
+                unpackWithPremultipliedAlpha: this._unpackWithPremultipliedAlpha,
+                imageSmoothingEnabled: this._imageSmoothingEnabled,
+                initShaderProgram: this.constructor.initShaderProgram
+            });
 
             this._resizeHandler = function(){
 
@@ -25287,9 +25969,176 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             this.viewer.addHandler("resize", this._resizeHandler);
         }
 
+
+        /**
+         * Check if an error is related to WebGL context issues.
+         * @param {Error} error - The error to check
+         * @returns {Boolean} true if the error is a WebGL context error, false otherwise
+         * @private
+         */
+        _isWebGLContextError(error) {
+            if (!error || !error.message) {
+                return false;
+            }
+            const message = error.message.toLowerCase();
+            return message.includes('max_texture_image_units') ||
+                   (message.includes('webgl') && ((message.includes('context') || message.includes('lost') || message.includes('invalid'))));
+        }
+
+        /**
+         * Recreate the WebGL context when it has been lost or exhausted.
+         * This method recreates only the WebglContextManager, preserving the drawer instance
+         * and all drawer state (canvases, options, cache, etc.).
+         * @returns {OpenSeadragon.WebGLDrawer|null} The same drawer instance if successful, null otherwise
+         * @private
+         */
+        _recreateContext() {
+            if (this._destroyed) {
+                return null;
+            }
+
+            try {
+                // Store old canvas properties
+                const oldCanvas = this._renderingCanvas;
+                const oldWidth = oldCanvas.width;
+                const oldHeight = oldCanvas.height;
+                const oldStyleWidth = oldCanvas.style.width;
+                const oldStyleHeight = oldCanvas.style.height;
+
+                // Destroy internal cache FIRST (while old context still exists)
+                // This ensures textures are freed using the old context before it's destroyed
+                this.destroyInternalCache();
+
+                // Destroy old context manager
+                if (this._glContext) {
+                    this._glContext.destroy();
+                    this._glContext = null;
+                }
+
+                // Note: destroyInternalCache() above already properly cleaned up all texture
+                // and glContext references via internalCacheFree() callbacks
+
+                // Create new rendering canvas element
+                this._renderingCanvas = document.createElement('canvas');
+                this._renderingCanvas.width = oldWidth;
+                this._renderingCanvas.height = oldHeight;
+                if (oldStyleWidth) {
+                    this._renderingCanvas.style.width = oldStyleWidth;
+                }
+                if (oldStyleHeight) {
+                    this._renderingCanvas.style.height = oldStyleHeight;
+                }
+
+                // Create new context manager with new canvas
+                this._glContext = new WebglContextManager({
+                    renderingCanvas: this._renderingCanvas,
+                    unpackWithPremultipliedAlpha: this._unpackWithPremultipliedAlpha,
+                    imageSmoothingEnabled: this._imageSmoothingEnabled,
+                    initShaderProgram: this.constructor.initShaderProgram
+                });
+
+                // Verify context is valid
+                if (!this._glContext.getContext()) {
+                    $.console.error('Failed to recreate WebGL context: no GL context');
+                    return null;
+                }
+
+                // Check if the new context has valid MAX_TEXTURE_IMAGE_UNITS
+                try {
+                    const maxTextures = this._glContext.getMaxTextures();
+                    if (!maxTextures || maxTextures <= 0) {
+                        $.console.error('Failed to recreate WebGL context: invalid MAX_TEXTURE_IMAGE_UNITS');
+                        return null;
+                    }
+                } catch (e) {
+                    $.console.error('Failed to verify new WebGL context:', e);
+                    return null;
+                }
+
+                // Reinitialize renderer (shaders, framebuffers)
+                this._setupRenderer();
+
+                // Mark cache as needing refresh for future entries
+                // (Old entries were already freed above)
+                this.setInternalCacheNeedsRefresh();
+
+                return this; // Return same drawer instance
+            } catch (e) {
+                $.console.error('Failed to recreate WebGL context:', e);
+                return null;
+            }
+        }
+
+        /**
+         * Fall back to canvas drawer when WebGL fails (requires viewer.drawerCandidates to include 'canvas').
+         * If allowed, switches the viewer to use the canvas drawer, raises the webgl-context-recovery-failed event
+         * with the canvas drawer, and draws the current frame.
+         * Otherwise, raise the event with canvasDrawer: null and rethrow the error.
+         *
+         * @param {Error} error - The error that triggered the fallback
+         * @param {Array} tiledImages - Array of TiledImage objects to draw with the new drawer
+         * @throws {Error} Re-throws the error if canvas is not an allowed fallback or if canvas drawer creation fails
+         * @private
+         */
+        _fallbackToCanvasDrawer(error, tiledImages) {
+            const oldWebGLDrawer = this;
+            if (!this._canvasFallbackAllowed) {
+                oldWebGLDrawer._raiseContextRecoveryFailedEvent(error, null);
+                throw error;
+            }
+            const canvasDrawer = this.viewer.requestDrawer('canvas', {
+                mainDrawer: true,
+                redrawImmediately: false
+            });
+
+            if (canvasDrawer) {
+                $.console.error('Failed to recreate WebGL context, switching to canvas drawer');
+                oldWebGLDrawer._raiseContextRecoveryFailedEvent(error, canvasDrawer);
+                this.viewer.world.requestInvalidate(true);
+            } else {
+                $.console.error('Failed to create canvas drawer as fallback');
+                oldWebGLDrawer._raiseContextRecoveryFailedEvent(error, null);
+                throw error;
+            }
+        }
+
+        /**
+         * Raise the webgl-context-recovery-failed event.
+         * @param {Error} error - The error that triggered the recovery failure
+         * @param {OpenSeadragon.CanvasDrawer} [canvasDrawer=null] - The canvas drawer that was created as a fallback, or null if canvas was not an allowed fallback or creation failed
+         * @private
+         */
+        _raiseContextRecoveryFailedEvent(error, canvasDrawer = null) {
+            if (!this.viewer) {
+                return;
+            }
+            /**
+             * Raised when the WebGL drawer fails to recover from a context loss. The drawer may fall back to
+             * canvas drawer only when canvas is in the viewer's drawer list; otherwise canvasDrawer is null and no switch occurs.
+             *
+             * @event webgl-context-recovery-failed
+             * @memberof OpenSeadragon.Viewer
+             * @type {object}
+             * @property {OpenSeadragon.Viewer} eventSource - A reference to the Viewer which raised the event.
+             * @property {OpenSeadragon.WebGLDrawer} drawer - The WebGL drawer instance that failed to recover (may be destroyed).
+             * @property {OpenSeadragon.CanvasDrawer} canvasDrawer - The canvas drawer that was created as a fallback, or null if canvas was not an allowed fallback or creation failed.
+             * @property {Error} error - The original error that triggered the recovery attempt.
+             * @property {?Object} userData - Arbitrary subscriber-defined object.
+             */
+            this.viewer.raiseEvent('webgl-context-recovery-failed', {
+                drawer: this,
+                canvasDrawer: canvasDrawer,
+                error: error
+            });
+        }
+
         internalCacheCreate(cache, tile) {
             const tiledImage = tile.tiledImage;
-            const gl = this._gl;
+            const gl = this._glContext ? this._glContext.getContext() : null;
+            if (!gl) {
+                $.console.error('WebGL context not available in internalCacheCreate');
+                return {};
+            }
             let texture;
             let position;
 
@@ -25303,7 +26152,9 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
             if (!tiledImage.getIssue('webgl')) {
                 if (isCanvas && $.isCanvasTainted(data)){
                     tiledImage.setIssue('webgl', 'WebGL cannot be used to draw this TiledImage because it has tainted data. Does crossOriginPolicy need to be set?');
-                    this._raiseDrawerErrorEvent(tiledImage, 'Tainted data cannot be used by the WebGLDrawer. Falling back to CanvasDrawer for this TiledImage.');
+                    this._raiseDrawerErrorEvent(tiledImage, this._canvasFallbackAllowed ?
+                        'Tainted data cannot be used by the WebGLDrawer. Falling back to CanvasDrawer for this TiledImage.' :
+                        'Tainted data cannot be used by the WebGLDrawer, and canvas fallback is not enabled.');
                     this.setInternalCacheNeedsRefresh();
                 } else {
                     let sourceWidthFraction, sourceHeightFraction;
@@ -25315,8 +26166,6 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                         sourceHeightFraction = 1;
                     }
 
-                    // create a gl Texture for this tile and bind the canvas with the image data
-                    texture = gl.createTexture();
                     const overlap = tiledImage.source.tileOverlap;
                     const overlapFraction = this._calculateOverlapFraction(tile, tiledImage);
                     if( overlap > 0){
@@ -25326,37 +26175,35 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
                         const top = (tile.y === 0 ? 0 : overlapFraction.y) * sourceHeightFraction;
                         const right = (tile.isRightMost ? 1 : 1 - overlapFraction.x) * sourceWidthFraction;
                         const bottom = (tile.isBottomMost ? 1 : 1 - overlapFraction.y) * sourceHeightFraction;
-                        position = this._makeQuadVertexBuffer(left, right, top, bottom);
+                        position = this._glContext.makeQuadVertexBuffer(left, right, top, bottom);
                     } else if (sourceWidthFraction === 1 && sourceHeightFraction === 1) {
                         // no overlap and no padding: this texture can use the unit quad as its position data
-                        position = this._unitQuad;
+                        position = this._glContext.getUnitQuad();
                     } else {
-                        position = this._makeQuadVertexBuffer(0, sourceWidthFraction, 0, sourceHeightFraction);
+                        position = this._glContext.makeQuadVertexBuffer(0, sourceWidthFraction, 0, sourceHeightFraction);
                     }
 
-                    gl.activeTexture(gl.TEXTURE0);
-                    gl.bindTexture(gl.TEXTURE_2D, texture);
-                    // Set the parameters so we can render any size image.
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this._textureFilter());
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this._textureFilter());
+                    // create a gl Texture for this tile using the manager
+                    texture = this._glContext.createTexture(data, {
+                        unpackWithPremultipliedAlpha: this._unpackWithPremultipliedAlpha
+                    });
 
-                    try {
-                        // This depends on gl.TEXTURE_2D being bound to the texture
-                        // associated with this canvas before calling this function
-                        gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, this._unpackWithPremultipliedAlpha);
-                        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data);
+                    if (!texture) {
+                        tiledImage.setIssue('webgl', 'Error creating texture in WebGL.');
+                        const canvasAllowed = this._canvasFallbackAllowed;
+                        this._raiseDrawerErrorEvent(tiledImage, canvasAllowed ?
+                            'Unknown error when creating texture. Falling back to CanvasDrawer for this TiledImage.' :
+                            'Cannot use WebGL for this TiledImage; canvas fallback is not enabled.');
+                        this.setInternalCacheNeedsRefresh();
+                    } else {
                         // TextureInfo stored in the cache
+                        // Store reference to the context that created this texture
                         return {
                             texture: texture,
                             position: position,
-                            overlapFraction: overlapFraction
+                            overlapFraction: overlapFraction,
+                            glContext: this._glContext  // Store context reference for safe deletion
                         };
-                    } catch (e){
-                        tiledImage.setIssue('webgl', 'Error uploading image data to WebGL.', e);
-                        this._raiseDrawerErrorEvent(tiledImage, 'Unknown error when uploading texture. Falling back to CanvasDrawer for this TiledImage.');
-                        this.setInternalCacheNeedsRefresh();
                     }
                 }
             }
@@ -25377,21 +26224,23 @@ function determineSubPixelRoundingRule(subPixelRoundingRules) {
 
         internalCacheFree(data) {
             if (data && data.texture) {
-                this._gl.deleteTexture(data.texture);
+                // Use the stored context reference if available, otherwise fall back to current context
+                const glContext = data.glContext || this._glContext;
+
+                if (glContext && !glContext.isDestroyed()) {
+                    try {
+                        glContext.deleteTexture(data.texture);
+                    } catch (e) {
+                        // Context may have been destroyed between check and deletion - safe to ignore
+                    }
+                }
+
+                // Always nullify references
                 data.texture = null;
+                data.glContext = null;
             }
         }
 
-        // private
-        _makeQuadVertexBuffer(left, right, top, bottom){
-            return new Float32Array([
-                left, bottom,
-                right, bottom,
-                left, top,
-                left, top,
-                right, bottom,
-                right, top]);
-        }
 
         // private
         _calculateOverlapFraction(tile, tiledImage){
@@ -25868,6 +26717,8 @@ $.Viewport = function( options ) {
     this._oldCenterY = this.centerSpringY.current.value;
     this._oldZoom    = this.zoomSpring.current.value;
     this._oldDegrees = this.degreesSpring.current.value;
+
+    this._sizeChanged = false;
 
     this._setContentBounds(new $.Rect(0, 0, 1, 1), 1);
 
@@ -26776,6 +27627,7 @@ $.Viewport.prototype = {
         const oldBounds = this.getBoundsNoRotate();
         const newBounds = oldBounds;
         let widthDeltaFactor;
+        this._sizeChanged = !this.containerSize.equals(newContainerSize);
 
         this.containerSize.x = newContainerSize.x;
         this.containerSize.y = newContainerSize.y;
@@ -26870,7 +27722,10 @@ $.Viewport.prototype = {
         const changed = this.centerSpringX.current.value !== this._oldCenterX ||
             this.centerSpringY.current.value !== this._oldCenterY ||
             this.zoomSpring.current.value !== this._oldZoom ||
-            this.degreesSpring.current.value !== this._oldDegrees;
+            this.degreesSpring.current.value !== this._oldDegrees ||
+            this._sizeChanged;
+
+        this._sizeChanged = false;
 
 
         this._oldCenterX = this.centerSpringX.current.value;
@@ -27290,7 +28145,7 @@ $.Viewport.prototype = {
         $.console.assert(this.viewer,
             "[Viewport.windowToImageCoordinates] the viewport must have a viewer.");
         const viewerCoordinates = pixel.minus(
-                $.getElementPosition(this.viewer.element));
+                $.getElementPosition(this.viewer.container));
         return this.viewerElementToImageCoordinates(viewerCoordinates);
     },
 
@@ -27305,7 +28160,7 @@ $.Viewport.prototype = {
             "[Viewport.imageToWindowCoordinates] the viewport must have a viewer.");
         const viewerCoordinates = this.imageToViewerElementCoordinates(pixel);
         return viewerCoordinates.plus(
-                $.getElementPosition(this.viewer.element));
+                $.getElementPosition(this.viewer.container));
     },
 
     /**
@@ -27365,7 +28220,7 @@ $.Viewport.prototype = {
         $.console.assert(this.viewer,
             "[Viewport.windowToViewportCoordinates] the viewport must have a viewer.");
         const viewerCoordinates = pixel.minus(
-                $.getElementPosition(this.viewer.element));
+                $.getElementPosition(this.viewer.container));
         return this.viewerElementToViewportCoordinates(viewerCoordinates);
     },
 
@@ -27379,7 +28234,7 @@ $.Viewport.prototype = {
             "[Viewport.viewportToWindowCoordinates] the viewport must have a viewer.");
         const viewerCoordinates = this.viewportToViewerElementCoordinates(point);
         return viewerCoordinates.plus(
-                $.getElementPosition(this.viewer.element));
+                $.getElementPosition(this.viewer.container));
     },
 
     /**
@@ -27875,6 +28730,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * @param {Boolean} [restoreTiles=true] if true, tile processing starts from the tile original data
      * @param {boolean} [viewportOnly=false] optionally invalidate only viewport-visible tiles if true
      * @param {number} [tStamp=OpenSeadragon.now()] optionally provide tStamp of the update event
+     * @return {OpenSeadragon.Promise}
      */
     requestInvalidate: function (restoreTiles = true, viewportOnly = false, tStamp = $.now()) {
         const tiles = viewportOnly ? this._lastDrawn.map(x => x.tile) : this._tileCache.getLoadedTilesFor(this);
@@ -27959,7 +28815,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * @private
      */
     setIssue(issueType, description = undefined, error = undefined){
-        this._issues[issueType] = (description || `TiledImage is ${issueType}}`) + (error.message || error);
+        const errorText = error ? (error.message || error) : '';
+        this._issues[issueType] = (description || `TiledImage is ${issueType}}`) + errorText;
         $.console.warn(this._issues[issueType], error);
     },
 
@@ -29774,6 +30631,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 const desiredType = $.converter.getConversionPathFinalType(conversion);
                 $.converter.convert(tile, data, dataType, desiredType).then(newData => {
                     this._setTileLoaded(tile, newData, null, tileRequest, desiredType);
+                }).catch(e => {
+                    $.console.warn("Failed to satisfy original type [%s] %s from %s: %s", desiredType, tile, dataType, e);
+                    this._setTileLoaded(tile, data, null, tileRequest, dataType);
                 });
             } else {
                 $.console.warn( "Ignoring default base tile data type %s: no conversion possible from %s", this.originalDataType, dataType);
@@ -29855,7 +30715,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
              * @property {OpenSeadragon.Tile} tile - The tile which has been loaded.
              * @property {XMLHttpRequest} tileRequest - The AJAX request that loaded this tile (if applicable).
              * @property {OpenSeadragon.Promise} - Promise resolved when the tile gets fully loaded.
-             *  NOTE: do no await the promise in the handler: you will create a deadlock!
+             *   NOTE: DO NOT await the promise in the handler: you will create a deadlock!
              * @property {function} getCompletionCallback - deprecated
              */
             _this.viewer.raiseEventAwaiting("tile-loaded", {
@@ -29886,7 +30746,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
         if (tileCacheCreated) {
             // setting invalidation tstamp to 1 makes sure any update gets applied later on
-            this.viewer.world.requestTileInvalidateEvent([tile], undefined, false, true, true).then(markTileAsReady);
+            this.viewer.world.requestTileInvalidateEvent([tile], undefined, false, true, true).then(markTileAsReady).catch(markTileAsReady);
         } else {
             const origCache = tile.getCache(tile.originalCacheKey);
             // First, ensure we really are ready to draw the tile
@@ -30167,10 +31027,12 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
 (function( $ ){
 
+    const OpenSeadragon = $; // alias for JSDoc
+
     const DRAWER_INTERNAL_CACHE = Symbol("DRAWER_INTERNAL_CACHE");
 
     /**
-     * @class CacheRecord
+     * @class OpenSeadragon.CacheRecord
      * @memberof OpenSeadragon
      * @classdesc Cached Data Record, the cache object. Keeps only latest object type required.
      *
@@ -30181,7 +31043,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * Furthermore, it has a 'getData' function that returns a promise resolving
      * with the value on the desired type passed to the function.
      */
-    $.CacheRecord = class CacheRecord {
+    OpenSeadragon.CacheRecord = class CacheRecord {
         constructor() {
             this.revive();
         }
@@ -30191,7 +31053,6 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
          * Might be undefined if this.loaded = false.
          * You can access the data in synchronous way, but the data might not be available.
          * If you want to access the data indirectly (await), use this.transformTo or this.getDataAs
-         * @memberof OpenSeadragon.CacheRecord#
          * @returns {any}
          */
         get data() {
@@ -30201,7 +31062,6 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         /**
          * Read the cache type. The type can dynamically change, but should be consistent at
          * one point in the time. For available types see the OpenSeadragon.Converter, or the tutorials.
-         * @memberof OpenSeadragon.CacheRecord#
          * @returns {string}
          */
         get type() {
@@ -30210,7 +31070,6 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
         /**
          * Await ongoing process so that we get cache ready on callback.
-         * @memberof OpenSeadragon.CacheRecord#
          * @returns {OpenSeadragon.Promise<?>}
          */
         await() {
@@ -30236,7 +31095,6 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
         /**
          * Set the cache data. Asynchronous.
-         * @memberof OpenSeadragon.CacheRecord#
          * @param {any} data
          * @param {string} type
          * @returns {OpenSeadragon.Promise<?>} the old cache data that has been overwritten
@@ -30293,6 +31151,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                         return undefined;
                     }
                     return finalData;
+                }).catch(e => {
+                    this._handleConversionError(e);
+                    return undefined;
                 });
             }
             return false; // no conversion needed, parent function returns item as-is
@@ -30318,7 +31179,17 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
          */
         getDataForRendering(drawer, tileToDraw) {
             // Test cache state
+            if (this._destroyed) {
+                $.console.error(`Attempt to draw tile with destroyed main cache ${this}!`);
+                tileToDraw._unload();
+                return undefined;
+            }
             if (!this.loaded) {
+                // If a conversion/load is in progress, it is normal that the cache is temporarily not loaded.
+                // Avoid spamming errors; just skip drawing this tile this frame.
+                if (this._promise) {
+                    return undefined;
+                }
                 $.console.error(`Attempt to draw cache ${this} when not loaded!`);
                 return undefined;
             }
@@ -30405,11 +31276,16 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 selfPromise = this.await();
             }
 
+            const swallow = (p) => p.catch(e => {
+                this._handleConversionError(e);
+                return null;
+            });
+
             // If internal cache wanted and preloading enabled, convert now
             if (drawer.options.usePrivateCache && drawer.options.preloadCache) {
-                return selfPromise.then(_ => this.prepareInternalCacheAsync(drawer));
+                return swallow(selfPromise.then(_ => this.prepareInternalCacheAsync(drawer)));
             }
-            return selfPromise;
+            return swallow(selfPromise);
         }
 
         /**
@@ -30607,6 +31483,11 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             this.loaded = false;
             this._promise = null;
             this._destroyed = false;
+
+            // Optional ownership metadata (set by TileCache for managed records).
+            // Working caches created during invalidation are intentionally left without an owner.
+            this._ownerTileCache = null;
+            this.cacheKey = null;
         }
 
         /**
@@ -30675,10 +31556,21 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 } else {
                     // If we receive async callback, we consume the async state
                     if (data instanceof $.Promise) {
-                        this._promise = data.then(d => {
-                            this._data = d;
+                        this._promise = data.then(data => {
+                            if (this._destroyed) {
+                                try {
+                                    $.converter.destroy(data, this._type);
+                                } catch (e) {
+                                    // no-op
+                                }
+                                return undefined;
+                            }
                             this.loaded = true;
-                            return d;
+                            this._data = data;
+                            return data;
+                        }).catch(e => {
+                            this._handleConversionError(e);
+                            return undefined;
                         });
                         this._data = null;
                     } else {
@@ -30829,33 +31721,71 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             const stepCount = conversionPath.length;
             const _this = this;
             const convert = (x, i) => {
-                    if (i >= stepCount) {
-                        _this._data = x;
-                        _this.loaded = true;
-                        _this._checkAwaitsConvert();
-                        return $.Promise.resolve(x);
-                    }
-                    const edge = conversionPath[i];
-                    const y = edge.transform(_this._tRef, x);
-                    if (y === undefined) {
-                        _this.loaded = false;
-                        throw `[CacheRecord._convert] data mid result undefined value (while converting using ${edge}})`;
-                    }
-                    converter.destroy(x, edge.origin.value);
-                    const result = $.type(y) === "promise" ? y : $.Promise.resolve(y);
-                    return result.then(res => convert(res, i + 1));
-                };
+                if (i >= stepCount) {
+                    _this._data = x;
+                    _this.loaded = true;
+                    _this._checkAwaitsConvert();
+                    return $.Promise.resolve(x);
+                }
+                const edge = conversionPath[i];
+                let y;
+                try {
+                    y = edge.transform(_this._tRef, x);
+                } catch (err) {
+                    converter.destroy(x, edge.origin.value); // prevent leak
+                    return $.Promise.reject(`[CacheRecord._convert] sync failure (while converting using ${edge.target.value}, ${edge.origin.value})`);
+                }
+                if (y === undefined) {
+                    _this.loaded = false;
+                    converter.destroy(x, edge.origin.value); // prevent leak
+                    return $.Promise.reject(`[CacheRecord._convert] data mid result undefined value (while converting using ${edge.target.value}, ${edge.origin.value})`);
+                }
+                converter.destroy(x, edge.origin.value);
+                const result = $.type(y) === "promise" ? y : $.Promise.resolve(y);
+                return result.then(res => convert(res, i + 1));
+            };
 
             this.loaded = false;
             this._data = undefined;
             // Read target type from the conversion path: [edge.target] = Vertex, its value=type
             this._type = conversionPath[stepCount - 1].target.value;
-            this._promise = convert(originalData, 0);
+
+            // IMPORTANT: conversion failures must not poison the cache record with a permanently
+            // rejected promise (methods rely on being able to await() without throwing).
+            this._promise = convert(originalData, 0).catch(e => {
+                this._handleConversionError(e);
+                return undefined;
+            });
+        }
+
+        /**
+         * Handle conversion error by cleaning up and unloading affected tiles
+         * @param {Error} e
+         * @private
+         */
+        _handleConversionError(e) {
+            $.console.error("[CacheRecord] Conversion/preparation error:", e);
+
+            this._destroyed = true;
+            this.loaded = false;
+            this._data = null;
+
+            // WORKING CACHE: do not escalate to TileCache, do not unload tiles.
+            // A working cache is not registered (no cacheKey and/or no owner).
+            if (!this.cacheKey || !this._ownerTileCache) {
+                this._promise = $.Promise.resolve(undefined);
+                this._tiles = [];
+                this._tRef = null;
+                return;
+            }
+
+            // MANAGED CACHE: notify TileCache to remove record and possibly mark tile missing.
+            this._ownerTileCache._handleBrokenCacheRecord(this);
         }
     };
 
     /**
-     * @class InternalCacheRecord
+     * @class OpenSeadragon.InternalCacheRecord
      * @memberof OpenSeadragon
      * @classdesc Simple cache record without robust support for async access. Meant for internal use only.
      *
@@ -30867,7 +31797,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * It also does not record tiles nor allows cache/tile sharing.
      * @private
      */
-    $.InternalCacheRecord = class InternalCacheRecord {
+    OpenSeadragon.InternalCacheRecord = class InternalCacheRecord {
         constructor(data, type, onDestroy) {
             this.tstamp = $.now();
             this._ondestroy = onDestroy;
@@ -30938,8 +31868,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
     };
 
+
     /**
-     * @class TileCache
+     * @class OpenSeadragon.TileCache
      * @memberof OpenSeadragon
      * @classdesc Stores all the tiles displayed in a {@link OpenSeadragon.Viewer}.
      * You generally won't have to interact with the TileCache directly.
@@ -30947,8 +31878,9 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
      * @param {Number} [options.maxImageCacheCount] - See maxImageCacheCount in
      * {@link OpenSeadragon.Options} for details.
      */
-    $.TileCache = class TileCache {
+    OpenSeadragon.TileCache = class TileCache {
         constructor( options ) {
+
             options = options || {};
 
             this._maxCacheItemCount = options.maxImageCacheCount || $.DEFAULT_SETTINGS.maxImageCacheCount;
@@ -30997,14 +31929,14 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
          *   tiles will not be released.
          * @returns {OpenSeadragon.CacheRecord} - The cache record the tile was attached to.
          */
-        cacheTile( options ) {
-            $.console.assert( options, "[TileCache.cacheTile] options is required" );
+        cacheTile(options) {
+            $.console.assert(options, "[TileCache.cacheTile] options is required");
             const theTile = options.tile;
-            $.console.assert( theTile, "[TileCache.cacheTile] options.tile is required" );
-            $.console.assert( theTile.cacheKey, "[TileCache.cacheTile] options.tile.cacheKey is required" );
+            $.console.assert(theTile, "[TileCache.cacheTile] options.tile is required");
+            $.console.assert(theTile.cacheKey, "[TileCache.cacheTile] options.tile.cacheKey is required");
 
             if (options.image instanceof Image) {
-                $.console.warn("[TileCache.cacheTile] options.image is deprecated!" );
+                $.console.warn("[TileCache.cacheTile] options.image is deprecated!");
                 options.data = options.image;
                 options.dataType = "image";
             }
@@ -31040,7 +31972,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 } else {
                     //allow anything but undefined, null, false (other values mean the data was set, for example '0')
                     const validData = options.data !== undefined && options.data !== null && options.data !== false;
-                    $.console.assert( validData, "[TileCache.cacheTile] options.data is required to create an CacheRecord" );
+                    $.console.assert(validData, "[TileCache.cacheTile] options.data is required to create an CacheRecord");
                     cacheRecord = this._cachesLoaded[cacheKey] = new $.CacheRecord();
                     this._cachesLoadedCount++;
                 }
@@ -31058,6 +31990,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 options.dataType = $.converter.guessType(options.data);
             }
 
+            cacheRecord._ownerTileCache = this;
+            cacheRecord.cacheKey = cacheKey;
             cacheRecord.addTile(theTile, options.data, options.dataType);
             this._freeOldRecordRoutine(theTile, options.cutoff || 0);
             return cacheRecord;
@@ -31071,14 +32005,14 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
          * @param {String} options.newCacheKey - New key to set
          * @return {OpenSeadragon.CacheRecord | null}
          */
-        renameCache( options ) {
+        renameCache(options) {
             const newKey = options.newCacheKey,
                 oldKey = options.oldCacheKey;
             let originalCache = this._cachesLoaded[oldKey];
 
             if (!originalCache) {
                 originalCache = this._zombiesLoaded[oldKey];
-                $.console.assert( originalCache, "[TileCache.renameCache] oldCacheKey must reference existing cache!" );
+                $.console.assert(originalCache, "[TileCache.renameCache] oldCacheKey must reference existing cache!");
                 if (this._zombiesLoaded[newKey]) {
                     $.console.error("Cannot rename zombie cache %s to %s: the target cache is occupied!",
                         oldKey, newKey);
@@ -31095,6 +32029,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 delete this._cachesLoaded[oldKey];
             }
 
+            originalCache._ownerTileCache = this;
+            originalCache.cacheKey = newKey;
             for (const tile of originalCache._tiles) {
                 tile.reflectCacheRenamed(oldKey, newKey);
             }
@@ -31169,6 +32105,8 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
             const cache = options.cache;
             this._cachesLoaded[targetKey] = cache;
+            cache._ownerTileCache = this;
+            cache.cacheKey = targetKey;
 
             // Update cache: add the new cache, we must add since we removed above with unloadCacheForTile()
             for (const t of tile.getCache(tile.originalCacheKey)._tiles) {  // grab all cache-equal tiles
@@ -31250,7 +32188,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
 
             // Note that just because we're unloading a tile doesn't necessarily mean
             // we're unloading its cache records. With repeated calls it should sort itself out, though.
-            if ( this._cachesLoadedCount + this._zombiesLoadedCount > this._maxCacheItemCount ) {
+            if (this._cachesLoadedCount + this._zombiesLoadedCount > this._maxCacheItemCount) {
                 //prefer zombie deletion, faster, better
                 if (this._zombiesLoadedCount > 0) {
                     for (const zombie in this._zombiesLoaded) {
@@ -31263,34 +32201,34 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                     let worstTile = null;
                     let prevTile, worstTime, worstLevel, prevTime, prevLevel;
 
-                    for ( let i = this._tilesLoaded.length - 1; i >= 0; i-- ) {
-                        prevTile = this._tilesLoaded[ i ];
+                    for (let i = this._tilesLoaded.length - 1; i >= 0; i--) {
+                        prevTile = this._tilesLoaded[i];
 
-                        if ( prevTile.level <= cutoff ||
+                        if (prevTile.level <= cutoff ||
                             prevTile.beingDrawn ||
                             prevTile.loading ||
-                            prevTile.processing ) {
+                            prevTile.processing) {
                             continue;
                         }
-                        if ( !worstTile ) {
-                            worstTile       = prevTile;
-                            worstTileIndex  = i;
+                        if (!worstTile) {
+                            worstTile = prevTile;
+                            worstTileIndex = i;
                             continue;
                         }
 
-                        prevTime    = prevTile.lastTouchTime;
-                        worstTime   = worstTile.lastTouchTime;
-                        prevLevel   = prevTile.level;
-                        worstLevel  = worstTile.level;
+                        prevTime = prevTile.lastTouchTime;
+                        worstTime = worstTile.lastTouchTime;
+                        prevLevel = prevTile.level;
+                        worstLevel = worstTile.level;
 
-                        if ( prevTime < worstTime ||
-                            ( prevTime === worstTime && prevLevel > worstLevel )) {
-                            worstTile       = prevTile;
-                            worstTileIndex  = i;
+                        if (prevTime < worstTime ||
+                            (prevTime === worstTime && prevLevel > worstLevel)) {
+                            worstTile = prevTile;
+                            worstTileIndex = i;
                         }
                     }
 
-                    if ( worstTile && worstTileIndex >= 0 ) {
+                    if (worstTile && worstTileIndex >= 0) {
                         this._unloadTile(worstTile, true);
                         insertionIndex = worstTileIndex;
                     }
@@ -31298,18 +32236,56 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
 
             if (theTile.getCacheSize() === 0) {
-                this._tilesLoaded[ insertionIndex ] = theTile;
+                this._tilesLoaded[insertionIndex] = theTile;
             } else if (worstTileIndex >= 0) {
                 //tile is already recorded, do not add tile, but remove the tile at insertion index
                 this._tilesLoaded.splice(insertionIndex, 1);
             }
         }
 
+        _handleBrokenCacheRecord(cache) {
+            if (!cache) {
+                return;
+            }
+
+            const key = cache.cacheKey;
+
+            if (key && this._cachesLoaded[key] === cache) {
+                delete this._cachesLoaded[key];
+                this._cachesLoadedCount--;
+            }
+            if (key && this._zombiesLoaded[key] === cache) {
+                delete this._zombiesLoaded[key];
+                this._zombiesLoadedCount--;
+            }
+
+            const tiles = cache._tiles ? [...cache._tiles] : [];
+            for (const tile of tiles) {
+                const isMainCache = tile.getCache && tile.getCache() === cache;
+                const isOriginalCache = key && tile.originalCacheKey === key;
+
+                if (isMainCache || isOriginalCache) {
+                    tile.exists = false; // prevents the tile from loading (TODO: consider ability to revive!)
+                    tile.unload(true);
+                } else {
+                    if (tile.removeCache && key) {
+                        tile.removeCache(key);
+                    }
+                    cache.removeTile(tile);
+                }
+            }
+
+            cache._promise = $.Promise.resolve(undefined);
+            cache._tiles = [];
+            cache._tRef = null;
+            cache._ownerTileCache = null;
+        }
+
         /**
          * Clears all tiles associated with the specified tiledImage.
          * @param {OpenSeadragon.TiledImage} tiledImage
          */
-        clearTilesFor( tiledImage ) {
+        clearTilesFor(tiledImage) {
             $.console.assert(tiledImage, '[TileCache.clearTilesFor] tiledImage is required');
             let tile;
 
@@ -31323,14 +32299,14 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 this._zombiesLoadedCount = 0;
                 cacheOverflows = this._cachesLoadedCount > this._maxCacheItemCount;
             }
-            for ( let i = this._tilesLoaded.length - 1; i >= 0; i-- ) {
-                tile = this._tilesLoaded[ i ];
+            for (let i = this._tilesLoaded.length - 1; i >= 0; i--) {
+                tile = this._tilesLoaded[i];
 
                 if (tile.tiledImage === tiledImage) {
                     if (!tile.loaded) {
                         //iterates from the array end, safe to remove
-                        this._tilesLoaded.splice( i, 1 );
-                    } else if ( tile.tiledImage === tiledImage ) {
+                        this._tilesLoaded.splice(i, 1);
+                    } else if (tile.tiledImage === tiledImage) {
                         this._unloadTile(tile, !tiledImage._zombieCache || cacheOverflows, i);
                     }
                 }
@@ -31346,7 +32322,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
                 this._zombiesLoaded[zombie].destroy();
             }
             for (const tile in this._tilesLoaded) {
-                this._unloadTile(tile, true, undefined);
+                this._unloadTile(tile, true);
             }
             this._tilesLoaded = [];
             this._zombiesLoaded = [];
@@ -31401,18 +32377,18 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
          * @param {OpenSeadragon.CacheRecord} cache
          */
         safeUnloadCache(cache) {
-           if (cache && !cache._destroyed && cache.getTileCount() < 1) {
-               for (const i in this._zombiesLoaded) {
-                   const c = this._zombiesLoaded[i];
-                   if (c === cache) {
-                       delete this._zombiesLoaded[i];
-                       c.destroy();
-                       return;
-                   }
-               }
-               $.console.error("Attempt to delete an orphan cache that is not in zombie list: this could be a bug!", cache);
-               cache.destroy();
-           }
+            if (cache && !cache._destroyed && cache.getTileCount() < 1) {
+                for (const i in this._zombiesLoaded) {
+                    const c = this._zombiesLoaded[i];
+                    if (c === cache) {
+                        delete this._zombiesLoaded[i];
+                        c.destroy();
+                        return;
+                    }
+                }
+                $.console.error("Attempt to delete an orphan cache that is not in zombie list: this could be a bug!", cache);
+                cache.destroy();
+            }
         }
 
         /**
@@ -31470,10 +32446,10 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         /**
          * @param {OpenSeadragon.Tile} tile tile to unload
          * @param {boolean} destroy destroy tile cache if the cache tile counts falls to zero
-         * @param {Number} deleteAtIndex index to remove the tile record at, will not remove from _tilesLoaded if not set
+         * @param {Number} [deleteAtIndex=undefined] index to remove the tile record at, will not remove from _tilesLoaded if not set
          * @private
          */
-        _unloadTile(tile, destroy, deleteAtIndex) {
+        _unloadTile(tile, destroy, deleteAtIndex = undefined) {
             $.console.assert(tile, '[TileCache._unloadTile] tile is required');
 
             for (const key in tile._caches) {
@@ -31483,7 +32459,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
             }
             //delete also the tile record
             if (deleteAtIndex !== undefined) {
-                this._tilesLoaded.splice( deleteAtIndex, 1 );
+                this._tilesLoaded.splice(deleteAtIndex, 1);
             }
 
             // Possible error: it can happen that unloaded tile gets to this stage. Should it even be allowed to happen?
@@ -31510,7 +32486,7 @@ $.extend($.TiledImage.prototype, $.EventSource.prototype, /** @lends OpenSeadrag
         }
     };
 
-}( OpenSeadragon ));
+}(OpenSeadragon));
 
 /*
  * OpenSeadragon - World
@@ -31917,6 +32893,10 @@ $.extend( $.World.prototype, $.EventSource.prototype, /** @lends OpenSeadragon.W
                 type = type || origCache.type;
                 workingCache = new $.CacheRecord().withTileReference(tile);
                 return origCache.getDataAs(type, true).then(data => {
+                    if (data === undefined || data === null) {
+                        // Conversion/loading failed upstream; abort invalidation for this tile.
+                        return $.Promise.reject(new Error('[World.getData] Working cache source data unavailable'));
+                    }
                     workingCache.addTile(tile, data, type);
                     return workingCache.data;
                 });
@@ -31985,9 +32965,31 @@ $.extend( $.World.prototype, $.EventSource.prototype, /** @lends OpenSeadragon.W
                     // }
                     return result;
                 },
+            }).catch(err => {
+                // Plugin/invalidation error: keep existing main cache, discard working cache, and finish processing as invalid.
+                $.console.error('Update routine error:', err);
+                if (workingCache) {
+                    try {
+                        workingCache.destroy();
+                    } catch (e) {
+                        //no-op
+                    }
+                    workingCache = null;
+                }
+                wasOutdatedRun = true;
+                if (originalCache.__finishProcessing) {
+                    originalCache.__finishProcessing(true);
+                }
+                return null;
             }).then(_ => {
                 if (this.viewer.isDestroyed()) {
-                    originalCache.__finishProcessing(true);
+                    if (originalCache.__finishProcessing) {
+                        originalCache.__finishProcessing(true);
+                    }
+                    return null;
+                }
+
+                if (wasOutdatedRun) {
                     return null;
                 }
 
