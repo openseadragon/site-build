@@ -767,7 +767,7 @@ OpenSeadragon.MyCustomTileSource = class MyCustomTileSource extends OpenSeadrago
 
     getTileHashKey(level, x, y, url, ajaxHeaders, postData) {
         // By default, the tile url serves as a hash key. Here you can override how a unique hash key is created.
-        // Hash key is a crucial to uniquely distinguish tiles with the same data - such tiles then SHARE the data.
+        // Hash key is crucial to uniquely distinguish tiles with the same data - such tiles then SHARE the data.
         // You might override this method if, for example, you fetch tiles with parameters in POST, and need
         // to adjust key to be unique based on some POST payload.
         return super.getTileHashKey(level, x, y, url, ajaxHeaders, postData);
