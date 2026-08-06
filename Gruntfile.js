@@ -21,6 +21,7 @@ module.exports = function (grunt) {
     var examples = {
         "tilesource-custom": "Custom Tile Source",
         "tilesource-custom-advanced": "Building custom TileSource in Depth",
+        "tilesource-flexible-pyramid": "Flexible Pyramids and Rendering Controls",
         "tilesource-dzi": "DZI Tile Source",
         "tilesource-osm": "OpenStreetMap Tile Source",
         "tilesource-tms": "Tiled Map Service Tile Source",
