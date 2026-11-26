@@ -30,7 +30,7 @@ module.exports = function (grunt) {
         "tilesource-iip": "IIP Tile Source",
         "tilesource-legacy": "Legacy Tile Source",
         "tilesource-zoomify": "Zoomify Tile Source",
-        "tilesource-zoomit": "Zoom.it Tile Source",
+        "tilesource-zoomit": "ZoomHub (formerly zoom.it) Tile Source",
         "tilesource-image": "Image Tile Source",
         "tilesource-sequence": "Sequence Mode",
         "tilesource-collection": "Collection Mode",

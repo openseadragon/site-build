@@ -1,11 +1,11 @@
 <h2>
-    example: integrating with zoom.it tiles
+    example: integrating with ZoomHub (formerly zoom.it) tiles
 </h2>
-<p><strong>Note: Zoom.it is not currently accepting new images, though hopefully it will in the future.</strong></p>
 <p>
-    <a href="http://zoom.it">Zoom.it</a> provides a simple service-based way
-    of loading images and serving tiles.  The Zoom.it service is based on the
-    DZI format.
+    <a href="https://zoomhub.net">ZoomHub</a>, formerly
+    <a href="https://zoom.it">zoom.it</a>, provides a simple service-based way
+    of loading images and serving tiles.  The ZoomHub service is based on the
+    DZI format, and all old zoom.it images keep working.
 </p>
 <p>
     OpenSeadragon can render the DZI tiles and provide you all the features
@@ -15,24 +15,24 @@
     To get started:
 </p>
 <ol class="for-examples">
-    <li>Post your source image online somewhere.</li>
-    <li>Paste its URL into <a href="http://zoom.it">http://zoom.it</a>.</li>
-    <li>You can then get the info you need about the resulting image by going to<br><tt>http://api.zoom.it/v1/content/?url=&lt;YOUR_IMAGE_URL&gt;</tt>.</li>
+    <li>Upload your image or PDF at <a href="https://zoomhub.net">https://zoomhub.net</a>, or paste a link to one.</li>
+    <li>You can then get the info you need about the resulting image by going to<br><tt>https://api.zoomhub.net/v2/assets/&lt;YOUR_IMAGE_ID&gt;</tt>.
+        Its <tt>image.dzi</tt> has the DZI&rsquo;s URL, size, tile size, overlap and format.</li>
     <li>See below for how to format that information for OpenSeadragon.</li>
 </ol>
-<p>For more advanced use, see the <a href="http://zoom.it/pages/api/">Zoom.it API</a>.</p>
+<p>For more advanced use, see the <a href="https://zoomhub.net/docs/api">ZoomHub API</a>.</p>
 
 <div class="description">
-    <h3>Pulling Tiles From Zoom.it</h3>
+    <h3>Pulling Tiles From ZoomHub</h3>
     <p>
-        If you are pulling image tiles from Zoom.it, please respect the
-        copyright of the image creator and the policies of the Zoom.it
+        If you are pulling image tiles from ZoomHub, please respect the
+        copyright of the image creator and the policies of the ZoomHub
         service.
     </p>
 </div>
 <div class="demoarea">
     <div class="demoheading">
-        Example Inline Configuration for Rendering DZIs Hosted at Zoom.it
+        Example Inline Configuration for Rendering DZIs Hosted at ZoomHub
     </div>
     <div id="example-zoomit-tilesource" 
          class="openseadragon">
@@ -40,43 +40,17 @@
             OpenSeadragon({
                 id:            "example-zoomit-tilesource",
                 prefixUrl:     "/openseadragon/images/",
+                crossOriginPolicy: "anonymous",
                 tileSources:   [{ 
                     Image:  {
                         xmlns: "http://schemas.microsoft.com/deepzoom/2009",
-                        Url: "http://cache.zoom.it/content/WwI0_files/",
+                        Url: "https://cache.zoomhub.net/content/WwI0_files/",
                         TileSize: "254", 
                         Overlap: "1", 
                         Format: "jpg", 
-                        ServerFormat: "Default",
                         Size: { 
                             Width: "5816",
                             Height: "3961"
-                        }
-                    }
-                },{ 
-                    Image:  {
-                        xmlns: "http://schemas.microsoft.com/deepzoom/2009",
-                        Url: "http://static.seadragon.com/content/misc/carina-nebula_files/",
-                        TileSize: "254", 
-                        Overlap: "1", 
-                        Format: "jpg", 
-                        ServerFormat: "Default",
-                        Size: { 
-                            Width: "29566",
-                            Height: "14321"
-                        }
-                    }
-                },{ 
-                    Image:  {
-                        xmlns: "http://schemas.microsoft.com/deepzoom/2009",
-                        Url: "http://static.seadragon.com/content/misc/milwaukee_files/",
-                        TileSize: "254", 
-                        Overlap: "1", 
-                        Format: "jpg", 
-                        ServerFormat: "Default",
-                        Size: { 
-                            Width: "15497",
-                            Height: "5378"
                         }
                     }
                 }]
@@ -91,19 +65,24 @@
     
     <p>
         Configuration is done via the <code>tileSources</code> option
-        (or programmatically).
+        (or programmatically).  Given inline, OpenSeadragon need not fetch
+        the DZI before it can show the image.  The <code>Url</code> is the
+        DZI&rsquo;s own with <code>_files/</code> in place of
+        <code>.dzi</code>.  The tiles come from another domain, so set
+        <code>crossOriginPolicy</code> as well: ZoomHub serves them with the
+        CORS headers the WebGL drawer needs.
     </p>
 <pre>
 OpenSeadragon({
     ...
+    crossOriginPolicy: "anonymous",
     tileSources:   [{ 
         Image:  {
             xmlns: "http://schemas.microsoft.com/deepzoom/2009",
-            Url: "http://cache.zoom.it/content/WwI0_files/",
+            Url: "https://cache.zoomhub.net/content/WwI0_files/",
             TileSize: "254", 
             Overlap: "1", 
             Format: "jpg", 
-            ServerFormat: "Default",
             Size: { 
                 Width: "5816",
                 Height: "3961"
